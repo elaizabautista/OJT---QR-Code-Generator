@@ -1,0 +1,262 @@
+﻿namespace OJT___QR_Code_Generator
+{
+    partial class Form1
+    {
+        /// <summary>
+        ///  Required designer variable.
+        /// </summary>
+        private System.ComponentModel.IContainer components = null;
+
+        /// <summary>
+        ///  Clean up any resources being used.
+        /// </summary>
+        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+
+        #region Windows Form Designer generated code
+
+        /// <summary>
+        ///  Required method for Designer support - do not modify
+        ///  the contents of this method with the code editor.
+        /// </summary>
+        private void InitializeComponent()
+        {
+            panel1 = new Panel();
+            label5 = new Label();
+            btnConvertToPdf = new Button();
+            btnPrint = new Button();
+            btnClear = new Button();
+            btnGenerate = new Button();
+            pnlPreview = new Panel();
+            label4 = new Label();
+            txtBinLocation2 = new TextBox();
+            txtBinLocation1 = new TextBox();
+            label3 = new Label();
+            label2 = new Label();
+            label1 = new Label();
+            label6 = new Label();
+            label7 = new Label();
+            txtCustomWidth = new TextBox();
+            txtCustomHeight = new TextBox();
+            panel1.SuspendLayout();
+            SuspendLayout();
+            // 
+            // panel1
+            // 
+            panel1.BackColor = Color.LightSteelBlue;
+            panel1.Controls.Add(txtCustomHeight);
+            panel1.Controls.Add(txtCustomWidth);
+            panel1.Controls.Add(label7);
+            panel1.Controls.Add(label6);
+            panel1.Controls.Add(label5);
+            panel1.Controls.Add(btnConvertToPdf);
+            panel1.Controls.Add(btnPrint);
+            panel1.Controls.Add(btnClear);
+            panel1.Controls.Add(btnGenerate);
+            panel1.Controls.Add(pnlPreview);
+            panel1.Controls.Add(label4);
+            panel1.Controls.Add(txtBinLocation2);
+            panel1.Controls.Add(txtBinLocation1);
+            panel1.Controls.Add(label3);
+            panel1.Controls.Add(label2);
+            panel1.Controls.Add(label1);
+            panel1.Location = new Point(53, 25);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1043, 514);
+            panel1.TabIndex = 0;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label5.Location = new Point(79, 323);
+            label5.Name = "label5";
+            label5.Size = new Size(89, 21);
+            label5.TabIndex = 12;
+            label5.Text = "Paper Size:";
+            // 
+            // btnConvertToPdf
+            // 
+            btnConvertToPdf.BackColor = Color.AliceBlue;
+            btnConvertToPdf.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnConvertToPdf.Location = new Point(445, 427);
+            btnConvertToPdf.Name = "btnConvertToPdf";
+            btnConvertToPdf.Size = new Size(165, 39);
+            btnConvertToPdf.TabIndex = 10;
+            btnConvertToPdf.Text = "Convert to PDF";
+            btnConvertToPdf.UseVisualStyleBackColor = false;
+            btnConvertToPdf.Click += btnConvertToPdf_Click;
+            // 
+            // btnPrint
+            // 
+            btnPrint.BackColor = Color.AliceBlue;
+            btnPrint.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnPrint.Location = new Point(829, 427);
+            btnPrint.Name = "btnPrint";
+            btnPrint.Size = new Size(165, 39);
+            btnPrint.TabIndex = 9;
+            btnPrint.Text = "Print";
+            btnPrint.UseVisualStyleBackColor = false;
+            btnPrint.Click += btnPrint_Click;
+            // 
+            // btnClear
+            // 
+            btnClear.BackColor = Color.AliceBlue;
+            btnClear.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            btnClear.Location = new Point(220, 418);
+            btnClear.Name = "btnClear";
+            btnClear.Size = new Size(154, 48);
+            btnClear.TabIndex = 8;
+            btnClear.Text = "Clear";
+            btnClear.UseVisualStyleBackColor = false;
+            btnClear.Click += btnClear_Click;
+            // 
+            // btnGenerate
+            // 
+            btnGenerate.BackColor = Color.AliceBlue;
+            btnGenerate.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            btnGenerate.Location = new Point(79, 418);
+            btnGenerate.Name = "btnGenerate";
+            btnGenerate.Size = new Size(138, 48);
+            btnGenerate.TabIndex = 7;
+            btnGenerate.Text = "Generate";
+            btnGenerate.UseVisualStyleBackColor = false;
+            btnGenerate.Click += btnGenerate_Click;
+            // 
+            // pnlPreview
+            // 
+            pnlPreview.Location = new Point(445, 169);
+            pnlPreview.Name = "pnlPreview";
+            pnlPreview.Size = new Size(549, 242);
+            pnlPreview.TabIndex = 6;
+            pnlPreview.Paint += pnlPreview_Paint;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label4.Location = new Point(445, 142);
+            label4.Name = "label4";
+            label4.Size = new Size(109, 21);
+            label4.TabIndex = 5;
+            label4.Text = "Print Preview:";
+            // 
+            // txtBinLocation2
+            // 
+            txtBinLocation2.Location = new Point(76, 263);
+            txtBinLocation2.Name = "txtBinLocation2";
+            txtBinLocation2.Size = new Size(298, 23);
+            txtBinLocation2.TabIndex = 4;
+            // 
+            // txtBinLocation1
+            // 
+            txtBinLocation1.Location = new Point(76, 169);
+            txtBinLocation1.Name = "txtBinLocation1";
+            txtBinLocation1.Size = new Size(298, 23);
+            txtBinLocation1.TabIndex = 3;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label3.Location = new Point(76, 235);
+            label3.Name = "label3";
+            label3.Size = new Size(117, 21);
+            label3.TabIndex = 2;
+            label3.Text = "Bin Location 2:";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label2.Location = new Point(76, 142);
+            label2.Name = "label2";
+            label2.Size = new Size(114, 21);
+            label2.TabIndex = 1;
+            label2.Text = "Bin Location 1:";
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 27.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.Location = new Point(353, 25);
+            label1.Name = "label1";
+            label1.Size = new Size(358, 50);
+            label1.TabIndex = 0;
+            label1.Text = "QR Code Generator";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(79, 357);
+            label6.Name = "label6";
+            label6.Size = new Size(42, 15);
+            label6.TabIndex = 13;
+            label6.Text = "Width:";
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(196, 357);
+            label7.Name = "label7";
+            label7.Size = new Size(46, 15);
+            label7.TabIndex = 14;
+            label7.Text = "Height:";
+            // 
+            // txtCustomWidth
+            // 
+            txtCustomWidth.Location = new Point(127, 352);
+            txtCustomWidth.Name = "txtCustomWidth";
+            txtCustomWidth.Size = new Size(51, 23);
+            txtCustomWidth.TabIndex = 15;
+            // 
+            // txtCustomHeight
+            // 
+            txtCustomHeight.Location = new Point(248, 352);
+            txtCustomHeight.Name = "txtCustomHeight";
+            txtCustomHeight.Size = new Size(50, 23);
+            txtCustomHeight.TabIndex = 16;
+            // 
+            // Form1
+            // 
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.LightSlateGray;
+            ClientSize = new Size(1139, 587);
+            Controls.Add(panel1);
+            Name = "Form1";
+            Text = "QR Code UI";
+            Load += Form1_Load;
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            ResumeLayout(false);
+        }
+
+        #endregion
+
+        public Panel panel1;
+        public Panel pnlPreview;
+        public Label label4;
+        public TextBox txtBinLocation2;
+        public TextBox txtBinLocation1;
+        public Label label3;
+        public Label label2;
+        public Label label1;
+        public Button btnPrint;
+        public Button btnClear;
+        public Button btnGenerate;
+        public Button btnConvertToPdf;
+        public Label label5;
+        private TextBox txtCustomHeight;
+        private TextBox txtCustomWidth;
+        private Label label7;
+        private Label label6;
+    }
+}
