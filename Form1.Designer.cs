@@ -45,16 +45,12 @@
             label3 = new Label();
             label2 = new Label();
             label1 = new Label();
-            label8 = new Label();
-            comboBoxZones = new ComboBox();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
-            panel1.Controls.Add(comboBoxZones);
-            panel1.Controls.Add(label8);
             panel1.Controls.Add(txtCustomHeight);
             panel1.Controls.Add(txtCustomWidth);
             panel1.Controls.Add(label7);
@@ -112,7 +108,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label5.Location = new Point(79, 323);
+            label5.Location = new Point(73, 309);
             label5.Name = "label5";
             label5.Size = new Size(89, 21);
             label5.TabIndex = 12;
@@ -134,9 +130,9 @@
             // 
             btnPrint.BackColor = Color.AliceBlue;
             btnPrint.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnPrint.Location = new Point(829, 427);
+            btnPrint.Location = new Point(863, 427);
             btnPrint.Name = "btnPrint";
-            btnPrint.Size = new Size(165, 39);
+            btnPrint.Size = new Size(131, 39);
             btnPrint.TabIndex = 9;
             btnPrint.Text = "Print";
             btnPrint.UseVisualStyleBackColor = false;
@@ -186,14 +182,14 @@
             // 
             // txtBinLocation2
             // 
-            txtBinLocation2.Location = new Point(76, 228);
+            txtBinLocation2.Location = new Point(73, 253);
             txtBinLocation2.Name = "txtBinLocation2";
             txtBinLocation2.Size = new Size(298, 23);
             txtBinLocation2.TabIndex = 4;
             // 
             // txtBinLocation1
             // 
-            txtBinLocation1.Location = new Point(76, 169);
+            txtBinLocation1.Location = new Point(73, 169);
             txtBinLocation1.Name = "txtBinLocation1";
             txtBinLocation1.Size = new Size(298, 23);
             txtBinLocation1.TabIndex = 3;
@@ -202,7 +198,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.Location = new Point(73, 204);
+            label3.Location = new Point(73, 229);
             label3.Name = "label3";
             label3.Size = new Size(117, 21);
             label3.TabIndex = 2;
@@ -212,7 +208,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label2.Location = new Point(76, 142);
+            label2.Location = new Point(73, 142);
             label2.Name = "label2";
             label2.Size = new Size(114, 21);
             label2.TabIndex = 1;
@@ -227,24 +223,6 @@
             label1.Size = new Size(358, 50);
             label1.TabIndex = 0;
             label1.Text = "QR Code Generator";
-            // 
-            // label8
-            // 
-            label8.AutoSize = true;
-            label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label8.Location = new Point(73, 266);
-            label8.Name = "label8";
-            label8.Size = new Size(80, 21);
-            label8.TabIndex = 17;
-            label8.Text = "Zone List:";
-            // 
-            // comboBoxZones
-            // 
-            comboBoxZones.FormattingEnabled = true;
-            comboBoxZones.Location = new Point(76, 290);
-            comboBoxZones.Name = "comboBoxZones";
-            comboBoxZones.Size = new Size(298, 23);
-            comboBoxZones.TabIndex = 18;
             // 
             // Form1
             // 
@@ -276,11 +254,9 @@
         public Button btnGenerate;
         public Button btnConvertToPdf;
         public Label label5;
-        private TextBox txtCustomHeight;
-        private TextBox txtCustomWidth;
-        private Label label7;
-        private Label label6;
-        private ComboBox comboBoxZones;
-        public Label label8;
+        public TextBox txtCustomHeight;
+        public TextBox txtCustomWidth;
+        public Label label7;
+        public Label label6;
     }
 }

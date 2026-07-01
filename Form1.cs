@@ -26,8 +26,6 @@ namespace OJT___QR_Code_Generator
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
         }
 
-
-
         private void Form1_Load(object sender, EventArgs e)
         {
             txtCustomWidth.Text = "3";
