@@ -193,43 +193,52 @@ namespace OJT___QR_Code_Generator
             RenderLabelLayout(g, printableWidth, printableHeight, isPrinting: true);
         }
 
-        // 🛠️ MAXIMUM SCALE LAYOUT: Shifter divider right, pushes text and QR to the absolute limit
+        // 🛠️ HONEYWELL COMPATIBLE HIGH-SCALE LAYOUT
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
-            int halfHeight = totalHeight / 2;
+            // Safeguard border cutoff zone on physical thermal heads (Honeywell standard unprintable margins)
+            int margin = isPrinting ? 20 : 8;
 
-            // Shift the partition line further right to 75% to give the text box maximum stretching room
-            int qrDividerX = (int)(totalWidth * 0.75);
+            int safeX = margin;
+            int safeY = margin;
+            int safeWidth = totalWidth - (margin * 2);
+            int safeHeight = totalHeight - (margin * 2);
+            int halfHeight = safeHeight / 2;
 
-            // 1. Draw layout grid lines
+            // Maintain your 75% wide partition strategy securely in safe zones
+            int qrDividerX = safeX + (int)(safeWidth * 0.75);
+
+            // 1. Draw frame paths
             int penThickness = isPrinting ? 4 : 2;
             using (Pen blackPen = new Pen(Color.Black, penThickness))
             {
-                g.DrawRectangle(blackPen, 0, 0, totalWidth - 1, totalHeight - 1);
-                g.DrawLine(blackPen, 0, halfHeight, totalWidth, halfHeight);
-                g.DrawLine(blackPen, qrDividerX, 0, qrDividerX, totalHeight);
+                g.DrawRectangle(blackPen, safeX, safeY, safeWidth, safeHeight);
+                g.DrawLine(blackPen, safeX, safeY + halfHeight, safeX + safeWidth, safeY + halfHeight);
+                g.DrawLine(blackPen, qrDividerX, safeY, qrDividerX, safeY + safeHeight);
             }
 
-            // 2. MAXIMUM BIN TEXT SIZE: Increased ratio to 0.26f with a 75% wide box means giant text that won't clip
-            float fontSize = totalHeight * 0.26f;
-            using (Font labelFont = new Font("Arial", fontSize, FontStyle.Bold))
+            // 2. MAXIMUM AUTOFIT BIN TEXT: Automatically climbs to the tallest absolute size allowed by the height bounds.
+            float maxFontCeiling = safeHeight * 0.32f;
+            int textPadding = 10;
+            int textBoxWidth = (qrDividerX - safeX) - textPadding;
+            int textBoxHeight = halfHeight - textPadding;
+
+            // Top Row Bin Code Text
+            if (!string.IsNullOrEmpty(_activeBin1))
             {
-                // Top Row Bin Code
-                if (!string.IsNullOrEmpty(_activeBin1))
-                {
-                    DrawTextCentered(g, _activeBin1, labelFont, 0, 0, qrDividerX, halfHeight);
-                }
-
-                // Bottom Row Bin Code
-                if (!string.IsNullOrEmpty(_activeBin2))
-                {
-                    DrawTextCentered(g, _activeBin2, labelFont, 0, halfHeight, qrDividerX, halfHeight);
-                }
+                DrawTextAutofit(g, _activeBin1, "Arial", FontStyle.Bold, maxFontCeiling, safeX + (textPadding / 2), safeY + (textPadding / 2), textBoxWidth, textBoxHeight);
             }
 
-            // 3. MAXIMUM QR CODE SIZE: Pushed to 96% of the box height with a tight 2% border buffer
-            int qrSize = (int)(halfHeight * 0.96);
-            int qrX = qrDividerX + ((totalWidth - qrDividerX) - qrSize) / 2;
+            // Bottom Row Bin Code Text
+            if (!string.IsNullOrEmpty(_activeBin2))
+            {
+                DrawTextAutofit(g, _activeBin2, "Arial", FontStyle.Bold, maxFontCeiling, safeX + (textPadding / 2), safeY + halfHeight + (textPadding / 2), textBoxWidth, textBoxHeight);
+            }
+
+            // 3. MAXIMIZED SYSTEM QR CODES: Scales cleanly to 95% of available inner box area height
+            int qrSize = (int)(halfHeight * 0.95);
+            int rightCompartmentWidth = (safeX + safeWidth) - qrDividerX;
+            int qrX = qrDividerX + (rightCompartmentWidth - qrSize) / 2;
 
             // Top Row QR Code
             if (!string.IsNullOrEmpty(_activeBin1))
@@ -238,8 +247,7 @@ namespace OJT___QR_Code_Generator
                 {
                     if (qrImg != null)
                     {
-                        // Tight vertical centering
-                        int qrY = (halfHeight - qrSize) / 2;
+                        int qrY = safeY + (halfHeight - qrSize) / 2;
                         g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
                     }
                 }
@@ -252,20 +260,34 @@ namespace OJT___QR_Code_Generator
                 {
                     if (qrImg != null)
                     {
-                        // Tight vertical centering
-                        int qrY = halfHeight + (halfHeight - qrSize) / 2;
+                        int qrY = safeY + halfHeight + (halfHeight - qrSize) / 2;
                         g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
                     }
                 }
             }
         }
 
-        private void DrawTextCentered(Graphics g, string text, Font font, int x, int y, int width, int height)
+        // Adaptive font crunching ruleset to ensure maximum enlargement on both 6" and 5.4" lengths without bounds breaches
+        private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight)
         {
-            SizeF textSize = g.MeasureString(text, font);
-            float posX = x + (width - textSize.Width) / 2;
-            float posY = y + (height - textSize.Height) / 2;
-            g.DrawString(text, font, Brushes.Black, posX, posY);
+            float currentSize = maxFontSize;
+            Font testFont = new Font(fontFamily, currentSize, style);
+            SizeF size = g.MeasureString(text, testFont);
+
+            while ((size.Width > maxWidth || size.Height > maxHeight) && currentSize > 8f)
+            {
+                currentSize -= 1f;
+                testFont.Dispose();
+                testFont = new Font(fontFamily, currentSize, style);
+                size = g.MeasureString(text, testFont);
+            }
+
+            using (testFont)
+            {
+                float posX = x + (maxWidth - size.Width) / 2;
+                float posY = y + (maxHeight - size.Height) / 2;
+                g.DrawString(text, testFont, Brushes.Black, posX, posY);
+            }
         }
 
         private Bitmap CreateQRCodeImage(string text)
