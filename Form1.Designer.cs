@@ -29,6 +29,10 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            txtCustomHeight = new TextBox();
+            txtCustomWidth = new TextBox();
+            label7 = new Label();
+            label6 = new Label();
             label5 = new Label();
             btnConvertToPdf = new Button();
             btnPrint = new Button();
@@ -41,16 +45,16 @@
             label3 = new Label();
             label2 = new Label();
             label1 = new Label();
-            label6 = new Label();
-            label7 = new Label();
-            txtCustomWidth = new TextBox();
-            txtCustomHeight = new TextBox();
+            label8 = new Label();
+            comboBoxZones = new ComboBox();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
+            panel1.Controls.Add(comboBoxZones);
+            panel1.Controls.Add(label8);
             panel1.Controls.Add(txtCustomHeight);
             panel1.Controls.Add(txtCustomWidth);
             panel1.Controls.Add(label7);
@@ -71,6 +75,38 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1043, 514);
             panel1.TabIndex = 0;
+            // 
+            // txtCustomHeight
+            // 
+            txtCustomHeight.Location = new Point(248, 352);
+            txtCustomHeight.Name = "txtCustomHeight";
+            txtCustomHeight.Size = new Size(50, 23);
+            txtCustomHeight.TabIndex = 16;
+            // 
+            // txtCustomWidth
+            // 
+            txtCustomWidth.Location = new Point(127, 352);
+            txtCustomWidth.Name = "txtCustomWidth";
+            txtCustomWidth.Size = new Size(51, 23);
+            txtCustomWidth.TabIndex = 15;
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(196, 357);
+            label7.Name = "label7";
+            label7.Size = new Size(46, 15);
+            label7.TabIndex = 14;
+            label7.Text = "Height:";
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Location = new Point(79, 357);
+            label6.Name = "label6";
+            label6.Size = new Size(42, 15);
+            label6.TabIndex = 13;
+            label6.Text = "Width:";
             // 
             // label5
             // 
@@ -150,7 +186,7 @@
             // 
             // txtBinLocation2
             // 
-            txtBinLocation2.Location = new Point(76, 263);
+            txtBinLocation2.Location = new Point(76, 228);
             txtBinLocation2.Name = "txtBinLocation2";
             txtBinLocation2.Size = new Size(298, 23);
             txtBinLocation2.TabIndex = 4;
@@ -166,7 +202,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.Location = new Point(76, 235);
+            label3.Location = new Point(73, 204);
             label3.Name = "label3";
             label3.Size = new Size(117, 21);
             label3.TabIndex = 2;
@@ -192,37 +228,23 @@
             label1.TabIndex = 0;
             label1.Text = "QR Code Generator";
             // 
-            // label6
+            // label8
             // 
-            label6.AutoSize = true;
-            label6.Location = new Point(79, 357);
-            label6.Name = "label6";
-            label6.Size = new Size(42, 15);
-            label6.TabIndex = 13;
-            label6.Text = "Width:";
+            label8.AutoSize = true;
+            label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label8.Location = new Point(73, 266);
+            label8.Name = "label8";
+            label8.Size = new Size(80, 21);
+            label8.TabIndex = 17;
+            label8.Text = "Zone List:";
             // 
-            // label7
+            // comboBoxZones
             // 
-            label7.AutoSize = true;
-            label7.Location = new Point(196, 357);
-            label7.Name = "label7";
-            label7.Size = new Size(46, 15);
-            label7.TabIndex = 14;
-            label7.Text = "Height:";
-            // 
-            // txtCustomWidth
-            // 
-            txtCustomWidth.Location = new Point(127, 352);
-            txtCustomWidth.Name = "txtCustomWidth";
-            txtCustomWidth.Size = new Size(51, 23);
-            txtCustomWidth.TabIndex = 15;
-            // 
-            // txtCustomHeight
-            // 
-            txtCustomHeight.Location = new Point(248, 352);
-            txtCustomHeight.Name = "txtCustomHeight";
-            txtCustomHeight.Size = new Size(50, 23);
-            txtCustomHeight.TabIndex = 16;
+            comboBoxZones.FormattingEnabled = true;
+            comboBoxZones.Location = new Point(76, 290);
+            comboBoxZones.Name = "comboBoxZones";
+            comboBoxZones.Size = new Size(298, 23);
+            comboBoxZones.TabIndex = 18;
             // 
             // Form1
             // 
@@ -258,5 +280,7 @@
         private TextBox txtCustomWidth;
         private Label label7;
         private Label label6;
+        private ComboBox comboBoxZones;
+        public Label label8;
     }
 }
