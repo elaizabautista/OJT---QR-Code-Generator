@@ -116,7 +116,6 @@ namespace OJT___QR_Code_Generator
 
             using (PrintDocument pd = new PrintDocument())
             {
-                // FIX: Force true landscape printing modes if height is larger than width
                 pd.DefaultPageSettings.Landscape = (paperSize.Width > paperSize.Height) || (paperSize.Height > paperSize.Width);
                 pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
                 pd.PrintPage += new PrintPageEventHandler(PrintLabelsHandler);
@@ -150,7 +149,6 @@ namespace OJT___QR_Code_Generator
                 {
                     using (PrintDocument pd = new PrintDocument())
                     {
-                        // FIX: Sync landscape flags identically with your printing method
                         pd.DefaultPageSettings.Landscape = (paperSize.Width > paperSize.Height) || (paperSize.Height > paperSize.Width);
                         pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
                         pd.OriginAtMargins = false;
@@ -195,60 +193,45 @@ namespace OJT___QR_Code_Generator
             RenderLabelLayout(g, printableWidth, printableHeight, isPrinting: true);
         }
 
+        // 🛠️ CHANGED: Completely rewritten layout structure to center large components vertically
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
-            int halfHeight = totalHeight / 2;
-            int qrDividerX = (int)(totalWidth * 0.72);
+            // Use activeBin1 as our core text value
+            string binText = !string.IsNullOrEmpty(_activeBin1) ? _activeBin1 : _activeBin2;
 
+            if (string.IsNullOrEmpty(binText)) return;
+
+            // 1. Draw the outer frame border
             int penThickness = isPrinting ? 4 : 2;
             using (Pen blackPen = new Pen(Color.Black, penThickness))
             {
                 g.DrawRectangle(blackPen, 0, 0, totalWidth - 1, totalHeight - 1);
-                g.DrawLine(blackPen, 0, halfHeight, totalWidth, halfHeight);
-                g.DrawLine(blackPen, qrDividerX, 0, qrDividerX, totalHeight);
             }
 
-            float fontSize = totalHeight * 0.16f;
-            Font labelFont = new Font("Arial", fontSize, FontStyle.Bold);
-
-            int qrSize = (int)(halfHeight * 0.82);
-            int qrX = qrDividerX + ((totalWidth - qrDividerX) - qrSize) / 2;
-
-            if (!string.IsNullOrEmpty(_activeBin1))
+            // 2. TEXT MODIFICATIONS: Make text significantly larger (26% of total label height)
+            float fontSize = totalHeight * 0.26f;
+            using (Font labelFont = new Font("Arial", fontSize, FontStyle.Bold))
             {
-                using (Bitmap qrImg = CreateQRCodeImage(_activeBin1))
+                // Measure text size to calculate precise horizontal centering coordinates
+                SizeF textSize = g.MeasureString(binText, labelFont);
+                float textX = (totalWidth - textSize.Width) / 2;
+                float textY = (float)(totalHeight * 0.12); // Positioned comfortably in the upper half
+
+                g.DrawString(binText, labelFont, Brushes.Black, textX, textY);
+            }
+
+            // 3. QR CODE MODIFICATIONS: Scale up size massively (42% of total label height)
+            int qrSize = (int)(totalHeight * 0.42);
+            int qrX = (totalWidth - qrSize) / 2; // Perfectly center horizontally
+            int qrY = (int)(totalHeight * 0.48);  // Positioned cleanly on the lower half of the sticker
+
+            using (Bitmap qrImg = CreateQRCodeImage(binText))
+            {
+                if (qrImg != null)
                 {
-                    if (qrImg != null)
-                    {
-                        DrawTextCentered(g, _activeBin1, labelFont, 0, 0, qrDividerX, halfHeight);
-                        int qrY = (halfHeight - qrSize) / 2;
-                        g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
-                    }
+                    g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
                 }
             }
-
-            if (!string.IsNullOrEmpty(_activeBin2))
-            {
-                using (Bitmap qrImg = CreateQRCodeImage(_activeBin2))
-                {
-                    if (qrImg != null)
-                    {
-                        DrawTextCentered(g, _activeBin2, labelFont, 0, halfHeight, qrDividerX, halfHeight);
-                        int qrY = halfHeight + (halfHeight - qrSize) / 2;
-                        g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
-                    }
-                }
-            }
-
-            labelFont.Dispose();
-        }
-
-        private void DrawTextCentered(Graphics g, string text, Font font, int x, int y, int width, int height)
-        {
-            SizeF textSize = g.MeasureString(text, font);
-            float posX = x + (width - textSize.Width) / 2;
-            float posY = y + (height - textSize.Height) / 2;
-            g.DrawString(text, font, Brushes.Black, posX, posY);
         }
 
         private Bitmap CreateQRCodeImage(string text)
