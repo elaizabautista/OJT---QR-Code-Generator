@@ -29,6 +29,9 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            btnPrintAll = new Button();
+            label8 = new Label();
+            cmbBatch = new ComboBox();
             txtCustomHeight = new TextBox();
             txtCustomWidth = new TextBox();
             label7 = new Label();
@@ -51,6 +54,9 @@
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
+            panel1.Controls.Add(btnPrintAll);
+            panel1.Controls.Add(label8);
+            panel1.Controls.Add(cmbBatch);
             panel1.Controls.Add(txtCustomHeight);
             panel1.Controls.Add(txtCustomWidth);
             panel1.Controls.Add(label7);
@@ -72,16 +78,46 @@
             panel1.Size = new Size(1043, 514);
             panel1.TabIndex = 0;
             // 
+            // btnPrintAll
+            // 
+            btnPrintAll.BackColor = Color.AliceBlue;
+            btnPrintAll.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnPrintAll.Location = new Point(726, 427);
+            btnPrintAll.Name = "btnPrintAll";
+            btnPrintAll.Size = new Size(131, 39);
+            btnPrintAll.TabIndex = 19;
+            btnPrintAll.Text = "Print All";
+            btnPrintAll.UseVisualStyleBackColor = false;
+            btnPrintAll.Click += btnPrintAll_Click;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label8.Location = new Point(70, 260);
+            label8.Name = "label8";
+            label8.Size = new Size(55, 21);
+            label8.TabIndex = 18;
+            label8.Text = "Batch:";
+            // 
+            // cmbBatch
+            // 
+            cmbBatch.FormattingEnabled = true;
+            cmbBatch.Location = new Point(73, 284);
+            cmbBatch.Name = "cmbBatch";
+            cmbBatch.Size = new Size(298, 23);
+            cmbBatch.TabIndex = 17;
+            // 
             // txtCustomHeight
             // 
-            txtCustomHeight.Location = new Point(248, 352);
+            txtCustomHeight.Location = new Point(248, 363);
             txtCustomHeight.Name = "txtCustomHeight";
             txtCustomHeight.Size = new Size(50, 23);
             txtCustomHeight.TabIndex = 16;
             // 
             // txtCustomWidth
             // 
-            txtCustomWidth.Location = new Point(127, 352);
+            txtCustomWidth.Location = new Point(127, 363);
             txtCustomWidth.Name = "txtCustomWidth";
             txtCustomWidth.Size = new Size(51, 23);
             txtCustomWidth.TabIndex = 15;
@@ -89,7 +125,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(196, 357);
+            label7.Location = new Point(196, 368);
             label7.Name = "label7";
             label7.Size = new Size(46, 15);
             label7.TabIndex = 14;
@@ -98,7 +134,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(79, 357);
+            label6.Location = new Point(79, 368);
             label6.Name = "label6";
             label6.Size = new Size(42, 15);
             label6.TabIndex = 13;
@@ -108,7 +144,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label5.Location = new Point(73, 309);
+            label5.Location = new Point(70, 330);
             label5.Name = "label5";
             label5.Size = new Size(89, 21);
             label5.TabIndex = 12;
@@ -182,14 +218,14 @@
             // 
             // txtBinLocation2
             // 
-            txtBinLocation2.Location = new Point(73, 253);
+            txtBinLocation2.Location = new Point(73, 228);
             txtBinLocation2.Name = "txtBinLocation2";
             txtBinLocation2.Size = new Size(298, 23);
             txtBinLocation2.TabIndex = 4;
             // 
             // txtBinLocation1
             // 
-            txtBinLocation1.Location = new Point(73, 169);
+            txtBinLocation1.Location = new Point(73, 166);
             txtBinLocation1.Name = "txtBinLocation1";
             txtBinLocation1.Size = new Size(298, 23);
             txtBinLocation1.TabIndex = 3;
@@ -198,7 +234,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.Location = new Point(73, 229);
+            label3.Location = new Point(70, 204);
             label3.Name = "label3";
             label3.Size = new Size(117, 21);
             label3.TabIndex = 2;
@@ -258,5 +294,8 @@
         public TextBox txtCustomWidth;
         public Label label7;
         public Label label6;
+        public Label label8;
+        private ComboBox cmbBatch;
+        public Button btnPrintAll;
     }
 }

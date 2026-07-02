@@ -4,6 +4,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Windows.Forms;
 using QRCoder;
+using System.Collections.Generic;
 
 namespace OJT___QR_Code_Generator
 {
@@ -12,14 +13,18 @@ namespace OJT___QR_Code_Generator
         private string _activeBin1 = string.Empty;
         private string _activeBin2 = string.Empty;
 
+        private List<(string bin1, string bin2)> _batchPages = new List<(string, string)>();
+        private int _batchPageIndex = 0;
+
         public Form1()
-        {
+        {   
             InitializeComponent();
 
             this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
             this.btnConvertToPdf.Click += new System.EventHandler(this.btnConvertToPdf_Click);
+            this.btnPrintAll.Click += new System.EventHandler(this.btnPrintAll_Click);   // <-- add this line
             this.pnlPreview.Paint += new PaintEventHandler(this.pnlPreview_Paint);
 
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
@@ -30,6 +35,11 @@ namespace OJT___QR_Code_Generator
         {
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
+
+            for (int i = 1; i <= 26; i++)
+            {
+                cmbBatch.Items.Add("Zone " + i);
+            }
         }
 
         private Size GetTargetPaperSizeInHundredths()
@@ -47,6 +57,30 @@ namespace OJT___QR_Code_Generator
             if (h <= 0) h = 600;
 
             return new Size(w, h);
+        }
+
+        private void PrintBatchPageHandler(object sender, PrintPageEventArgs e)
+        {
+            if (_batchPageIndex >= _batchPages.Count)
+            {
+                e.HasMorePages = false;
+                return;
+            }
+
+            // Temporarily swap in this page's bin values so the existing render path handles it
+            string savedBin1 = _activeBin1;
+            string savedBin2 = _activeBin2;
+
+            _activeBin1 = _batchPages[_batchPageIndex].bin1;
+            _activeBin2 = _batchPages[_batchPageIndex].bin2;
+
+            PrintLabelsHandler(sender, e); // exact same rotation + RenderLabelLayout call as manual mode
+
+            _activeBin1 = savedBin1;
+            _activeBin2 = savedBin2;
+
+            _batchPageIndex++;
+            e.HasMorePages = _batchPageIndex < _batchPages.Count;
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -323,6 +357,61 @@ namespace OJT___QR_Code_Generator
             {
                 return null;
             }
+        }
+
+        private void btnPrintAll_Click(object sender, EventArgs e)
+        {
+            if (cmbBatch.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a Zone from the Batch dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string selected = cmbBatch.SelectedItem.ToString();
+            int zoneNum;
+            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.Zones.ContainsKey(zoneNum))
+            {
+                MessageBox.Show("Selected zone has no bin location data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string[] bins = WarehouseData.Zones[zoneNum];
+            if (bins == null || bins.Length == 0)
+            {
+                MessageBox.Show("Selected zone has no bin locations.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            _batchPages.Clear();
+            for (int i = 0; i < bins.Length; i += 2)
+            {
+                string bin1 = bins[i];
+                string bin2 = (i + 1 < bins.Length) ? bins[i + 1] : string.Empty;
+                _batchPages.Add((bin1, bin2));
+            }
+
+            Size paperSize = GetTargetPaperSizeInHundredths();
+
+            using (PrintDocument pd = new PrintDocument())
+            {
+                pd.DefaultPageSettings.Landscape = (paperSize.Width > paperSize.Height) || (paperSize.Height > paperSize.Width);
+                pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
+
+                // Reset the page cursor every time this document starts a print/preview pass —
+                // PrintPreviewDialog can trigger BeginPrint more than once (resize, zoom, view switch)
+                pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
+
+                pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
+
+                using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
+                {
+                    previewDlg.Document = pd;
+                    previewDlg.WindowState = FormWindowState.Maximized;
+                    previewDlg.ShowDialog();
+                }
+            }
+
+            pnlPreview.Invalidate();
         }
     }
 }
