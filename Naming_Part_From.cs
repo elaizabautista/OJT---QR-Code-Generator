@@ -1,22 +1,27 @@
+﻿using QRCoder;
 using System;
+using System.Collections.Generic;
+using System.Data.Common;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Windows.Forms;
-using QRCoder;
-using System.Collections.Generic;
 
 namespace OJT___QR_Code_Generator
 {
-    public partial class Form1 : Form
+    public partial class Naming_Part_From : Form
     {
-        private string _activeBin1 = string.Empty;
-        private string _activeBin2 = string.Empty;
+        // NOTE: renamed from _activeBin1 / _activeBin2 to reflect Part Name / Part Number usage
+        private string _activePartName = string.Empty;
+        private string _activePartNumber = string.Empty;
 
-        private List<(string bin1, string bin2)> _batchPages = new List<(string, string)>();
+        // NOTE: batch pages now hold (partName, partNumber) pairs instead of bin pairs.
+        // If WarehouseData.Zones still returns bin-location strings, you'll want to point
+        // this at a part-number data source instead (see btnPrintAll_Click below).
+        private List<(string partName, string partNumber)> _batchPages = new List<(string, string)>();
         private int _batchPageIndex = 0;
 
-        public Form1()
+        public Naming_Part_From()
         {
             InitializeComponent();
 
@@ -24,22 +29,16 @@ namespace OJT___QR_Code_Generator
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
             this.btnConvertToPdf.Click += new System.EventHandler(this.btnConvertToPdf_Click);
-            this.btnPrintAll.Click += new System.EventHandler(this.btnPrintAll_Click);   // <-- add this line
             this.pnlPreview.Paint += new PaintEventHandler(this.pnlPreview_Paint);
 
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void Naming_Part_From_Load(object sender, EventArgs e)
         {
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
-
-            for (int i = 1; i <= 26; i++)
-            {
-                cmbBatch.Items.Add("Zone " + i);
-            }
         }
 
         private Size GetTargetPaperSizeInHundredths()
@@ -67,17 +66,17 @@ namespace OJT___QR_Code_Generator
                 return;
             }
 
-            // Temporarily swap in this page's bin values so the existing render path handles it
-            string savedBin1 = _activeBin1;
-            string savedBin2 = _activeBin2;
+            // Temporarily swap in this page's part values so the existing render path handles it
+            string savedName = _activePartName;
+            string savedNumber = _activePartNumber;
 
-            _activeBin1 = _batchPages[_batchPageIndex].bin1;
-            _activeBin2 = _batchPages[_batchPageIndex].bin2;
+            _activePartName = _batchPages[_batchPageIndex].partName;
+            _activePartNumber = _batchPages[_batchPageIndex].partNumber;
 
             PrintLabelsHandler(sender, e); // exact same rotation + RenderLabelLayout call as manual mode
 
-            _activeBin1 = savedBin1;
-            _activeBin2 = savedBin2;
+            _activePartName = savedName;
+            _activePartNumber = savedNumber;
 
             _batchPageIndex++;
             e.HasMorePages = _batchPageIndex < _batchPages.Count;
@@ -85,12 +84,12 @@ namespace OJT___QR_Code_Generator
 
         private void btnGenerate_Click(object sender, EventArgs e)
         {
-            _activeBin1 = txtBinLocation1.Text.Trim();
-            _activeBin2 = txtBinLocation2.Text.Trim();
+            _activePartName = txtBinLocation1.Text.Trim();
+            _activePartNumber = txtBinLocation2.Text.Trim();
 
-            if (string.IsNullOrEmpty(_activeBin1) && string.IsNullOrEmpty(_activeBin2))
+            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber))
             {
-                MessageBox.Show("Please enter at least one Bin Location value to generate.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter Part Name and/or Part Number to generate.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -101,8 +100,8 @@ namespace OJT___QR_Code_Generator
         {
             txtBinLocation1.Clear();
             txtBinLocation2.Clear();
-            _activeBin1 = string.Empty;
-            _activeBin2 = string.Empty;
+            _activePartName = string.Empty;
+            _activePartNumber = string.Empty;
             pnlPreview.Invalidate();
         }
 
@@ -140,9 +139,9 @@ namespace OJT___QR_Code_Generator
 
         private void btnPrint_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_activeBin1) && string.IsNullOrEmpty(_activeBin2))
+            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber))
             {
-                MessageBox.Show("Please enter a Bin Location and click Generate before printing.", "Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter a Part Name/Number and click Generate before printing.", "Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -165,9 +164,9 @@ namespace OJT___QR_Code_Generator
 
         private void btnConvertToPdf_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_activeBin1) && string.IsNullOrEmpty(_activeBin2))
+            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber))
             {
-                MessageBox.Show("Please generate a Bin Location layout before converting to PDF.", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please generate a Part Name/Number layout before converting to PDF.", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -176,8 +175,8 @@ namespace OJT___QR_Code_Generator
             using (SaveFileDialog saveDlg = new SaveFileDialog())
             {
                 saveDlg.Filter = "PDF Files (*.pdf)|*.pdf";
-                saveDlg.Title = "Save Bin Labels as PDF";
-                saveDlg.FileName = $"Bin_Labels_{_activeBin1.Replace("-", "_")}";
+                saveDlg.Title = "Save Part Label as PDF";
+                saveDlg.FileName = $"Part_Label_{_activePartNumber.Replace("-", "_")}";
 
                 if (saveDlg.ShowDialog() == DialogResult.OK)
                 {
@@ -227,7 +226,7 @@ namespace OJT___QR_Code_Generator
             RenderLabelLayout(g, printableWidth, printableHeight, isPrinting: true);
         }
 
-        // 🛠️ HONEYWELL COMPATIBLE HIGH-SCALE LAYOUT
+        // 🛠️ SINGLE-ROW PART LABEL: Part Name (top) / Part Number (bottom) on left, ONE shared QR on right
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
             // Safeguard border cutoff zone on physical thermal heads (Honeywell standard unprintable margins)
@@ -239,69 +238,59 @@ namespace OJT___QR_Code_Generator
             int safeHeight = totalHeight - (margin * 2);
             int halfHeight = safeHeight / 2;
 
-            // Maintain your 75% wide partition strategy securely in safe zones
+            // Maintain the 75% wide text partition / 25% QR partition
             int qrDividerX = safeX + (int)(safeWidth * 0.75);
 
-            // 1. Draw frame paths
+            // 1. Draw frame: outer box, horizontal divider (Name|Number) only across the text column,
+            //    vertical divider separating text column from the QR column
             int penThickness = isPrinting ? 4 : 2;
             using (Pen blackPen = new Pen(Color.Black, penThickness))
             {
                 g.DrawRectangle(blackPen, safeX, safeY, safeWidth, safeHeight);
-                g.DrawLine(blackPen, safeX, safeY + halfHeight, safeX + safeWidth, safeY + halfHeight);
+                g.DrawLine(blackPen, safeX, safeY + halfHeight, qrDividerX, safeY + halfHeight);
                 g.DrawLine(blackPen, qrDividerX, safeY, qrDividerX, safeY + safeHeight);
             }
 
-            // 2. MAXIMUM AUTOFIT BIN TEXT: Automatically climbs to the tallest absolute size allowed by the height bounds.
+            // 2. MAXIMUM AUTOFIT TEXT: Part Name on top half, Part Number on bottom half
             float maxFontCeiling = safeHeight * 0.32f;
             int textPadding = 10;
             int textBoxWidth = (qrDividerX - safeX) - textPadding;
             int textBoxHeight = halfHeight - textPadding;
 
-            // Top Row Bin Code Text
-            if (!string.IsNullOrEmpty(_activeBin1))
+            if (!string.IsNullOrEmpty(_activePartName))
             {
-                DrawTextAutofit(g, _activeBin1, "Arial", FontStyle.Bold, maxFontCeiling, safeX + (textPadding / 2), safeY + (textPadding / 2), textBoxWidth, textBoxHeight);
+                DrawTextAutofit(g, _activePartName, "Arial", FontStyle.Bold, maxFontCeiling,
+                    safeX + (textPadding / 2), safeY + (textPadding / 2), textBoxWidth, textBoxHeight);
             }
 
-            // Bottom Row Bin Code Text
-            if (!string.IsNullOrEmpty(_activeBin2))
+            if (!string.IsNullOrEmpty(_activePartNumber))
             {
-                DrawTextAutofit(g, _activeBin2, "Arial", FontStyle.Bold, maxFontCeiling, safeX + (textPadding / 2), safeY + halfHeight + (textPadding / 2), textBoxWidth, textBoxHeight);
+                DrawTextAutofit(g, _activePartNumber, "Arial", FontStyle.Bold, maxFontCeiling,
+                    safeX + (textPadding / 2), safeY + halfHeight + (textPadding / 2), textBoxWidth, textBoxHeight);
             }
 
-            // 3. MAXIMIZED SYSTEM QR CODES: Scales cleanly to 95% of available inner box area height
-            int qrSize = (int)(halfHeight * 0.95);
+            // 3. ONE QR code spanning the full label height, encoding the part number
+            //    (falls back to part name if number is blank)
             int rightCompartmentWidth = (safeX + safeWidth) - qrDividerX;
-            int qrX = qrDividerX + (rightCompartmentWidth - qrSize) / 2;
+            int qrSize = (int)(Math.Min(safeHeight, rightCompartmentWidth) * 0.9);
 
-            // Top Row QR Code
-            if (!string.IsNullOrEmpty(_activeBin1))
+            string qrPayload = $"{_activePartName} - {_activePartNumber}";
+
+            if (!string.IsNullOrEmpty(qrPayload))
             {
-                using (Bitmap qrImg = CreateQRCodeImage(_activeBin1))
+                using (Bitmap qrImg = CreateQRCodeImage(qrPayload))
                 {
                     if (qrImg != null)
                     {
-                        int qrY = safeY + (halfHeight - qrSize) / 2;
-                        g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
-                    }
-                }
-            }
-
-            // Bottom Row QR Code
-            if (!string.IsNullOrEmpty(_activeBin2))
-            {
-                using (Bitmap qrImg = CreateQRCodeImage(_activeBin2))
-                {
-                    if (qrImg != null)
-                    {
-                        int qrY = safeY + halfHeight + (halfHeight - qrSize) / 2;
+                        int qrX = qrDividerX + (rightCompartmentWidth - qrSize) / 2;
+                        int qrY = safeY + (safeHeight - qrSize) / 2;
                         g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
                     }
                 }
             }
         }
 
-        // Adaptive font crunching ruleset to ensure maximum enlargement on both 6" and 5.4" lengths without bounds breaches
+        // Adaptive font crunching ruleset to ensure maximum enlargement without bounds breaches
         private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight)
         {
             float currentSize = maxFontSize;
@@ -359,67 +348,9 @@ namespace OJT___QR_Code_Generator
             }
         }
 
-        private void btnPrintAll_Click(object sender, EventArgs e)
-        {
-            if (cmbBatch.SelectedItem == null)
-            {
-                MessageBox.Show("Please select a Zone from the Batch dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string selected = cmbBatch.SelectedItem.ToString();
-            int zoneNum;
-            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.Zones.ContainsKey(zoneNum))
-            {
-                MessageBox.Show("Selected zone has no bin location data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string[] bins = WarehouseData.Zones[zoneNum];
-            if (bins == null || bins.Length == 0)
-            {
-                MessageBox.Show("Selected zone has no bin locations.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            _batchPages.Clear();
-            for (int i = 0; i < bins.Length; i += 2)
-            {
-                string bin1 = bins[i];
-                string bin2 = (i + 1 < bins.Length) ? bins[i + 1] : string.Empty;
-                _batchPages.Add((bin1, bin2));
-            }
-
-            Size paperSize = GetTargetPaperSizeInHundredths();
-
-            using (PrintDocument pd = new PrintDocument())
-            {
-                pd.DefaultPageSettings.Landscape = (paperSize.Width > paperSize.Height) || (paperSize.Height > paperSize.Width);
-                pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
-
-                // Reset the page cursor every time this document starts a print/preview pass —
-                // PrintPreviewDialog can trigger BeginPrint more than once (resize, zoom, view switch)
-                pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
-
-                pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
-
-                using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
-                {
-                    previewDlg.Document = pd;
-                    previewDlg.WindowState = FormWindowState.Maximized;
-                    previewDlg.ShowDialog();
-                }
-            }
-
-            pnlPreview.Invalidate();
-        }
+        
 
         private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void txtBinLocation1_TextChanged(object sender, EventArgs e)
         {
 
         }
