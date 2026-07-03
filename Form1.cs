@@ -414,6 +414,11 @@ namespace OJT___QR_Code_Generator
             pnlPreview.Invalidate();
         }
 
+        private void GenerateNameNNumberButt_Click(object sender, EventArgs e)
+        {
+            Naming_Part_From namingForm = new Naming_Part_From();
+            namingForm.ShowDialog();
+        }
         private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
         {
 

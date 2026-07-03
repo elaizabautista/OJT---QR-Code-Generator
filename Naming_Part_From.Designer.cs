@@ -45,6 +45,7 @@
             label2 = new Label();
             label1 = new Label();
             panel1 = new Panel();
+            ReturnButt = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -133,6 +134,7 @@
             btnGenerate.TabIndex = 7;
             btnGenerate.Text = "Generate";
             btnGenerate.UseVisualStyleBackColor = false;
+            btnGenerate.Click += btnGenerate_Click_1;
             // 
             // pnlPreview
             // 
@@ -198,6 +200,7 @@
             // panel1
             // 
             panel1.BackColor = Color.RosyBrown;
+            panel1.Controls.Add(ReturnButt);
             panel1.Controls.Add(txtCustomHeight);
             panel1.Controls.Add(txtCustomWidth);
             panel1.Controls.Add(label7);
@@ -218,6 +221,17 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1043, 514);
             panel1.TabIndex = 1;
+            // 
+            // ReturnButt
+            // 
+            ReturnButt.BackColor = Color.MediumTurquoise;
+            ReturnButt.Location = new Point(930, 20);
+            ReturnButt.Name = "ReturnButt";
+            ReturnButt.Size = new Size(97, 38);
+            ReturnButt.TabIndex = 17;
+            ReturnButt.Text = "Return";
+            ReturnButt.UseVisualStyleBackColor = false;
+            ReturnButt.Click += ReturnButt_Click;
             // 
             // Naming_Part_From
             // 
@@ -252,5 +266,6 @@
         public Label label2;
         public Label label1;
         public Panel panel1;
+        private Button ReturnButt;
     }
 }

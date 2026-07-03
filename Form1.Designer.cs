@@ -48,12 +48,14 @@
             label3 = new Label();
             label2 = new Label();
             label1 = new Label();
+            GenerateNameNNumberButt = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
+            panel1.Controls.Add(GenerateNameNNumberButt);
             panel1.Controls.Add(btnPrintAll);
             panel1.Controls.Add(label8);
             panel1.Controls.Add(cmbBatch);
@@ -82,9 +84,9 @@
             // 
             btnPrintAll.BackColor = Color.AliceBlue;
             btnPrintAll.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnPrintAll.Location = new Point(726, 427);
+            btnPrintAll.Location = new Point(64, 423);
             btnPrintAll.Name = "btnPrintAll";
-            btnPrintAll.Size = new Size(131, 39);
+            btnPrintAll.Size = new Size(151, 48);
             btnPrintAll.TabIndex = 19;
             btnPrintAll.Text = "Print All";
             btnPrintAll.UseVisualStyleBackColor = false;
@@ -94,7 +96,7 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label8.Location = new Point(70, 260);
+            label8.Location = new Point(61, 203);
             label8.Name = "label8";
             label8.Size = new Size(55, 21);
             label8.TabIndex = 18;
@@ -103,7 +105,7 @@
             // cmbBatch
             // 
             cmbBatch.FormattingEnabled = true;
-            cmbBatch.Location = new Point(73, 284);
+            cmbBatch.Location = new Point(64, 227);
             cmbBatch.Name = "cmbBatch";
             cmbBatch.Size = new Size(298, 23);
             cmbBatch.TabIndex = 17;
@@ -111,14 +113,14 @@
             // 
             // txtCustomHeight
             // 
-            txtCustomHeight.Location = new Point(248, 363);
+            txtCustomHeight.Location = new Point(277, 315);
             txtCustomHeight.Name = "txtCustomHeight";
             txtCustomHeight.Size = new Size(50, 23);
             txtCustomHeight.TabIndex = 16;
             // 
             // txtCustomWidth
             // 
-            txtCustomWidth.Location = new Point(127, 363);
+            txtCustomWidth.Location = new Point(156, 315);
             txtCustomWidth.Name = "txtCustomWidth";
             txtCustomWidth.Size = new Size(51, 23);
             txtCustomWidth.TabIndex = 15;
@@ -126,7 +128,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(196, 368);
+            label7.Location = new Point(225, 320);
             label7.Name = "label7";
             label7.Size = new Size(46, 15);
             label7.TabIndex = 14;
@@ -135,7 +137,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(79, 368);
+            label6.Location = new Point(108, 320);
             label6.Name = "label6";
             label6.Size = new Size(42, 15);
             label6.TabIndex = 13;
@@ -145,7 +147,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label5.Location = new Point(70, 330);
+            label5.Location = new Point(61, 273);
             label5.Name = "label5";
             label5.Size = new Size(89, 21);
             label5.TabIndex = 12;
@@ -155,7 +157,7 @@
             // 
             btnConvertToPdf.BackColor = Color.AliceBlue;
             btnConvertToPdf.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnConvertToPdf.Location = new Point(445, 427);
+            btnConvertToPdf.Location = new Point(446, 432);
             btnConvertToPdf.Name = "btnConvertToPdf";
             btnConvertToPdf.Size = new Size(165, 39);
             btnConvertToPdf.TabIndex = 10;
@@ -167,9 +169,9 @@
             // 
             btnPrint.BackColor = Color.AliceBlue;
             btnPrint.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnPrint.Location = new Point(863, 427);
+            btnPrint.Location = new Point(231, 423);
             btnPrint.Name = "btnPrint";
-            btnPrint.Size = new Size(131, 39);
+            btnPrint.Size = new Size(151, 48);
             btnPrint.TabIndex = 9;
             btnPrint.Text = "Print";
             btnPrint.UseVisualStyleBackColor = false;
@@ -179,9 +181,9 @@
             // 
             btnClear.BackColor = Color.AliceBlue;
             btnClear.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            btnClear.Location = new Point(220, 418);
+            btnClear.Location = new Point(231, 369);
             btnClear.Name = "btnClear";
-            btnClear.Size = new Size(154, 48);
+            btnClear.Size = new Size(151, 48);
             btnClear.TabIndex = 8;
             btnClear.Text = "Clear";
             btnClear.UseVisualStyleBackColor = false;
@@ -191,9 +193,9 @@
             // 
             btnGenerate.BackColor = Color.AliceBlue;
             btnGenerate.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            btnGenerate.Location = new Point(79, 418);
+            btnGenerate.Location = new Point(64, 369);
             btnGenerate.Name = "btnGenerate";
-            btnGenerate.Size = new Size(138, 48);
+            btnGenerate.Size = new Size(151, 48);
             btnGenerate.TabIndex = 7;
             btnGenerate.Text = "Generate";
             btnGenerate.UseVisualStyleBackColor = false;
@@ -201,9 +203,9 @@
             // 
             // pnlPreview
             // 
-            pnlPreview.Location = new Point(445, 169);
+            pnlPreview.Location = new Point(446, 134);
             pnlPreview.Name = "pnlPreview";
-            pnlPreview.Size = new Size(549, 252);
+            pnlPreview.Size = new Size(549, 292);
             pnlPreview.TabIndex = 6;
             pnlPreview.Paint += pnlPreview_Paint;
             // 
@@ -211,7 +213,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label4.Location = new Point(445, 142);
+            label4.Location = new Point(446, 107);
             label4.Name = "label4";
             label4.Size = new Size(109, 21);
             label4.TabIndex = 5;
@@ -219,14 +221,14 @@
             // 
             // txtBinLocation2
             // 
-            txtBinLocation2.Location = new Point(73, 228);
+            txtBinLocation2.Location = new Point(64, 171);
             txtBinLocation2.Name = "txtBinLocation2";
             txtBinLocation2.Size = new Size(298, 23);
             txtBinLocation2.TabIndex = 4;
             // 
             // txtBinLocation1
             // 
-            txtBinLocation1.Location = new Point(73, 166);
+            txtBinLocation1.Location = new Point(64, 109);
             txtBinLocation1.Name = "txtBinLocation1";
             txtBinLocation1.Size = new Size(298, 23);
             txtBinLocation1.TabIndex = 3;
@@ -236,7 +238,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.Location = new Point(70, 204);
+            label3.Location = new Point(61, 147);
             label3.Name = "label3";
             label3.Size = new Size(108, 21);
             label3.TabIndex = 2;
@@ -246,7 +248,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label2.Location = new Point(73, 142);
+            label2.Location = new Point(64, 85);
             label2.Name = "label2";
             label2.Size = new Size(90, 21);
             label2.TabIndex = 1;
@@ -261,6 +263,18 @@
             label1.Size = new Size(358, 50);
             label1.TabIndex = 0;
             label1.Text = "QR Code Generator";
+            // 
+            // GenerateNameNNumberButt
+            // 
+            GenerateNameNNumberButt.BackColor = Color.AliceBlue;
+            GenerateNameNNumberButt.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            GenerateNameNNumberButt.Location = new Point(830, 432);
+            GenerateNameNNumberButt.Name = "GenerateNameNNumberButt";
+            GenerateNameNNumberButt.Size = new Size(165, 39);
+            GenerateNameNNumberButt.TabIndex = 20;
+            GenerateNameNNumberButt.Text = "Generate Item";
+            GenerateNameNNumberButt.UseVisualStyleBackColor = false;
+            GenerateNameNNumberButt.Click += GenerateNameNNumberButt_Click;
             // 
             // Form1
             // 
@@ -299,5 +313,6 @@
         public Label label8;
         private ComboBox cmbBatch;
         public Button btnPrintAll;
+        public Button GenerateNameNNumberButt;
     }
 }

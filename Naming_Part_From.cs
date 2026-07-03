@@ -274,7 +274,7 @@ namespace OJT___QR_Code_Generator
             int rightCompartmentWidth = (safeX + safeWidth) - qrDividerX;
             int qrSize = (int)(Math.Min(safeHeight, rightCompartmentWidth) * 0.9);
 
-            string qrPayload = $"{_activePartName} - {_activePartNumber}";
+            string qrPayload = $"{_activePartNumber}";
 
             if (!string.IsNullOrEmpty(qrPayload))
             {
@@ -348,9 +348,20 @@ namespace OJT___QR_Code_Generator
             }
         }
 
-        
+
 
         private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void ReturnButt_Click(object sender, EventArgs e)
+        {
+            Form1 form1 = new Form1();
+            form1.ShowDialog();
+        }
+
+        private void btnGenerate_Click_1(object sender, EventArgs e)
         {
 
         }
