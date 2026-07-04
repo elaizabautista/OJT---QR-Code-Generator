@@ -21,6 +21,10 @@ namespace OJT___QR_Code_Generator
         private List<(string partName, string partNumber)> _batchPages = new List<(string, string)>();
         private int _batchPageIndex = 0;
 
+        // Fixed default label dimensions (measured from the physical label): 4.375" x 1.625"
+        private const double DefaultLabelWidthInches = 4.375;
+        private const double DefaultLabelHeightInches = 1.625;
+
         public Naming_Part_From()
         {
             InitializeComponent();
@@ -37,14 +41,14 @@ namespace OJT___QR_Code_Generator
 
         private void Naming_Part_From_Load(object sender, EventArgs e)
         {
-            txtCustomWidth.Text = "3";
-            txtCustomHeight.Text = "6";
+            txtCustomWidth.Text = DefaultLabelWidthInches.ToString();
+            txtCustomHeight.Text = DefaultLabelHeightInches.ToString();
         }
 
         private Size GetTargetPaperSizeInHundredths()
         {
-            double widthInches = 3.0;
-            double heightInches = 6.0;
+            double widthInches = DefaultLabelWidthInches;
+            double heightInches = DefaultLabelHeightInches;
 
             double.TryParse(txtCustomWidth.Text, out widthInches);
             double.TryParse(txtCustomHeight.Text, out heightInches);
@@ -52,8 +56,8 @@ namespace OJT___QR_Code_Generator
             int w = (int)(widthInches * 100);
             int h = (int)(heightInches * 100);
 
-            if (w <= 0) w = 300;
-            if (h <= 0) h = 600;
+            if (w <= 0) w = (int)(DefaultLabelWidthInches * 100);
+            if (h <= 0) h = (int)(DefaultLabelHeightInches * 100);
 
             return new Size(w, h);
         }
