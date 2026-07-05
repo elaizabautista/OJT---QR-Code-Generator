@@ -341,16 +341,6 @@ namespace OJT___QR_Code_Generator
             int safeHeight = totalHeight - (margin * 2);
             int rowHeight = safeHeight / 3;
 
-            int penThickness = isPrinting ? 4 : 2;
-            using (Pen blackPen = new Pen(Color.Black, penThickness))
-            {
-                // Outer border around the whole label
-                g.DrawRectangle(blackPen, safeX, safeY, safeWidth, safeHeight);
-
-                // Horizontal dividers separating the 3 stacked sections
-                g.DrawLine(blackPen, safeX, safeY + rowHeight, safeX + safeWidth, safeY + rowHeight);
-                g.DrawLine(blackPen, safeX, safeY + (rowHeight * 2), safeX + safeWidth, safeY + (rowHeight * 2));
-            }
 
             string[] bins = { _activeBin1, _activeBin2, _activeBin3 };
 
