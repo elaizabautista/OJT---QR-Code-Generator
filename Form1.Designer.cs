@@ -252,9 +252,9 @@
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label3.Location = new Point(61, 147);
             label3.Name = "label3";
-            label3.Size = new Size(108, 21);
+            label3.Size = new Size(117, 21);
             label3.TabIndex = 2;
-            label3.Text = "Part Number:";
+            label3.Text = "Bin Location 2:";
             // 
             // label2
             // 
@@ -262,9 +262,9 @@
             label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
             label2.Location = new Point(64, 85);
             label2.Name = "label2";
-            label2.Size = new Size(90, 21);
+            label2.Size = new Size(114, 21);
             label2.TabIndex = 1;
-            label2.Text = "Part Name:";
+            label2.Text = "Bin Location 1:";
             // 
             // label1
             // 
