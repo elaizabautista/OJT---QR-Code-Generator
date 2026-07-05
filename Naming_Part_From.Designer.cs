@@ -45,6 +45,9 @@
             label2 = new Label();
             label1 = new Label();
             panel1 = new Panel();
+            PrintAllButt = new Button();
+            label9 = new Label();
+            cmbBatch = new ComboBox();
             ReturnButt = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
@@ -108,7 +111,7 @@
             btnPrint.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnPrint.Location = new Point(46, 431);
             btnPrint.Name = "btnPrint";
-            btnPrint.Size = new Size(328, 39);
+            btnPrint.Size = new Size(161, 39);
             btnPrint.TabIndex = 9;
             btnPrint.Text = "Print";
             btnPrint.UseVisualStyleBackColor = false;
@@ -155,23 +158,23 @@
             // 
             // txtBinLocation2
             // 
-            txtBinLocation2.Location = new Point(79, 192);
+            txtBinLocation2.Location = new Point(57, 160);
             txtBinLocation2.Name = "txtBinLocation2";
-            txtBinLocation2.Size = new Size(196, 23);
+            txtBinLocation2.Size = new Size(267, 23);
             txtBinLocation2.TabIndex = 4;
             // 
             // txtBinLocation1
             // 
-            txtBinLocation1.Location = new Point(79, 130);
+            txtBinLocation1.Location = new Point(57, 98);
             txtBinLocation1.Name = "txtBinLocation1";
-            txtBinLocation1.Size = new Size(196, 23);
+            txtBinLocation1.Size = new Size(267, 23);
             txtBinLocation1.TabIndex = 3;
             // 
             // label3
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.Location = new Point(76, 168);
+            label3.Location = new Point(54, 136);
             label3.Name = "label3";
             label3.Size = new Size(108, 21);
             label3.TabIndex = 2;
@@ -181,7 +184,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label2.Location = new Point(79, 106);
+            label2.Location = new Point(57, 74);
             label2.Name = "label2";
             label2.Size = new Size(90, 21);
             label2.TabIndex = 1;
@@ -200,6 +203,9 @@
             // panel1
             // 
             panel1.BackColor = Color.RosyBrown;
+            panel1.Controls.Add(PrintAllButt);
+            panel1.Controls.Add(label9);
+            panel1.Controls.Add(cmbBatch);
             panel1.Controls.Add(ReturnButt);
             panel1.Controls.Add(txtCustomHeight);
             panel1.Controls.Add(txtCustomWidth);
@@ -221,6 +227,36 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1043, 514);
             panel1.TabIndex = 1;
+            // 
+            // PrintAllButt
+            // 
+            PrintAllButt.BackColor = Color.LightSkyBlue;
+            PrintAllButt.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            PrintAllButt.Location = new Point(213, 431);
+            PrintAllButt.Name = "PrintAllButt";
+            PrintAllButt.Size = new Size(161, 39);
+            PrintAllButt.TabIndex = 21;
+            PrintAllButt.Text = "Print All";
+            PrintAllButt.UseVisualStyleBackColor = false;
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label9.Location = new Point(54, 200);
+            label9.Name = "label9";
+            label9.Size = new Size(105, 21);
+            label9.TabIndex = 20;
+            label9.Text = "Batch Match:";
+            // 
+            // cmbBatch
+            // 
+            cmbBatch.FormattingEnabled = true;
+            cmbBatch.Location = new Point(169, 198);
+            cmbBatch.Name = "cmbBatch";
+            cmbBatch.Size = new Size(155, 23);
+            cmbBatch.TabIndex = 18;
+            cmbBatch.SelectedIndexChanged += cmbBatch_SelectedIndexChanged_1;
             // 
             // ReturnButt
             // 
@@ -267,5 +303,8 @@
         public Label label1;
         public Panel panel1;
         private Button ReturnButt;
+        private ComboBox cmbBatch;
+        public Label label9;
+        public Button PrintAllButt;
     }
 }

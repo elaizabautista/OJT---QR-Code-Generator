@@ -37,12 +37,52 @@ namespace OJT___QR_Code_Generator
 
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
+
+            // NOTE: cmbBatch's SelectedIndexChanged is already wired to cmbBatch_SelectedIndexChanged_1
+            // by the Designer (from double-clicking the control) — no manual subscription needed here.
         }
 
         private void Naming_Part_From_Load(object sender, EventArgs e)
         {
             txtCustomWidth.Text = DefaultLabelWidthInches.ToString();
             txtCustomHeight.Text = DefaultLabelHeightInches.ToString();
+
+            // Populate the single dropdown with every bin location across Zone 1 through Zone 26,
+            // in the same order they appear in WarehouseData.Zones.
+            cmbBatch.Items.Clear();
+            for (int zoneNum = 1; zoneNum <= 26; zoneNum++)
+            {
+                if (!WarehouseData.Zones.ContainsKey(zoneNum)) continue;
+
+                foreach (string bin in WarehouseData.Zones[zoneNum])
+                {
+                    cmbBatch.Items.Add(bin);
+                }
+            }
+        }
+
+        // When a Bin Location is selected from the single dropdown, look up its Part Name/Number and fill the fields
+        private void cmbBatch_SelectedIndexChanged_1(object sender, EventArgs e)
+        {
+            if (cmbBatch.SelectedItem == null) return;
+
+            string selectedBin = cmbBatch.SelectedItem.ToString();
+            var part = PartNumber_and_PartName_DATA.GetFirstPart(selectedBin);
+
+            if (part.HasValue)
+            {
+                txtBinLocation1.Text = part.Value.PartName;
+                txtBinLocation2.Text = part.Value.PartNumber;
+
+                _activePartName = part.Value.PartName;
+                _activePartNumber = part.Value.PartNumber;
+
+                pnlPreview.Invalidate();
+            }
+            else
+            {
+                MessageBox.Show($"No Part Name/Number found for bin \"{selectedBin}\".", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private Size GetTargetPaperSizeInHundredths()
@@ -230,7 +270,8 @@ namespace OJT___QR_Code_Generator
             RenderLabelLayout(g, printableWidth, printableHeight, isPrinting: true);
         }
 
-        // 🛠️ SINGLE-ROW PART LABEL: Part Name (top) / Part Number (bottom) on left, ONE shared QR on right
+        // 🛠️ WAREHOUSE-STYLE PART LABEL: black header bar (Part Name) on top,
+        // large bold Part Number below it on the left, ONE maximized QR on the right
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
             // Safeguard border cutoff zone on physical thermal heads (Honeywell standard unprintable margins)
@@ -240,43 +281,60 @@ namespace OJT___QR_Code_Generator
             int safeY = margin;
             int safeWidth = totalWidth - (margin * 2);
             int safeHeight = totalHeight - (margin * 2);
-            int halfHeight = safeHeight / 2;
 
-            // Maintain the 75% wide text partition / 25% QR partition
-            int qrDividerX = safeX + (int)(safeWidth * 0.75);
+            // Left column ~65% width for text, right column ~35% width for the QR (bigger than before)
+            int qrDividerX = safeX + (int)(safeWidth * 0.65);
+            int leftColumnWidth = qrDividerX - safeX;
 
-            // 1. Draw frame: outer box, horizontal divider (Name|Number) only across the text column,
-            //    vertical divider separating text column from the QR column
+            // Header bar (Part Name) takes the top ~32% of the left column's height
+            int headerHeight = (int)(safeHeight * 0.32);
+            int headerBottom = safeY + headerHeight;
+
+            // 1. Border only around the LEFT (text) column — left, top, and bottom edges.
+            //    The QR compartment (right side) gets no box lines, just the divider.
             int penThickness = isPrinting ? 4 : 2;
             using (Pen blackPen = new Pen(Color.Black, penThickness))
             {
-                g.DrawRectangle(blackPen, safeX, safeY, safeWidth, safeHeight);
-                g.DrawLine(blackPen, safeX, safeY + halfHeight, qrDividerX, safeY + halfHeight);
-                g.DrawLine(blackPen, qrDividerX, safeY, qrDividerX, safeY + safeHeight);
+                g.DrawLine(blackPen, safeX, safeY, safeX, safeY + safeHeight);                 // left edge
+                g.DrawLine(blackPen, safeX, safeY, qrDividerX, safeY);                          // top edge (text column only)
+                g.DrawLine(blackPen, safeX, safeY + safeHeight, qrDividerX, safeY + safeHeight); // bottom edge (text column only)
+                g.DrawLine(blackPen, qrDividerX, safeY, qrDividerX, safeY + safeHeight);         // divider between text and QR
             }
 
-            // 2. MAXIMUM AUTOFIT TEXT: Part Name on top half, Part Number on bottom half
-            float maxFontCeiling = safeHeight * 0.32f;
-            int textPadding = 10;
-            int textBoxWidth = (qrDividerX - safeX) - textPadding;
-            int textBoxHeight = halfHeight - textPadding;
+            // 2. Black header bar with the Part Name in white bold text
+            using (SolidBrush headerBrush = new SolidBrush(Color.Black))
+            {
+                g.FillRectangle(headerBrush, safeX, safeY, leftColumnWidth, headerHeight);
+            }
 
+            int headerPadding = 8;
             if (!string.IsNullOrEmpty(_activePartName))
             {
-                DrawTextAutofit(g, _activePartName, "Arial", FontStyle.Bold, maxFontCeiling,
-                    safeX + (textPadding / 2), safeY + (textPadding / 2), textBoxWidth, textBoxHeight);
+                DrawTextAutofit(g, _activePartName, "Arial", FontStyle.Bold, headerHeight * 0.6f,
+                    safeX + headerPadding, safeY + (headerPadding / 2),
+                    leftColumnWidth - (headerPadding * 2), headerHeight - headerPadding,
+                    Brushes.White);
             }
+
+            // 3. Large bold Part Number filling the remaining left column space below the header
+            int numberAreaTop = headerBottom;
+            int numberAreaHeight = (safeY + safeHeight) - numberAreaTop;
+            int textPadding = 10;
 
             if (!string.IsNullOrEmpty(_activePartNumber))
             {
+                float maxFontCeiling = numberAreaHeight * 0.75f;
                 DrawTextAutofit(g, _activePartNumber, "Arial", FontStyle.Bold, maxFontCeiling,
-                    safeX + (textPadding / 2), safeY + halfHeight + (textPadding / 2), textBoxWidth, textBoxHeight);
+                    safeX + (textPadding / 2), numberAreaTop + (textPadding / 2),
+                    leftColumnWidth - textPadding, numberAreaHeight - textPadding,
+                    Brushes.Black);
             }
 
-            // 3. ONE QR code spanning the full label height, encoding the part number
-            //    (falls back to part name if number is blank)
+            // 4. QR code centered in the right compartment (not maximized — normal padded size),
+            //    encoding the Part Number
             int rightCompartmentWidth = (safeX + safeWidth) - qrDividerX;
-            int qrSize = (int)(Math.Min(safeHeight, rightCompartmentWidth) * 0.9);
+            int qrPadding = isPrinting ? 12 : 6;
+            int qrSize = Math.Min(safeHeight, rightCompartmentWidth) - (qrPadding * 2);
 
             string qrPayload = $"{_activePartNumber}";
 
@@ -295,8 +353,10 @@ namespace OJT___QR_Code_Generator
         }
 
         // Adaptive font crunching ruleset to ensure maximum enlargement without bounds breaches
-        private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight)
+        private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight, Brush brush = null)
         {
+            if (brush == null) brush = Brushes.Black;
+
             float currentSize = maxFontSize;
             Font testFont = new Font(fontFamily, currentSize, style);
             SizeF size = g.MeasureString(text, testFont);
@@ -313,7 +373,7 @@ namespace OJT___QR_Code_Generator
             {
                 float posX = x + (maxWidth - size.Width) / 2;
                 float posY = y + (maxHeight - size.Height) / 2;
-                g.DrawString(text, testFont, Brushes.Black, posX, posY);
+                g.DrawString(text, testFont, brush, posX, posY);
             }
         }
 
@@ -329,7 +389,7 @@ namespace OJT___QR_Code_Generator
                         {
                             using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
                             {
-                                byte[] qrCodeBytes = qrCode.GetGraphic(4);
+                                byte[] qrCodeBytes = qrCode.GetGraphic(4, Color.Black, Color.White, drawQuietZones: false);
                                 using (var ms = new System.IO.MemoryStream(qrCodeBytes))
                                 {
                                     return new Bitmap(ms);
@@ -340,7 +400,7 @@ namespace OJT___QR_Code_Generator
                         {
                             using (QRCode qrCode = new QRCode(qrCodeData))
                             {
-                                return qrCode.GetGraphic(4, Color.Black, Color.White, true);
+                                return qrCode.GetGraphic(4, Color.Black, Color.White, drawQuietZones: false);
                             }
                         }
                     }
@@ -353,11 +413,6 @@ namespace OJT___QR_Code_Generator
         }
 
 
-
-        private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-        }
 
         private void ReturnButt_Click(object sender, EventArgs e)
         {
