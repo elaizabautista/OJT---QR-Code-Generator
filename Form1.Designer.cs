@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            GenerateNameNNumberButt = new Button();
             btnPrintAll = new Button();
             label8 = new Label();
             cmbBatch = new ComboBox();
@@ -48,7 +49,6 @@
             label3 = new Label();
             label2 = new Label();
             label1 = new Label();
-            GenerateNameNNumberButt = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -79,6 +79,18 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1043, 514);
             panel1.TabIndex = 0;
+            // 
+            // GenerateNameNNumberButt
+            // 
+            GenerateNameNNumberButt.BackColor = Color.AliceBlue;
+            GenerateNameNNumberButt.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            GenerateNameNNumberButt.Location = new Point(830, 432);
+            GenerateNameNNumberButt.Name = "GenerateNameNNumberButt";
+            GenerateNameNNumberButt.Size = new Size(165, 39);
+            GenerateNameNNumberButt.TabIndex = 20;
+            GenerateNameNNumberButt.Text = "Generate Item";
+            GenerateNameNNumberButt.UseVisualStyleBackColor = false;
+            GenerateNameNNumberButt.Click += GenerateNameNNumberButt_Click;
             // 
             // btnPrintAll
             // 
@@ -263,18 +275,6 @@
             label1.Size = new Size(358, 50);
             label1.TabIndex = 0;
             label1.Text = "QR Code Generator";
-            // 
-            // GenerateNameNNumberButt
-            // 
-            GenerateNameNNumberButt.BackColor = Color.AliceBlue;
-            GenerateNameNNumberButt.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            GenerateNameNNumberButt.Location = new Point(830, 432);
-            GenerateNameNNumberButt.Name = "GenerateNameNNumberButt";
-            GenerateNameNNumberButt.Size = new Size(165, 39);
-            GenerateNameNNumberButt.TabIndex = 20;
-            GenerateNameNNumberButt.Text = "Generate Item";
-            GenerateNameNNumberButt.UseVisualStyleBackColor = false;
-            GenerateNameNNumberButt.Click += GenerateNameNNumberButt_Click;
             // 
             // Form1
             // 
