@@ -246,9 +246,16 @@ namespace OJT___QR_Code_Generator
             // and subtract the moveTextUpPixels to shift the text upwards.
             int textY = (qrY + qrSize) - moveTextUpPixels;
 
+            // Thin divider between QR and number
+            using (Pen dividerPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
+            {
+                g.DrawLine(dividerPen, safeX, textY, safeX + safeWidth, textY);
+            }
+
             // Draw the text
             DrawTextAutofit(g, _activeNumber, "Arial", FontStyle.Bold, textHeight, safeX, textY, safeWidth, textHeight);
         }
+
         private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight)
         {
             float currentSize = maxFontSize;
