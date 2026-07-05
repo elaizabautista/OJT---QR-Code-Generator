@@ -40,6 +40,9 @@ namespace OJT___QR_Code_Generator
 
             // NOTE: cmbBatch's SelectedIndexChanged is already wired to cmbBatch_SelectedIndexChanged_1
             // by the Designer (from double-clicking the control) — no manual subscription needed here.
+
+            // NOTE: btnPrintAll must exist as a Button control in the Designer, wired to btnPrintAll_Click.
+            this.PrintAllButt.Click += new System.EventHandler(this.btnPrintAll_Click);
         }
 
         private void Naming_Part_From_Load(object sender, EventArgs e)
@@ -47,42 +50,79 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = DefaultLabelWidthInches.ToString();
             txtCustomHeight.Text = DefaultLabelHeightInches.ToString();
 
-            // Populate the single dropdown with every bin location across Zone 1 through Zone 26,
-            // in the same order they appear in WarehouseData.Zones.
+            // Populate the dropdown with "Zone 1" through "Zone 26"
             cmbBatch.Items.Clear();
-            for (int zoneNum = 1; zoneNum <= 26; zoneNum++)
+            for (int i = 1; i <= 26; i++)
             {
-                if (!WarehouseData.Zones.ContainsKey(zoneNum)) continue;
-
-                foreach (string bin in WarehouseData.Zones[zoneNum])
-                {
-                    cmbBatch.Items.Add(bin);
-                }
+                cmbBatch.Items.Add("Zone " + i);
             }
         }
 
-        // When a Bin Location is selected from the single dropdown, look up its Part Name/Number and fill the fields
+        // Selecting a zone just remembers which one is picked — the actual printing
+        // happens in bulk when "Print All" is clicked (see btnPrintAll_Click below).
         private void cmbBatch_SelectedIndexChanged_1(object sender, EventArgs e)
         {
-            if (cmbBatch.SelectedItem == null) return;
+            // Intentionally left without per-item lookup now that cmbBatch shows Zones, not individual bins.
+        }
 
-            string selectedBin = cmbBatch.SelectedItem.ToString();
-            var part = PartNumber_and_PartName_DATA.GetFirstPart(selectedBin);
-
-            if (part.HasValue)
+        // Prints one label per bin in the selected zone, each showing that bin's Part Name/Number + QR.
+        private void btnPrintAll_Click(object sender, EventArgs e)
+        {
+            if (cmbBatch.SelectedItem == null)
             {
-                txtBinLocation1.Text = part.Value.PartName;
-                txtBinLocation2.Text = part.Value.PartNumber;
-
-                _activePartName = part.Value.PartName;
-                _activePartNumber = part.Value.PartNumber;
-
-                pnlPreview.Invalidate();
+                MessageBox.Show("Please select a Zone from the dropdown first.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-            else
+
+            string selected = cmbBatch.SelectedItem.ToString();
+            int zoneNum;
+            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.Zones.ContainsKey(zoneNum))
             {
-                MessageBox.Show($"No Part Name/Number found for bin \"{selectedBin}\".", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selected zone has no bin data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
+
+            string[] bins = WarehouseData.Zones[zoneNum];
+
+            _batchPages.Clear();
+            foreach (string bin in bins)
+            {
+                var part = PartNumber_and_PartName_DATA.GetFirstPart(bin);
+                if (part.HasValue)
+                {
+                    _batchPages.Add((part.Value.PartName, part.Value.PartNumber));
+                }
+                // Bins with no matching Part Name/Number (like "5-4C-1") are silently skipped.
+            }
+
+            if (_batchPages.Count == 0)
+            {
+                MessageBox.Show($"No Part Name/Number data found for any bin in Zone {zoneNum}.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Size paperSize = GetTargetPaperSizeInHundredths();
+
+            using (PrintDocument pd = new PrintDocument())
+            {
+                pd.DefaultPageSettings.Landscape = (paperSize.Width > paperSize.Height) || (paperSize.Height > paperSize.Width);
+                pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
+
+                // Reset the page cursor every time this document starts a print/preview pass —
+                // PrintPreviewDialog can trigger BeginPrint more than once (resize, zoom, view switch)
+                pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
+
+                pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
+
+                using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
+                {
+                    previewDlg.Document = pd;
+                    previewDlg.WindowState = FormWindowState.Maximized;
+                    previewDlg.ShowDialog();
+                }
+            }
+
+            pnlPreview.Invalidate();
         }
 
         private Size GetTargetPaperSizeInHundredths()
