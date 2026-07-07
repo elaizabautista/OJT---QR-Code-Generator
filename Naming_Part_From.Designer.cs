@@ -45,23 +45,26 @@
             label2 = new Label();
             label1 = new Label();
             panel1 = new Panel();
+            PartNumberbox = new TextBox();
+            PartNamebox = new TextBox();
+            label8 = new Label();
+            label10 = new Label();
             PrintAllButt = new Button();
             label9 = new Label();
             cmbBatch = new ComboBox();
-            ReturnButt = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // txtCustomHeight
             // 
-            txtCustomHeight.Location = new Point(133, 308);
+            txtCustomHeight.Location = new Point(951, 87);
             txtCustomHeight.Name = "txtCustomHeight";
-            txtCustomHeight.Size = new Size(50, 23);
+            txtCustomHeight.Size = new Size(51, 23);
             txtCustomHeight.TabIndex = 16;
             // 
             // txtCustomWidth
             // 
-            txtCustomWidth.Location = new Point(133, 279);
+            txtCustomWidth.Location = new Point(951, 58);
             txtCustomWidth.Name = "txtCustomWidth";
             txtCustomWidth.Size = new Size(51, 23);
             txtCustomWidth.TabIndex = 15;
@@ -69,7 +72,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(81, 313);
+            label7.Location = new Point(899, 92);
             label7.Name = "label7";
             label7.Size = new Size(46, 15);
             label7.TabIndex = 14;
@@ -78,7 +81,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(85, 284);
+            label6.Location = new Point(903, 63);
             label6.Name = "label6";
             label6.Size = new Size(42, 15);
             label6.TabIndex = 13;
@@ -88,7 +91,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label5.Location = new Point(76, 246);
+            label5.Location = new Point(894, 25);
             label5.Name = "label5";
             label5.Size = new Size(89, 21);
             label5.TabIndex = 12;
@@ -98,7 +101,7 @@
             // 
             btnConvertToPdf.BackColor = Color.AliceBlue;
             btnConvertToPdf.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnConvertToPdf.Location = new Point(613, 405);
+            btnConvertToPdf.Location = new Point(653, 457);
             btnConvertToPdf.Name = "btnConvertToPdf";
             btnConvertToPdf.Size = new Size(165, 39);
             btnConvertToPdf.TabIndex = 10;
@@ -137,11 +140,10 @@
             btnGenerate.TabIndex = 7;
             btnGenerate.Text = "Generate";
             btnGenerate.UseVisualStyleBackColor = false;
-            btnGenerate.Click += btnGenerate_Click_1;
             // 
             // pnlPreview
             // 
-            pnlPreview.Location = new Point(445, 133);
+            pnlPreview.Location = new Point(485, 185);
             pnlPreview.Name = "pnlPreview";
             pnlPreview.Size = new Size(477, 255);
             pnlPreview.TabIndex = 6;
@@ -150,7 +152,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label4.Location = new Point(445, 106);
+            label4.Location = new Point(485, 158);
             label4.Name = "label4";
             label4.Size = new Size(109, 21);
             label4.TabIndex = 5;
@@ -203,10 +205,13 @@
             // panel1
             // 
             panel1.BackColor = Color.RosyBrown;
+            panel1.Controls.Add(PartNumberbox);
+            panel1.Controls.Add(PartNamebox);
+            panel1.Controls.Add(label8);
+            panel1.Controls.Add(label10);
             panel1.Controls.Add(PrintAllButt);
             panel1.Controls.Add(label9);
             panel1.Controls.Add(cmbBatch);
-            panel1.Controls.Add(ReturnButt);
             panel1.Controls.Add(txtCustomHeight);
             panel1.Controls.Add(txtCustomWidth);
             panel1.Controls.Add(label7);
@@ -228,6 +233,42 @@
             panel1.Size = new Size(1043, 514);
             panel1.TabIndex = 1;
             // 
+            // PartNumberbox
+            // 
+            PartNumberbox.Location = new Point(54, 282);
+            PartNumberbox.Name = "PartNumberbox";
+            PartNumberbox.Size = new Size(270, 23);
+            PartNumberbox.TabIndex = 25;
+            PartNumberbox.TextChanged += PartNumberbox_TextChanged;
+            // 
+            // PartNamebox
+            // 
+            PartNamebox.Location = new Point(54, 220);
+            PartNamebox.Name = "PartNamebox";
+            PartNamebox.Size = new Size(270, 23);
+            PartNamebox.TabIndex = 24;
+            PartNamebox.TextChanged += PartNamebox_TextChanged;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label8.Location = new Point(51, 258);
+            label8.Name = "label8";
+            label8.Size = new Size(108, 21);
+            label8.TabIndex = 23;
+            label8.Text = "Part Number:";
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label10.Location = new Point(54, 196);
+            label10.Name = "label10";
+            label10.Size = new Size(90, 21);
+            label10.TabIndex = 22;
+            label10.Text = "Part Name:";
+            // 
             // PrintAllButt
             // 
             PrintAllButt.BackColor = Color.LightSkyBlue;
@@ -238,12 +279,13 @@
             PrintAllButt.TabIndex = 21;
             PrintAllButt.Text = "Print All";
             PrintAllButt.UseVisualStyleBackColor = false;
+            PrintAllButt.Click += PrintAllButt_Click;
             // 
             // label9
             // 
             label9.AutoSize = true;
             label9.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label9.Location = new Point(54, 200);
+            label9.Location = new Point(57, 328);
             label9.Name = "label9";
             label9.Size = new Size(105, 21);
             label9.TabIndex = 20;
@@ -252,22 +294,11 @@
             // cmbBatch
             // 
             cmbBatch.FormattingEnabled = true;
-            cmbBatch.Location = new Point(169, 198);
+            cmbBatch.Location = new Point(172, 326);
             cmbBatch.Name = "cmbBatch";
-            cmbBatch.Size = new Size(155, 23);
+            cmbBatch.Size = new Size(152, 23);
             cmbBatch.TabIndex = 18;
             cmbBatch.SelectedIndexChanged += cmbBatch_SelectedIndexChanged_1;
-            // 
-            // ReturnButt
-            // 
-            ReturnButt.BackColor = Color.MediumTurquoise;
-            ReturnButt.Location = new Point(930, 20);
-            ReturnButt.Name = "ReturnButt";
-            ReturnButt.Size = new Size(97, 38);
-            ReturnButt.TabIndex = 17;
-            ReturnButt.Text = "Return";
-            ReturnButt.UseVisualStyleBackColor = false;
-            ReturnButt.Click += ReturnButt_Click;
             // 
             // Naming_Part_From
             // 
@@ -302,9 +333,12 @@
         public Label label2;
         public Label label1;
         public Panel panel1;
-        private Button ReturnButt;
         private ComboBox cmbBatch;
         public Label label9;
         public Button PrintAllButt;
+        public TextBox PartNumberbox;
+        public TextBox PartNamebox;
+        public Label label8;
+        public Label label10;
     }
 }
