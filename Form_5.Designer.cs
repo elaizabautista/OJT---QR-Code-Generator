@@ -30,6 +30,11 @@
         {
             PrintAllButt = new Button();
             panel1 = new Panel();
+            txtBinLocation6 = new TextBox();
+            label10 = new Label();
+            txtBinLocation4 = new TextBox();
+            label11 = new Label();
+            label12 = new Label();
             textBox1 = new TextBox();
             label9 = new Label();
             label8 = new Label();
@@ -50,12 +55,6 @@
             pnlPreview = new Panel();
             label4 = new Label();
             label1 = new Label();
-            textBox2 = new TextBox();
-            label10 = new Label();
-            textBox3 = new TextBox();
-            textBox4 = new TextBox();
-            label11 = new Label();
-            label12 = new Label();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -74,10 +73,9 @@
             // panel1
             // 
             panel1.BackColor = Color.RosyBrown;
-            panel1.Controls.Add(textBox2);
+            panel1.Controls.Add(txtBinLocation6);
             panel1.Controls.Add(label10);
-            panel1.Controls.Add(textBox3);
-            panel1.Controls.Add(textBox4);
+            panel1.Controls.Add(txtBinLocation4);
             panel1.Controls.Add(label11);
             panel1.Controls.Add(label12);
             panel1.Controls.Add(textBox1);
@@ -105,6 +103,50 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(1043, 514);
             panel1.TabIndex = 2;
+            // 
+            // txtBinLocation6
+            // 
+            txtBinLocation6.Location = new Point(239, 248);
+            txtBinLocation6.Name = "txtBinLocation6";
+            txtBinLocation6.Size = new Size(158, 23);
+            txtBinLocation6.TabIndex = 32;
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label10.Location = new Point(236, 224);
+            label10.Name = "label10";
+            label10.Size = new Size(117, 21);
+            label10.TabIndex = 31;
+            label10.Text = "Bin Location 6:";
+            // 
+            // txtBinLocation4
+            // 
+            txtBinLocation4.Location = new Point(239, 120);
+            txtBinLocation4.Name = "txtBinLocation4";
+            txtBinLocation4.Size = new Size(158, 23);
+            txtBinLocation4.TabIndex = 29;
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label11.Location = new Point(236, 158);
+            label11.Name = "label11";
+            label11.Size = new Size(117, 21);
+            label11.TabIndex = 28;
+            label11.Text = "Bin Location 5:";
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label12.Location = new Point(236, 96);
+            label12.Name = "label12";
+            label12.Size = new Size(117, 21);
+            label12.TabIndex = 27;
+            label12.Text = "Bin Location 4:";
             // 
             // textBox1
             // 
@@ -298,57 +340,6 @@
             label1.TabIndex = 0;
             label1.Text = "QR Code Generator";
             // 
-            // textBox2
-            // 
-            textBox2.Location = new Point(239, 248);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(158, 23);
-            textBox2.TabIndex = 32;
-            // 
-            // label10
-            // 
-            label10.AutoSize = true;
-            label10.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label10.Location = new Point(236, 224);
-            label10.Name = "label10";
-            label10.Size = new Size(117, 21);
-            label10.TabIndex = 31;
-            label10.Text = "Bin Location 3:";
-            // 
-            // textBox3
-            // 
-            textBox3.Location = new Point(239, 182);
-            textBox3.Name = "textBox3";
-            textBox3.Size = new Size(158, 23);
-            textBox3.TabIndex = 30;
-            // 
-            // textBox4
-            // 
-            textBox4.Location = new Point(239, 120);
-            textBox4.Name = "textBox4";
-            textBox4.Size = new Size(158, 23);
-            textBox4.TabIndex = 29;
-            // 
-            // label11
-            // 
-            label11.AutoSize = true;
-            label11.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label11.Location = new Point(236, 158);
-            label11.Name = "label11";
-            label11.Size = new Size(117, 21);
-            label11.TabIndex = 28;
-            label11.Text = "Bin Location 2:";
-            // 
-            // label12
-            // 
-            label12.AutoSize = true;
-            label12.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label12.Location = new Point(236, 96);
-            label12.Name = "label12";
-            label12.Size = new Size(114, 21);
-            label12.TabIndex = 27;
-            label12.Text = "Bin Location 1:";
-            // 
             // Form_5
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -388,10 +379,10 @@
         public Label label3;
         public Label label2;
         public Label label1;
-        public TextBox textBox2;
+        public TextBox txtBinLocation6;
         public Label label10;
         public TextBox textBox3;
-        public TextBox textBox4;
+        public TextBox txtBinLocation4;
         public Label label11;
         public Label label12;
     }
