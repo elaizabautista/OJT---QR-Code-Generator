@@ -36,10 +36,16 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
 
-            for (int i = 1; i <= 26; i++)
+            // Use 'object' to match the actual key type in your dictionary
+            var comboSource = new List<KeyValuePair<object, string[]>>();
+            foreach (var kvp in WarehouseData.myZones)
             {
-                cmbBatch.Items.Add("Zone " + i);
+                comboSource.Add(kvp);
             }
+
+            cmbBatch.DataSource = comboSource;
+            cmbBatch.DisplayMember = "Key";
+            // Do NOT set ValueMember
         }
 
         private Size GetTargetPaperSizeInHundredths()
@@ -363,24 +369,20 @@ namespace OJT___QR_Code_Generator
         {
             if (cmbBatch.SelectedItem == null)
             {
-                MessageBox.Show("Please select a Zone from the Batch dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a Zone from the Batch dropdown.", "Selection Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string selected = cmbBatch.SelectedItem.ToString();
-            int zoneNum;
-            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.Zones.ContainsKey(zoneNum))
+            var selectedKvp = (KeyValuePair<object, string[]>)cmbBatch.SelectedItem;
+            object selectedKey = selectedKvp.Key;
+
+            if (!WarehouseData.myZones.ContainsKey(selectedKey))
             {
                 MessageBox.Show("Selected zone has no bin location data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string[] bins = WarehouseData.Zones[zoneNum];
-            if (bins == null || bins.Length == 0)
-            {
-                MessageBox.Show("Selected zone has no bin locations.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            string[] bins = WarehouseData.myZones[selectedKey];
 
             _batchPages.Clear();
             for (int i = 0; i < bins.Length; i += 2)
@@ -394,13 +396,16 @@ namespace OJT___QR_Code_Generator
 
             using (PrintDocument pd = new PrintDocument())
             {
-                pd.DefaultPageSettings.Landscape = (paperSize.Width > paperSize.Height) || (paperSize.Height > paperSize.Width);
+                // 1. DO NOT set Landscape = true here if your PrintLabelsHandler 
+                // already handles rotation.
+                pd.DefaultPageSettings.Landscape = false;
+
+                // 2. Set the PaperSize to the physical dimensions. 
+                // Your PrintLabelsHandler logic checks (printableWidth < printableHeight)
+                // and rotates based on that.
                 pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
 
-                // Reset the page cursor every time this document starts a print/preview pass —
-                // PrintPreviewDialog can trigger BeginPrint more than once (resize, zoom, view switch)
                 pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
-
                 pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
 
                 using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())

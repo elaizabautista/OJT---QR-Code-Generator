@@ -353,9 +353,7 @@ namespace OJT___QR_Code_Generator
             string selected = cmbBatch.SelectedItem.ToString();
 
             int zoneNum;
-
-            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.Zones.ContainsKey(zoneNum))
-
+            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.myZones.ContainsKey(zoneNum))
             {
 
                 MessageBox.Show("Selected zone has no bin location data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -364,10 +362,7 @@ namespace OJT___QR_Code_Generator
 
             }
 
-
-
-            string[] bins = WarehouseData.Zones[zoneNum];
-
+            string[] bins = WarehouseData.myZones[zoneNum];
             if (bins == null || bins.Length == 0)
 
             {

@@ -9,12 +9,14 @@ namespace OJT___QR_Code_Generator
     {
 
         // Dictionary to map zone number to its list of locations
-        public static readonly Dictionary<int, string[]> Zones = new Dictionary<int, string[]>
+        public static readonly Dictionary<object, string[]> myZones = new Dictionary<object, string[]>
         {
+
             { 1, new string[] { "1-1A-1", "1-1A-2", "1-1B-1", "1-1C-1", "1-2A-1", "1-2A-2", "1-2B-1", "1-2B-2", "1-2C-1", "1-3A-1", "1-3B-1", "1-3B-2", "1-3C-1", "1-4A-1", "1-4A-2", "1-4B-1", "1-4C-1", "1-4C-2", "1-5A-1", "1-5B-1", "1-5C-1", "1-6A-1", "1-6B-1", "1-6C-1", "1-7A-1", "1-7A-2", "1-7B-1", "1-7B-2", "1-7C-1", "1-8A-1", "1-8A-2", "1-8B-1", "1-8C-1", "1-9A-1", "1-9B-1", "1-9C-1", "1-10A-1", "1-10B-1", "1-10C-1" } },
             { 2, new string[] { "2-1A-1", "2-1A-2", "2-1A-3", "2-1B-1", "2-1B-2", "2-1B-3", "2-1C-1", "2-1C-2", "2-1C-3", "2-1C-4", "2-1C-5", "2-2A-1", "2-2A-2", "2-2A-3", "2-2A-4", "2-2B-1", "2-2B-2", "2-2B-3", "2-2C-1", "2-2C-2", "2-2C-3", "2-3A-1", "2-3A-2", "2-3B-1", "2-3B-2", "2-3B-3", "2-3B-4", "2-3C-1", "2-3C-2", "2-4A-1", "2-4A-2", "2-4B-1", "2-4B-2", "2-4C-1", "2-4C-2", "2-5A-1", "2-5B-1", "2-6A-1", "2-6A-2", "2-6A-3", "2-6B-1", "2-6B-2", "2-6C-1", "2-7A-1", "2-7B-1", "2-7C-1", "2-8A-1", "2-8B-1", "2-8C-1", "2-9A-1", "2-9A-2", "2-9B-1", "2-9C-1", "2-10A-1", "2-10A-2", "2-10B-1", "2-10B-2" } },
             { 3, new string[] { "3-1A-1", "3-1B-1", "3-2A-1", "3-2B-1", "3-2C-1", "3-3A-1", "3-3B-1", "3-3C-1", "3-4A-1", "3-4B-1", "3-4C-1", "3-5A-1", "3-5B-1", "3-5C-1", "3-5C-2", "3-6A-1", "3-6B-1", "3-6B-2", "3-6C-1", "3-7A-1", "3-7B-1", "3-7C-1", "3-8A-1", "3-8B-1", "3-8C-1", "3-9A-1", "3-9B-1", "3-9C-1", "3-10A-1", "3-10B-1", "3-10C-1" } },
             { 4, new string[]
+
     {
         "4-1A-1", "4-1B-1", "4-1C-1",
         "4-2A-1", "4-2B-1", "4-2C-1",
@@ -236,19 +238,296 @@ namespace OJT___QR_Code_Generator
         "17-10A-1", "17-10A-2", "17-10A-3", "17-10A-4", "17-10B-1", "17-10B-2", "17-10C-1"
     }
             },
-            { 18, new string[] { "18A-1", "18A-2", "18A-3", "18A-4", "18B-1", "18B-2", "18B-3", "18B-4", "18B-5", "18B-6", "18B-7", "18C-1", "18C-2", "18C-3", "18C-4", "18C-5", "18C-6", "18C-7", "18C-8" } },
-            { 19, new string[] { "19A-1", "19A-2", "19A-3", "19A-4", "19A-5", "19A-6", "19B-1", "19B-2", "19B-3", "19B-4", "19B-5", "19B-6", "19C-1", "19C-2", "19C-3", "19C-4", "19C-5" } },
-            { 20, new string[] { "20A-1", "20A-2", "20A-3", "20A-4", "20B-1", "20B-2", "20B-3", "20B-4", "20C-1", "20C-2", "20C-3" } },
-            { 21, new string[] { "21A-1", "21A-2", "21A-3", "21B-1", "21B-2", "21B-3", "21B-4", "21B-5", "21B-6", "21C-1", "21C-2", "21C-3" } },
-            { 22, new string[] { "22B-1", "22B-2", "22B-3", "22B-5", "22C-1", "22C-2" } },
-            { 23, new string[] { "23B-1", "23B-2", "23B-3" } },
-            { 24, new string[] { "24B-1", "24B-2", "24B-3", "24C-1" } },
-            { 25, new string[] { "25B-1", "25B-2", "25C-1", "25C-2", "25C-3" } },
-            { 26, new string[] { "26A-1", "26A-2", "26A-3", "26A-4", "26A-5", "26A-6", "26B-1", "26B-2", "26B-3", "26B-4", "26B-5", "26C-1", "26C-2", "26C-3" } }
+            { 18, new string[]
+         {
+             "18A-1", "18A-2", "18A-3", "18A-4", "18B-1", "18B-2", "18B-3", "18B-4", "18B-5", "18B-6", "18B-7",
+             "18C-1", "18C-2", "18C-3", "18C-4", "18C-5", "18C-6", "18C-7", "18C-8"
+         }
+            },
+            { 19, new string[]
+         {
+             "19A-1", "19A-2", "19A-3", "19A-4", "19A-5", "19A-6", "19B-1", "19B-2", "19B-3", "19B-4", "19B-5", "19B-6",
+             "19C-1", "19C-2", "19C-3", "19C-4", "19C-5"
+         }
+            },
+            { 20, new string[]
+         {
+             "20A-1", "20A-2", "20A-3", "20A-4", "20B-1", "20B-2", "20B-3", "20B-4",
+             "20C-1", "20C-2", "20C-3"
+         }
+            },
+            { 21, new string[]
+         {
+             "21A-1", "21A-2", "21A-3", "21B-1", "21B-2", "21B-3", "21B-4", "21B-5", "21B-6",
+             "21C-1", "21C-2", "21C-3"
+         }
+            },
+            { 22, new string[]
+         {
+             "22B-1", "22B-2", "22B-3", "22B-5", "22C-1", "22C-2"
+         }
+            },
+            { 23, new string[]
+         {
+             "23B-1", "23B-2", "23B-3"
+         }
+            },
+            { 24, new string[]
+         {
+             "24B-1", "24B-2", "24B-3", "24C-1"
+         }
+            },
+            { 25, new string[]
+         {
+             "25B-1", "25B-2", "25C-1", "25C-2", "25C-3"
+         }
+            },
+            { 26, new string[]
+         {
+             "26A-1", "26A-2", "26A-3", "26A-4", "26A-5", "26A-6", "26B-1", "26B-2", "26B-3", "26B-4", "26B-5",
+             "26C-1", "26C-2", "26C-3"
+         }
+            },
+            { 27, new string[]
+         {
+             "27A-4", "27B-2", "27B-3", "27C-3", "27C-4", "27C-6"
+         }
+            },
+            { "A", new string[]
+         {
+             "A1-A-1", "A1-B-1", "A1-C-1", "A1-D-1", "A1-E-1", "A1-E-2",
+             "A2-A-1", "A2-B-1", "A2-C-1", "A2-C-2", "A2-D-1", "A2-E-1",
+             "A3-A-1", "A3-B-1", "A3-C-1", "A3-D-1", "A3-D-2", "A3-E-1",
+             "A4-A-1", "A4-B-1", "A4-B-2", "A4-C-1", "A4-D-1", "A4-D-2", "A4-E-1",
+             "A5-A-1", "A5-A-2", "A5-A-3", "A5-B-1", "A5-B-2", "A5-B-3", "A5-C-2", "A5-E-1",
+             "A6-A-1", "A6-B-1", "A6-C-1", "A6-C-2", "A6-D-1", "A6-D-2", "A6-E-1",
+             "A7-A-1", "A7-B-1", "A7-C-1", "A7-D-1", "A7-E-1",
+             "A8-A-1", "A8-B-1", "A8-D-1", "A8-E-1"
+         }
+            },
+            { "B", new string[]
+         {
+             "B1-A-1", "B1-A-2", "B1-B-1", "B1-C-1", "B1-D-1", "B1-D-2", "B1-E-1", "B1-E-2",
+             "B2-A-1", "B2-B-1", "B2-C-1", "B2-C-2",
+             "B3-A-1", "B3-B-1",
+             "B4-A-1", "B4-B-1", "B4-E-1",
+             "B5-A-1", "B5-B-1", "B5-C-1", "B5-C-2", "B5-D-1", "B5-D-2",
+             "B7-A-1", "B7-A-2", "B7-A-3", "B7-B-1", "B7-B-2", "B7-B-3", "B7-C-1", "B7-C-2", "B7-C-3", "B7-D-1", "B7-D-2", "B7-E-1",
+             "B8-A-1", "B8-B-1", "B8-C-1", "B8-C-2", "B8-D-1", "B8-E-1"
+         }
+            },
+            { "C", new string[]
+         {
+             "C1-A-1", "C1-A-2", "C1-A-3", "C1-B-2", "C1-C-1", "C1-C-2", "C1-C-3", "C1-D-1", "C1-E-1", "C1-E-2",
+             "C2-A-1", "C2-B-1", "C2-B-2", "C2-B-3", "C2-C-1", "C2-D-1", "C2-E-1",
+             "C3-A-1", "C3-B-1", "C3-B-2", "C3-C-1", "C3-C-3", "C3-D-1", "C3-D-2", "C3-D-3", "C3-E-1", "C3-E-2", "C3-E-3",
+             "C4-B-3", "C4-C-2", "C4-D-1", "C4-D-3", "C4-D-3", "C4-E-1",
+             "C5-B-1", "C5-B-2", "C5-B-3", "C5-C-3", "C5-D-1", "C5-E-1", "C5-E-3",
+             "C6-A-1", "C6-B-1", "C6-C-3", "C6-D-3", "C6-E-1", "C6-E-2", "C6-E-3",
+             "C7-A-1", "C7-B-1", "C7-B-2", "C7-C-1", "C7-D-1", "C7-D-2", "C7-E-1", "C7-E-2"
+         }
+            },
+            { "D", new string[]
+         {
+             "D1-A-1", "D1-A-2", "D1-B-2", "D1-C-1", "D1-C-2", "D1-D-1", "D1-E-1",
+             "D2-A-1", "D2-B-1", "D2-B-2", "D2-C-1", "D2-D-1", "D2-E-1", "D2-E-2",
+             "D3-A-1", "D3-A-2", "D3-B-1", "D3-B-2", "D3-C-1", "D3-C-2", "D3-D-1", "D3-E-1", "D3-E-2",
+             "D4-A-1", "D4-A-2", "D4-B-1", "D4-C-1", "D4-D-1", "D4-D-2", "D4-E-1", "D4-E-2",
+             "D5-A-1", "D5-C-1", "D5-B-2", "D5-C-2", "D5-D-1", "D5-E-1", "D5-E-2",
+             "D6-A-1", "D6-A-2", "D6-B-1", "D6-C-1", "D6-D-1", "D6-E-1", "D6-E-2"
+         }
+            },
+            { "E", new string[]
+         {
+             "E3-A-1", "E3-C-1", "E3-C-2", "E3-D-1",
+             "E4-A-1", "E4-D-1",
+             "E5-A-1", "E5-B-1", "E5-B-2", "E5-C-1", "E5-E-1", "E5-E-2", "E5-E-3",
+             "E6-A-1", "E6-A-2", "E6-A-3", "E6-B-1", "E6-B-2", "E6-C-1", "E6-D-2", "E6-E-1"
+         }
+            },
+            { "ANX", new string[]
+         {
+             "ANX", "ANX", "ANX", "ANX", "ANX", "ANX", "ANX", "ANX", "ANX", "ANX",
+             "ANX1", "ANX3", "ANX4", "ANX5", "ANX5", "ANX6", "ANX7", "ANX8", "ANX9", "ANX10",
+             "ANX11", "ANX12", "ANX13", "ANX14", "ANX15", "ANX16", "ANX17", "ANX18", "ANX19", "ANX20",
+             "ANX21", "ANX22", "ANX23",
+             "ANXL3-1", "ANXL4-1", "ANXL5-1", "ANXL6-1", "ANXL7-1", "ANXL8-1", "ANXL9-1",
+             "ANXL10-1", "ANXL11-1", "ANXL12-1", "ANXL12-2", "ANXL13-1", "ANXL13-2", "ANXL14-1", "ANXL14-2",
+             "ANXR1-B", "ANXR1-C-1", "ANXR1-C-2", "ANXR1-C-3",
+             "ANXR2-A-1", "ANXR2-A-2", "ANXR2-B-1", "ANXR2-B-2", "ANXR2-C-1",
+             "ANXR3-B-1", "ANXR3-B-2", "ANXR3-B-3", "ANXR3-C-2", "ANXR3-C-3",
+             "ANXR4-A-2", "ANXR4-A-3", "ANXR4-B-1", "ANXR4-B-2", "ANXR4-B-3", "ANXR4-C", "ANXR4-C-1", "ANXR4-C-2", "ANXR4-C-3",
+             "ANXR5-A", "ANXR5-A-1", "ANXR5-B", "ANXR5-B-1", "ANXR5-C",
+             "ANXR6-B-1", "ANXR6-B-2", "ANXR6-B-3", "ANXR6-C-1", "ANXR6-C-2", "ANXR6-C-3"
+         }
+            },
+            { "B5", new string[]
+         {
+             "B5R1-AC1", "B5R1-AC2", "B5R1-AC3", "B5R1-AC4", "B5R1-AD1", "B5R1-BC1", "B5R1-BC2", "B5R1-BC3", "B5R1-BC4", "B5R1-BC5", "B5R1-BD1", "B5R1-BD2", "B5R1-CC1", "B5R1-CC2", "B5R1-CC3", "B5R1-CC4", "B5R1-CD1", "B5R1-CD2", "B5R1-CD3", "B5R1-DC1", "B5R1-DC2", "B5R1-DC3", "B5R1-DC4", "B5R1-DD1", "B5R1-DD2", "B5R1-EC1", "B5R1-EC2", "B5R1-EC3", "B5R1-ED1", "B5R1-ED2", "B5R1-ED3", "B5R1-FC1", "B5R1-FC2", "B5R1-FC3", "B5R1-FC4", "B5R1-FD1", "B5R1-FD2", "B5R1-FD3", "B5R1-GC1", "B5R1-GC2", "B5R1-GC3", "B5R1-GC4", "B5R1-GD1", "B5R1-GD2", "B5R1-GD3", "B5R1-GD4", "B5R1-GD5", "B5R1-HC1", "B5R1-HC2", "B5R1-HC3", "B5R1-HC4", "B5R1-HC5", "B5R1-HD1", "B5R1-HD2", "B5R1-HD3", "B5R1-HD4", "B5R1-IC1", "B5R1-IC2", "B5R1-IC3", "B5R1-IC4", "B5R1-IC5", "B5R1-ID1", "B5R1-ID2", "B5R1-ID3", "B5R1-ID4", "B5R1-ID5", "B5R1-JC1", "B5R1-JC2", "B5R1-JC3", "B5R1-JC4", "B5R1-JD1", "B5R1-JD2", "B5R1-JD3", "B5R1-KC1", "B5R1-KC2", "B5R1-KC3", "B5R1-KC4", "B5R1-KC5", "B5R1-KD1", "B5R1-KD2", "B5R1-LC1", "B5R1-LC2",
+             "B5R2-AC1", "B5R2-AC2", "B5R2-AC3", "B5R2-BC2", "B5R2-BC3", "B5R2-DD2", "B5R2-DD3",
+             "B5R3-AC1", "B5R3-AC2", "B5R3-AC3", "B5R3-AD1", "B5R3-AD2", "B5R3-AD3", "B5R3-BC1", "B5R3-BC2", "B5R3-BC3", "B5R3-BD1", "B5R3-BD2", "B5R3-BD3", "B5R3-CC1", "B5R3-CD1", "B5R3-DC1", "B5R3-DC2", "B5R3-DC3", "B5R3-EC1", "B5R3-EC2", "B5R3-EC3",
+             "B5R4-AC1", "B5R4-AC2", "B5R4-AC3", "B5R4-BC1", "B5R4-BC2", "B5R4-BC3", "B5R4-CC1", "B5R4-CC2", "B5R4-CC3", "B5R4-DC1", "B5R4-DC2", "B5R4-DC3", "B5R4-EC1", "B5R4-EC2", "B5R4-ED1", "B5R4-ED2", "B5R4-ED3", "B5R4-ED4",
+             "B5R5-11AB1", "B5R5-11AC1", "B5R5-11AC2", "B5R5-AB2", "B5R5-AC1-1", "B5R5-AC1-2", "B5R5-AC2", "B5R5-AC3", "B5R5-AD2", "B5R5-AD3", "B5R5-BB2-1", "B5R5-BB2-2", "B5R5-BC1-1", "B5R5-BC1-2", "B5R5-BC2-1", "B5R5-BC2-2", "B5R5-BC3", "B5R5-BD1-2", "B5R5-BD1-3", "B5R5-BD2", "B5R5-BD3", "B5R5-CC1-1", "B5R5-CC1-2", "B5R5-CC1-3", "B5R5-CC2-2", "B5R5-CC3-1", "B5R5-CC3-2", "B5R5-CC3-3", "B5R5-CD1", "B5R5-CD2", "B5R5-CD3", "B5R5-CD3-1", "B5R5-CD3-2", "B5R5-DB2", "B5R5-DB3-1", "B5R5-DC2", "B5R5-DC3", "B5R5-DD1-1", "B5R5-DD1-2", "B5R5-DD1-3", "B5R5-DD2", "B5R5-DD3", "B5R5-DD3-1", "B5R5-EB2", "B5R5-EC1", "B5R5-EC3", "B5R5-ED1", "B5R5-ED2",
+             "B5R6-DC1", "B5R6-DC2", "B5R6-DC3", "B5R6-CC3", "B5R6-EC1", "B5R6-EC3",
+             "B5R7-AC2", "B5R7-BA2", "B5R7-BB2", "B5R7-BC2", "B5R7-CB1", "B5R7-CB2", "B5R7-CC1", "B5R7-CC2", "B5R7-CC3", "B5R7-DB1", "B5R7-DB2", "B5R7-DC1", "B5R7-EC1", "B5R7-EC2",
+             "B5R8-EC3", "B5R8-EC4", "B5R8-ED2", "B5R8-ED3",
+             "B5R9-AA1", "B5R9-AA2", "B5R9-AC1", "B5R9-AC2", "B5R9-AC3", "B5R9-AC4", "B5R9-AD1", "B5R9-ED1", "B5R9-ED2",
+             "B5R10-AA1", "B5R10-AC1", "B5R10-AC2", "B5R10-AC3", "B5R10-BC1", "B5R10-BC2", "B5R10-BC3", "B5R10-CC1", "B5R10-CC2", "B5R10-CC3", "B5R10-DD1", "B5R10-DD2",
+             "B5R11-AC2", "B5R11-AC3-1", "B5R11-AC3-2", "B5R11-AD2", "B5R11-BC1-2", "B5R11-BC2", "B5R11-BC3", "B5R11-CC1", "B5R11-CC2-1", "B5R11-CC2-2", "B5R11-CC3", "B5R11-CD2", "B5R11-DC1", "B5R11-DC2", "B5R11-DC3", "B5R11-DC3-1", "B5R11-DD-1", "B5R11-EC1", "B5R11-EC2-2", "B5R11-EC2-3", "B5R11-EC3", "B5R11-ED2-1", "B5R11-ED3",
+             "B5R12-C-1", "B5R12-C-2", "B5R12-EC2",
+             "B5R13-A1", "B5R13-A2", "B5R13-D1", "B5R13-D2"
+         }
+            },
+            { "FREONRACK", new string[]
+         {
+             "FREONRACK"
+         }
+            },
+            { "SCR", new string[]
+         {
+             "SCR1-A-1", "SCR1-B-1", "SCR1-B-4", "SCR1-B-5", "SCR1-C-3", "SCR1-C-4", "SCR1-C-5", "SCR1-C-5", "SCR1-C-6",
+             "SCR2-A-1", "SCR2-A-2", "SCR2-A-3", "SCR2-A-4", "SCR2-A-5", "SCR2-B-1", "SCR2-B-2", "SCR2-B-3", "SCR2-B-4", "SCR2-B-5",
+             "SCR3-A-1", "SCR3-A-2", "SCR3-A-3", "SCR3-A-4", "SCR3-A-5", "SCR3-A-6", "SCR3-B-1", "SCR3-B-2", "SCR3-B-3", "SCR3-B-4", "SCR3-B-5", "SCR3-B-6",
+             "SCR4-A-1", "SCR4-A-2", "SCR4-A-3", "SCR4-B-1", "SCR4-B-2", "SCR4-B-3",
+             "SCR5-A-1", "SCR5-A-2", "SCR5-A-3", "SCR5-A-4", "SCR5-B-1", "SCR5-B-2", "SCR5-B-3", "SCR5-B-4",
+             "SCR6-A-1", "SCR6-A-2", "SCR6-A-3", "SCR6-A-4", "SCR6-A-5", "SCR6-A-6", "SCR6-B-1", "SCR6-B-2", "SCR6-B-3", "SCR6-B-4", "SCR6-C-1", "SCR6-C-2", "SCR6-C-3", "SCR6-C-4", "SCR6-D-1", "SCR6-D-2", "SCR6-D-3",
+             "SCR7-1A", "SCR7-1B-1", "SCR7-1B-2", "SCR7-1C-1", "SCR7-1C-2", "SCR7-2A-1", "SCR7-2A-2", "SCR7-2B-1", "SCR7-2B-2", "SCR7-2C-1", "SCR7-3A-1", "SCR7-3A-2", "SCR7-3A-3", "SCR7-3B-1", "SCR7-3B-2", "SCR7-3C-1", "SCR7-3C-2", "SCR7-3C-3", "SCR7-4A-1", "SCR7-4A-2", "SCR7-4A-3", "SCR7-4B-1", "SCR7-4B-2", "SCR7-4B-3"
+         }
+            },
+            { "STRPNG", new string[]
+         {
+             "STRPNGP1", "STRPNGP2", "STRPNGP3", "STRPNGP4", "STRPNGP5", "STRPNGP6", "STRPNGP7", "STRPNGP8", "STRPNGP9", "STRPNGP10",
+             "STRPNGP11", "STRPNGP12", "STRPNGP13-A", "STRPNGP13-B", "STRPNGP14-A", "STRPNGP14-B", "STRPNGP15-A", "STRPNGP15-B", "STRPNGP16-A", "STRPNGP16-B",
+             "STRPNGP17", "STRPNGP18", "STRPNGP19", "STRPNGP20"
+         }
+            },
+            { "WHA01", new string[]
+         {
+             "WHA01-B-1", "WHA01-C-1", "WHA01-C-2", "WHA01-C-3", "WHA01-D-1", "WHA01-D-2", "WHA01-D-3", "WHA01-D-4", "WHA01-E-1", "WHA01-E-2", "WHA01-E-3", "WHA01-E-4"
+         }
+            },
+            { "WHA02", new string[]
+         {
+             "WHA02-1A-1", "WHA02-1A-2", "WHA02-1B-1", "WHA02-1C-1", "WHA02-2A-1", "WHA02-2B-1", "WHA02-2C-1", "WHA02-3A-1", "WHA02-3B-1", "WHA02-3C-1"
+         }
+            },
+            { "WHA03", new string[]
+         {
+             "WHA03-A-1", "WHA03-A-2", "WHA03-B-1", "WHA03-B-2", "WHA03-B-3", "WHA03-C-1", "WHA03-C-2", "WHA03-C-3"
+         }
+            },
+            { "WHA04", new string[]
+         {
+             "WHA04-A-1", "WHA04-A-2", "WHA04-A-3", "WHA04-A-4", "WHA04-B-1", "WHA04-B-2", "WHA04-B-3", "WHA04-C-1", "WHA04-C-2", "WHA04-C-3"
+         }
+            },
+            { "WHA05", new string[]
+         {
+             "WHA05-A-1", "WHA05-A-2", "WHA05-A-3", "WHA05-A-4", "WHA05-A-5", "WHA05-B-1", "WHA05-B-2", "WHA05-B-3", "WHA05-B-4", "WHA05-B-5", "WHA05-B-6",
+             "WHA05-C-1", "WHA05-C-2", "WHA05-C-3", "WHA05-C-4", "WHA05-C-5"
+         }
+            },
+            { "WHA06", new string[]
+         {
+             "WHA06-A-1", "WHA06-A-2", "WHA06-B-1", "WHA06-B-2", "WHA06-B-3", "WHA06-B-4", "WHA06-B-5", "WHA06-C-1", "WHA06-C-2", "WHA06-C-3"
+         }
+            },
+            { "WHA07", new string[]
+         {
+             "WHA07-A-1", "WHA07-A-2", "WHA07-A-3", "WHA07-A-4", "WHA07-A-5", "WHA07-B-1", "WHA07-B-2", "WHA07-B-3", "WHA07-B-4", "WHA07-C-1", "WHA07-C-2", "WHA07-C-4", "WHA07-C-5"
+         }
+            },
+            { "WHA08", new string[]
+         {
+             "WHA08-A-1", "WHA08-A-2", "WHA08-B-1", "WHA08-B-2", "WHA08-B-3", "WHA08-B-4", "WHA08-B-5", "WHA08-C-1", "WHA08-C-2", "WHA08-C-3", "WHA08-C-4", "WHA08-C-5", "WHA08-C-6",
+             "WHA08-D1", "WHA08-D2", "WHA08-D3", "WHA08-D4", "WHA08-D5"
+         }
+            },
+            { "WHA09", new string[]
+         {
+             "WHA09-A-1", "WHA09-A-2", "WHA09-A-3"
+         }
+            },
+            { "WHA10", new string[]
+         {
+             "WHA10-A-1", "WHA10-A-4", "WHA10-B-2", "WHA10-B-3"
+         }
+            },
+            { "WHA11", new string[]
+         {
+             "WHA11-A-1", "WHA11-A-2"
+         }
+            },
+            { "WHA12", new string[]
+         {
+             "WHA12-A-1", "WHA12-A-2", "WHA12-A-3"
+         }
+            },
+            { "WHA13", new string[]
+         {
+             "WHA13-1A-1", "WHA13-1A-2", "WHA13-1B-1", "WHA13-1C-1", "WHA13-2A-1", "WHA13-2B-1", "WHA13-2B-2", "WHA13-2C-1"
+         }
+            },
+            { "WHA14", new string[]
+         {
+             "WHA14-1A-1", "WHA14-1A-2", "WHA14-1B-1", "WHA14-1B-2", "WHA14-1B-3", "WHA14-1C-1", "WHA14-1C-2", "WHA14-1C-3", "WHA14-2B-1", "WHA14-2B-2", "WHA14-2B-3", "WHA14-2C-1", "WHA14-2C-2", "WHA14-2C-3",
+             "WHA14-3A-1", "WHA14-3A-2", "WHA14-3A-3", "WHA14-3B-1", "WHA14-3B-2", "WHA14-3B-3", "WHA14-3C-1", "WHA14-3C-2", "WHA14-3C-3", "WHA14-4A-1", "WHA14-4A-2", "WHA14-4A-3", "WHA14-4B-1", "WHA14-4B-2", "WHA14-4B-3",
+             "WHA14-4C-1", "WHA14-4C-2", "WHA14-4C-3", "WHA14-5A-1", "WHA14-5A-2", "WHA14-5B-1", "WHA14-5B-2", "WHA14-5B-3", "WHA14-5C-1", "WHA14-5C-2", "WHA14-5C-3", "WHA14-6A-1", "WHA14-6A-2", "WHA14-6A-3", "WHA14-6B-1",
+             "WHA14-6B-2", "WHA14-6B-3", "WHA14-6B-4", "WHA14-6B-5", "WHA14-6C-1", "WHA14-6C-2", "WHA14-6C-3", "WHA14-7A-1", "WHA14-7A-2", "WHA14-7A-3", "WHA14-7B-1", "WHA14-7B-2", "WHA14-7B-3", "WHA14-7B-4", "WHA14-7C-1",
+             "WHA14-7C-2", "WHA14-7C-3"
+         }
+            },
+            { "WHA15", new string[]
+         {
+             "WHA15-1A-1", "WHA15-1A-2", "WHA15-1B-1", "WHA15-1B-2", "WHA15-1B-3", "WHA15-1C-1", "WHA15-1C-2", "WHA15-2A-1", "WHA15-2A-2", "WHA15-2B-1", "WHA15-2B-2", "WHA15-2C-1", "WHA15-2C-2", "WHA15-2C-3"
+         }
+            },
+            { "WHA-CP", new string[]
+         {
+             "WHA-CP01-1", "WHA-CP01-2", "WHA-CP02-1", "WHA-CP02-2", "WHA-CP03-1", "WHA-CP03-2", "WHA-CP04-1", "WHA-CP04-2", "WHA-CP05-1", "WHA-CP05-2",
+             "WHA-CP06-1", "WHA-CP06-2", "WHA-CP07-1", "WHA-CP07-2", "WHA-CP08-1", "WHA-CP08-2", "WHA-CP09-1", "WHA-CP10-1", "WHA-CP11-1", "WHA-CP11-2", "WHA-CP12-1"
+         }
+            },
+            { "WHA-FM", new string[]
+         {
+             "WHA-FM-1-1", "WHA-FM-2-1", "WHA-FM-3-1", "WHA-FM-4-1", "WHA-FM-5-1", "WHA-FM-6-1", "WHA-FM-7-1", "WHA-FM-8-1", "WHA-FM-9-1", "WHA-FM-10-1",
+             "WHA-FM-11-1", "WHA-FM-12-1", "WHA-FM-13-1", "WHA-FM-14-1", "WHA-FM-15-1", "WHA-FM-16-1", "WHA-FM-17-1", "WHA-FM-18-1", "WHA-FM19-1", "WHA-FM20-1"
+         }
+            },
+            { "WHC", new string[]
+         {
+             "WHC-01-1", "WHC-01-2", "WHC-01-3", "WHC-01-4", "WHC-01-5", "WHC-01-6", "WHC-01-7", "WHC-01-8", "WHC-01-9", "WHC-02-1", "WHC-02-2",
+             "WHC-03-1", "WHC-03-1", "WHC-03-2", "WHC-03-2", "WHC-04-1", "WHC-04-2", "WHC-04-3", "WHC-05-1", "WHC-05-2", "WHC-06-1", "WHC-06-2",
+             "WHC-07-1", "WHC-07-2", "WHC-07-3", "WHC-07-4", "WHC-08-1", "WHC-09-1", "WHC-09-2", "WHC-10-1", "WHC-10-2", "WHC-10-3", "WHC-11-1",
+             "WHC-12-1", "WHC-12-2", "WHC-12-3", "WHC-13-1", "WHC-13-2", "WHC-13-3", "WHC-14-1", "WHC-14-2", "WHC-14-3", "WHC-15-1", "WHC-15-2",
+             "WHC-16-1", "WHC-17-1", "WHC-17-2", "WHC-18-1", "WHC-18-2", "WHC-19-1", "WHC-19-2", "WHC-20-1", "WHC-20-2", "WHC-21-1", "WHC-21-2",
+             "WHC-22-1", "WHC-22-2", "WHC-23-1", "WHC-23-2", "WHC-24-1", "WHC-24-2", "WHC-24-3", "WHC-24-4"
+         }
+            },
+            { "CNPYR", new string[]
+         {
+             "CNPYR1-B-1", "CNPYR1-B-2", "CNPYR1-B-3", "CNPYR1-B-4", "CNPYR1-C-1", "CNPYR1-C-2", "CNPYR1-C-3", "CNPYR1-C-4", "CNPYR1-D-1", "CNPYR1-D-2", "CNPYR1-D-4",
+             "CNPYR2-A-1", "CNPYR2-A-3", "CNPYR2-B-1", "CNPYR2-B-2", "CNPYR2-B-3", "CNPYR2-B-4", "CNPYR2-B-5", "CNPYR2-C-2", "CNPYR2-C-2", "CNPYR2-C-3", "CNPYR2-D-1", "CNPYR2-D-2", "CNPYR2-D-3", "CNPYR2-D-4", "CNPYR2-D-5", "CNPYR2-D-7",
+             "CNPYR3-A-1", "CNPYR3-A-2", "CNPYR3-A-4", "CNPYR3-B-1", "CNPYR3-B-2", "CNPYR3-B-3", "CNPYR3-B-4", "CNPYR3-B-5", "CNPYR3-C-1", "CNPYR3-C-2",
+             "CNPYR4-B-2", "CNPYR4-C-2", "CNPYR4-D-1", "CNPYR4-D-4",
+             "CNPYR5-A-1", "CNPYR5-A-2", "CNPYR5-B-1", "CNPYR5-B-2", "CNPYR5-B-3", "CNPYR5-C-1", "CNPYR5-C-2", "CNPYR5-D-1", "CNPYR5-D-2",
+             "CNPYR6-A-1", "CNPYR6-B-2", "CNPYR6-B-3", "CNPYR6-C-1", "CNPYR6-C-2", "CNPYR6-D-1",
+             "CNPYR7-B-1", "CNPYR7-B-2", "CNPYR7-B-3", "CNPYR7-B-4", "CNPYR7-B-6", "CNPYR7-C-1", "CNPYR7-C-2", "CNPYR7-C-3", "CNPYR7-C-5", "CNPYR7-C-6", "CNPYR7-D-2", "CNPYR7-D-3", "CNPYR7-D-4", "CNPYR7-D-5", "CNPYR7-D-6"
+         }
+            },
+            { "COPPER", new string[]
+         {
+             "COPPERAREA1", "COPPERAREA2", "COPPERAREA3", "COPPERAREA4", "COPPERAREA5"
+         }
+            }
         };
     }
-}
-     
+};
+
+
+
+
+
 
 
 
