@@ -55,6 +55,7 @@
             pnlPreview = new Panel();
             label4 = new Label();
             label1 = new Label();
+            textBox2 = new TextBox();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -73,6 +74,7 @@
             // panel1
             // 
             panel1.BackColor = Color.RosyBrown;
+            panel1.Controls.Add(textBox2);
             panel1.Controls.Add(txtBinLocation6);
             panel1.Controls.Add(label10);
             panel1.Controls.Add(txtBinLocation4);
@@ -340,6 +342,13 @@
             label1.TabIndex = 0;
             label1.Text = "QR Code Generator";
             // 
+            // textBox2
+            // 
+            textBox2.Location = new Point(239, 182);
+            textBox2.Name = "textBox2";
+            textBox2.Size = new Size(158, 23);
+            textBox2.TabIndex = 33;
+            // 
             // Form_5
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -385,5 +394,6 @@
         public TextBox txtBinLocation4;
         public Label label11;
         public Label label12;
+        public TextBox textBox2;
     }
 }

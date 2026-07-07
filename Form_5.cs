@@ -434,5 +434,20 @@ namespace OJT___QR_Code_Generator
                 return null;
             }
         }
+
+        private void txtBinLocation4_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void textBoxLocation_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtBinLocation6_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }
