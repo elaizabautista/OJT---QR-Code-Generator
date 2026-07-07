@@ -183,17 +183,20 @@ namespace OJT___QR_Code_Generator
                 }
             }
         }
+        // 1. Add this at the top of your class
+
+        private int _batchCurrentIndex = 0; // Class-level variable
 
         private void btnPrintAll_Click(object sender, EventArgs e)
         {
-            // 1. Retrieve the full KeyValuePair object directly from SelectedItem
             if (cmbBatch.SelectedItem is KeyValuePair<object, string[]> selectedPair)
             {
                 string[] locations = selectedPair.Value;
 
                 if (locations != null && locations.Length > 0)
                 {
-                    int currentIndex = 0;
+                    // Reset index before starting the print job
+                    _batchCurrentIndex = 0;
 
                     using (PrintDocument pd = new PrintDocument())
                     {
@@ -203,18 +206,17 @@ namespace OJT___QR_Code_Generator
 
                         pd.PrintPage += (s, ev) =>
                         {
-                            // 2. Assign the next two items to your active variables
-                            _activeNumber1 = locations[currentIndex];
-                            _activeNumber2 = (currentIndex + 1 < locations.Length) ? locations[currentIndex + 1] : "N/A";
+                            // Use the class-level variable to persist state across pages
+                            _activeNumber1 = locations[_batchCurrentIndex];
+                            _activeNumber2 = (_batchCurrentIndex + 1 < locations.Length) ? locations[_batchCurrentIndex + 1] : "N/A";
 
-                            // 3. Render the label using your existing logic
                             RenderFinishedGoodsLabel(ev.Graphics, ev.PageBounds.Width, ev.PageBounds.Height, true);
 
-                            // 4. Advance index by 2
-                            currentIndex += 2;
+                            // Advance index by 2
+                            _batchCurrentIndex += 2;
 
-                            // 5. If more items remain, trigger another page
-                            ev.HasMorePages = (currentIndex < locations.Length);
+                            // If more items remain, trigger another page
+                            ev.HasMorePages = (_batchCurrentIndex < locations.Length);
                         };
 
                         using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
