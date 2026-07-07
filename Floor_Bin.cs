@@ -229,8 +229,6 @@ namespace OJT___QR_Code_Generator
         private void RenderFloorBinLabel(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
             int margin = isPrinting ? 3 : 1;
-
-            int margin = 0;
             int safeX = margin;
             int safeY = margin;
             int safeWidth = totalWidth - (margin * 2);
@@ -282,7 +280,7 @@ namespace OJT___QR_Code_Generator
             }
 
             int textY = qrY + qrSize + gap;
-            int textY = (qrY + qrSize) - moveTextUpPixels;
+            textY -= moveTextUpPixels;
 
             using (Pen dividerPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
             {
