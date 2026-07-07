@@ -268,6 +268,7 @@
             Controls.Add(panel1);
             Name = "Finished_Goods";
             Text = "Finished_Goods";
+            Load += Finished_Goods_Load;
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
             ResumeLayout(false);

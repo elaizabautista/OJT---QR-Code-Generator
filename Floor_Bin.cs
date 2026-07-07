@@ -224,28 +224,45 @@ namespace OJT___QR_Code_Generator
 
             RenderFloorBinLabel(g, printableWidth, printableHeight, isPrinting: true);
         }
+        // Single QR with border, no divider line, number below
 
         private void RenderFloorBinLabel(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
+            int margin = isPrinting ? 3 : 1;
+
             int margin = 0;
             int safeX = margin;
             int safeY = margin;
             int safeWidth = totalWidth - (margin * 2);
             int safeHeight = totalHeight - (margin * 2);
 
+            // Border around the whole label - the only line drawn, no divider
+            int penThickness = isPrinting ? 4 : 2;
+            using (Pen borderPen = new Pen(Color.Black, penThickness))
+            {
+                g.DrawRectangle(borderPen, safeX, safeY, safeWidth, safeHeight);
+            }
+
             if (string.IsNullOrEmpty(_activeNumber))
                 return;
 
+            int gap = 2;
             float qrHeightPercentage = 0.95f;
             float textHeightPercentage = 0.30f;
 
+            int textHeight = (int)(safeHeight * 0.24f);
+            float maxFontCeiling = textHeight;
+
+            // QR sized down slightly - was the full remaining space, now 90% of it
+            int qrSize = (int)((safeHeight - gap - textHeight) * 0.90f);
+            qrSize = Math.Min(qrSize, safeWidth);
             int moveTextUpPixels = 39;
 
-            int qrSize = (int)(safeHeight * qrHeightPercentage);
-            int textHeight = (int)(safeHeight * textHeightPercentage);
+            int contentHeight = qrSize + gap + textHeight;
+            int blockStartY = safeY + (safeHeight - contentHeight) / 2;
 
             int qrX = safeX + (safeWidth - qrSize) / 2;
-            int qrY = safeY - 30;
+            int qrY = blockStartY;
 
             using (Bitmap qrImg = CreateQRCodeImage(_activeNumber))
             {
@@ -264,6 +281,7 @@ namespace OJT___QR_Code_Generator
                 }
             }
 
+            int textY = qrY + qrSize + gap;
             int textY = (qrY + qrSize) - moveTextUpPixels;
 
             using (Pen dividerPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
@@ -271,6 +289,7 @@ namespace OJT___QR_Code_Generator
                 g.DrawLine(dividerPen, safeX, textY, safeX + safeWidth, textY);
             }
 
+            DrawTextAutofit(g, _activeNumber, "Arial", FontStyle.Bold, maxFontCeiling, safeX, textY, safeWidth, textHeight);
             DrawTextAutofit(g, _activeNumber, "Arial", FontStyle.Bold, textHeight, safeX, textY, safeWidth, textHeight);
         }
 

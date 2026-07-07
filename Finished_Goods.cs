@@ -25,11 +25,23 @@ namespace OJT___QR_Code_Generator
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
         }
-
         private void Finished_Goods_Load(object sender, EventArgs e)
         {
             txtCustomWidth.Text = "4";
             txtCustomHeight.Text = "6";
+
+            // 1. Convert to a list of KeyValuePairs
+            var comboSource = new List<KeyValuePair<object, string[]>>();
+            foreach (var kvp in WarehouseData.myZones)
+            {
+                comboSource.Add(kvp);
+            }
+
+            // 2. Bind the list
+            cmbBatch.DataSource = comboSource;
+
+            // 3. ONLY set DisplayMember. Do NOT set ValueMember.
+            cmbBatch.DisplayMember = "Key";
         }
 
         private Size GetTargetPaperSizeInHundredths()
@@ -174,7 +186,54 @@ namespace OJT___QR_Code_Generator
 
         private void btnPrintAll_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Batch printing for Finished Goods isn't available yet - the data source hasn't been set up. Use manual mode (Generate + Print) for now.", "Coming Soon", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // 1. Retrieve the full KeyValuePair object directly from SelectedItem
+            if (cmbBatch.SelectedItem is KeyValuePair<object, string[]> selectedPair)
+            {
+                string[] locations = selectedPair.Value;
+
+                if (locations != null && locations.Length > 0)
+                {
+                    int currentIndex = 0;
+
+                    using (PrintDocument pd = new PrintDocument())
+                    {
+                        Size paperSize = GetTargetPaperSizeInHundredths();
+                        pd.DefaultPageSettings.Landscape = true;
+                        pd.DefaultPageSettings.PaperSize = new PaperSize("FinishedGoodsSticker", paperSize.Width, paperSize.Height);
+
+                        pd.PrintPage += (s, ev) =>
+                        {
+                            // 2. Assign the next two items to your active variables
+                            _activeNumber1 = locations[currentIndex];
+                            _activeNumber2 = (currentIndex + 1 < locations.Length) ? locations[currentIndex + 1] : "N/A";
+
+                            // 3. Render the label using your existing logic
+                            RenderFinishedGoodsLabel(ev.Graphics, ev.PageBounds.Width, ev.PageBounds.Height, true);
+
+                            // 4. Advance index by 2
+                            currentIndex += 2;
+
+                            // 5. If more items remain, trigger another page
+                            ev.HasMorePages = (currentIndex < locations.Length);
+                        };
+
+                        using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
+                        {
+                            previewDlg.Document = pd;
+                            previewDlg.WindowState = FormWindowState.Maximized;
+                            previewDlg.ShowDialog();
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Selected batch contains no data.", "Empty Batch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a valid batch to print.", "Selection Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void PrintFinishedGoodsHandler(object sender, PrintPageEventArgs e)
@@ -221,6 +280,12 @@ namespace OJT___QR_Code_Generator
                 int dividerY = margin + rowHeight;
                 g.DrawLine(dividerPen, margin, dividerY, margin + safeWidth, dividerY);
             }
+
+            // Outer border around the whole label
+            using (Pen borderPen = new Pen(Color.Black, isPrinting ? 3f : 2f))
+            {
+                g.DrawRectangle(borderPen, margin, margin, safeWidth - 1, safeHeight - 1);
+            }
         }
 
         private void RenderCodeRow(Graphics g, string codeValue, int rowX, int rowY, int rowWidth, int rowHeight)
@@ -228,8 +293,8 @@ namespace OJT___QR_Code_Generator
             if (string.IsNullOrEmpty(codeValue))
                 return;
 
-            // Tiny inner pad just so the QR doesn't touch the very edge of the sheet
-            int innerPad = 2;
+            // Small inner pad so the QR doesn't touch the border/divider
+            int innerPad = 10;
 
             int safeX = rowX + innerPad;
             int safeY = rowY + innerPad;
@@ -357,6 +422,7 @@ namespace OJT___QR_Code_Generator
                         {
                             // drawQuietZones: false removes the built-in white margin baked into
                             // the bitmap, so the QR modules fill the entire image with no dead space
+                            // - matches Finished_Goods sizing behavior
                             byte[] qrCodeBytes = qrCode.GetGraphic(20, Color.Black, Color.White, drawQuietZones: false);
                             using (var ms = new System.IO.MemoryStream(qrCodeBytes))
                             {
