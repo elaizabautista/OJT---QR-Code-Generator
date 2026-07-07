@@ -23,12 +23,44 @@ namespace OJT___QR_Code_Generator
 
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
+
+            // Connect the ComboBox change event
+            this.cmbBatch.SelectedIndexChanged += new EventHandler(this.cmbWhaZones_SelectedIndexChanged);
         }
 
         private void Floor_Bin_Load(object sender, EventArgs e)
         {
             txtCustomWidth.Text = "4";
             txtCustomHeight.Text = "6";
+
+            // Populate the ComboBox with options WHA01 to WHA15
+            cmbBatch.Items.Clear();
+            for (int i = 1; i <= 15; i++)
+            {
+                cmbBatch.Items.Add($"WHA{i:D2}");
+            }
+        }
+
+        private void cmbWhaZones_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbBatch.SelectedItem == null) return;
+
+            string selectedZonePrefix = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01"
+
+            // Query the WHA_Data dictionary for any matches starting with our prefix
+            foreach (var key in WHA_Data.BinToPartMapping.Keys)
+            {
+                if (key.StartsWith(selectedZonePrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Update textbox with the associated value/part number found
+                    txtNumber.Text = WHA_Data.BinToPartMapping[key];
+
+                    // Automatically trigger label preview updating
+                    _activeNumber = txtNumber.Text.Trim();
+                    pnlPreview.Invalidate();
+                    break;
+                }
+            }
         }
 
         private Size GetTargetPaperSizeInHundredths()
@@ -64,6 +96,7 @@ namespace OJT___QR_Code_Generator
         private void btnClear_Click(object sender, EventArgs e)
         {
             txtNumber.Clear();
+            cmbBatch.SelectedIndex = -1; // Reset combobox selection
             _activeNumber = string.Empty;
             pnlPreview.Invalidate();
         }
@@ -90,7 +123,6 @@ namespace OJT___QR_Code_Generator
             else
                 totalHeight = (int)(totalWidth / targetRatio);
 
-            // Center the label canvas itself within the panel, instead of pinning it to (0,0)
             int offsetX = (pnlPreview.Width - totalWidth) / 2;
             int offsetY = (pnlPreview.Height - totalHeight) / 2;
 
@@ -180,8 +212,6 @@ namespace OJT___QR_Code_Generator
             int printableWidth = e.PageBounds.Width;
             int printableHeight = e.PageBounds.Height;
 
-            // Same rotation safeguard as Form1's PrintLabelsHandler, in case the
-            // Honeywell driver reports the page as portrait despite Landscape = true
             if (printableWidth < printableHeight)
             {
                 g.TranslateTransform(printableWidth, 0);
@@ -194,9 +224,9 @@ namespace OJT___QR_Code_Generator
 
             RenderFloorBinLabel(g, printableWidth, printableHeight, isPrinting: true);
         }
+
         private void RenderFloorBinLabel(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
-            // Remove margins completely to use the full 4x6 area
             int margin = 0;
             int safeX = margin;
             int safeY = margin;
@@ -206,24 +236,17 @@ namespace OJT___QR_Code_Generator
             if (string.IsNullOrEmpty(_activeNumber))
                 return;
 
-            // --- ADJUSTABLE SETTINGS ---
-            float qrHeightPercentage = 0.95f;  // QR size
-            float textHeightPercentage = 0.30f; // Height of the text bounding box
+            float qrHeightPercentage = 0.95f;
+            float textHeightPercentage = 0.30f;
 
-            // This controls the vertical position. 
-            // Increase this number (e.g., 50, 80, 100) to move the text UP into the QR.
-            // Decrease it to move the text DOWN.
             int moveTextUpPixels = 39;
-            // ---------------------------
 
             int qrSize = (int)(safeHeight * qrHeightPercentage);
             int textHeight = (int)(safeHeight * textHeightPercentage);
 
-            // Center QR horizontally
             int qrX = safeX + (safeWidth - qrSize) / 2;
             int qrY = safeY - 30;
 
-            // Render QR
             using (Bitmap qrImg = CreateQRCodeImage(_activeNumber))
             {
                 if (qrImg != null)
@@ -241,18 +264,13 @@ namespace OJT___QR_Code_Generator
                 }
             }
 
-            // Direct Y calculation: 
-            // Start at the bottom of the QR (qrY + qrSize) 
-            // and subtract the moveTextUpPixels to shift the text upwards.
             int textY = (qrY + qrSize) - moveTextUpPixels;
 
-            // Thin divider between QR and number
             using (Pen dividerPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
             {
                 g.DrawLine(dividerPen, safeX, textY, safeX + safeWidth, textY);
             }
 
-            // Draw the text
             DrawTextAutofit(g, _activeNumber, "Arial", FontStyle.Bold, textHeight, safeX, textY, safeWidth, textHeight);
         }
 
@@ -289,8 +307,6 @@ namespace OJT___QR_Code_Generator
                     {
                         using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
                         {
-                            // Raised from 4 to 20 pixels-per-module - generates a much higher-resolution
-                            // native bitmap so scaling it up to fill a big label doesn't blur
                             byte[] qrCodeBytes = qrCode.GetGraphic(20);
                             using (var ms = new System.IO.MemoryStream(qrCodeBytes))
                             {

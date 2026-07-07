@@ -50,6 +50,12 @@
             pnlPreview = new Panel();
             label4 = new Label();
             label1 = new Label();
+            textBox2 = new TextBox();
+            label10 = new Label();
+            textBox3 = new TextBox();
+            textBox4 = new TextBox();
+            label11 = new Label();
+            label12 = new Label();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -68,6 +74,12 @@
             // panel1
             // 
             panel1.BackColor = Color.RosyBrown;
+            panel1.Controls.Add(textBox2);
+            panel1.Controls.Add(label10);
+            panel1.Controls.Add(textBox3);
+            panel1.Controls.Add(textBox4);
+            panel1.Controls.Add(label11);
+            panel1.Controls.Add(label12);
             panel1.Controls.Add(textBox1);
             panel1.Controls.Add(label9);
             panel1.Controls.Add(label8);
@@ -96,9 +108,9 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(49, 225);
+            textBox1.Location = new Point(49, 248);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(298, 23);
+            textBox1.Size = new Size(158, 23);
             textBox1.TabIndex = 26;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
@@ -106,7 +118,7 @@
             // 
             label9.AutoSize = true;
             label9.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label9.Location = new Point(46, 201);
+            label9.Location = new Point(46, 224);
             label9.Name = "label9";
             label9.Size = new Size(117, 21);
             label9.TabIndex = 25;
@@ -116,7 +128,7 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label8.Location = new Point(49, 282);
+            label8.Location = new Point(49, 298);
             label8.Name = "label8";
             label8.Size = new Size(55, 21);
             label8.TabIndex = 24;
@@ -125,7 +137,7 @@
             // cmbBatch
             // 
             cmbBatch.FormattingEnabled = true;
-            cmbBatch.Location = new Point(52, 306);
+            cmbBatch.Location = new Point(52, 322);
             cmbBatch.Name = "cmbBatch";
             cmbBatch.Size = new Size(298, 23);
             cmbBatch.TabIndex = 23;
@@ -133,9 +145,9 @@
             // 
             // txtBinLocation2
             // 
-            txtBinLocation2.Location = new Point(49, 159);
+            txtBinLocation2.Location = new Point(49, 182);
             txtBinLocation2.Name = "txtBinLocation2";
-            txtBinLocation2.Size = new Size(298, 23);
+            txtBinLocation2.Size = new Size(158, 23);
             txtBinLocation2.TabIndex = 22;
             txtBinLocation2.TextChanged += txtBinLocation2_TextChanged;
             // 
@@ -149,9 +161,9 @@
             // 
             // txtBinLocation1
             // 
-            txtBinLocation1.Location = new Point(49, 97);
+            txtBinLocation1.Location = new Point(49, 120);
             txtBinLocation1.Name = "txtBinLocation1";
-            txtBinLocation1.Size = new Size(298, 23);
+            txtBinLocation1.Size = new Size(158, 23);
             txtBinLocation1.TabIndex = 21;
             txtBinLocation1.TextChanged += txtBinLocation1_TextChanged;
             // 
@@ -167,7 +179,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.Location = new Point(46, 135);
+            label3.Location = new Point(46, 158);
             label3.Name = "label3";
             label3.Size = new Size(117, 21);
             label3.TabIndex = 20;
@@ -186,7 +198,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label2.Location = new Point(46, 73);
+            label2.Location = new Point(46, 96);
             label2.Name = "label2";
             label2.Size = new Size(114, 21);
             label2.TabIndex = 19;
@@ -286,6 +298,57 @@
             label1.TabIndex = 0;
             label1.Text = "QR Code Generator";
             // 
+            // textBox2
+            // 
+            textBox2.Location = new Point(239, 248);
+            textBox2.Name = "textBox2";
+            textBox2.Size = new Size(158, 23);
+            textBox2.TabIndex = 32;
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label10.Location = new Point(236, 224);
+            label10.Name = "label10";
+            label10.Size = new Size(117, 21);
+            label10.TabIndex = 31;
+            label10.Text = "Bin Location 3:";
+            // 
+            // textBox3
+            // 
+            textBox3.Location = new Point(239, 182);
+            textBox3.Name = "textBox3";
+            textBox3.Size = new Size(158, 23);
+            textBox3.TabIndex = 30;
+            // 
+            // textBox4
+            // 
+            textBox4.Location = new Point(239, 120);
+            textBox4.Name = "textBox4";
+            textBox4.Size = new Size(158, 23);
+            textBox4.TabIndex = 29;
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label11.Location = new Point(236, 158);
+            label11.Name = "label11";
+            label11.Size = new Size(117, 21);
+            label11.TabIndex = 28;
+            label11.Text = "Bin Location 2:";
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label12.Location = new Point(236, 96);
+            label12.Name = "label12";
+            label12.Size = new Size(114, 21);
+            label12.TabIndex = 27;
+            label12.Text = "Bin Location 1:";
+            // 
             // Form_5
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -325,5 +388,11 @@
         public Label label3;
         public Label label2;
         public Label label1;
+        public TextBox textBox2;
+        public Label label10;
+        public TextBox textBox3;
+        public TextBox textBox4;
+        public Label label11;
+        public Label label12;
     }
 }
