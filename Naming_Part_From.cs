@@ -10,20 +10,21 @@ namespace OJT___QR_Code_Generator
 {
     public partial class Naming_Part_From : Form
     {
-        // Strip 1
+        // 1. Keep only this updated version of the list:
+        private List<((string name, string number) p1, (string name, string number)? p2)> _batchPages =
+            new List<((string, string), (string, string)?)>();
+
+        // 2. Keep your existing string variables:
         private string _activePartName = string.Empty;
         private string _activePartNumber = string.Empty;
-
-        // Strip 2
         private string _activePartName2 = string.Empty;
         private string _activePartNumber2 = string.Empty;
 
-        private List<(string partName, string partNumber)> _batchPages = new List<(string, string)>();
+        // 3. Keep the index and constants:
         private int _batchPageIndex = 0;
-
-        // Swapped default label dimensions: 5.375" width x 1.625" height
         private const double DefaultLabelWidthInches = 6.375;
         private const double DefaultLabelHeightInches = 2.625;
+
 
         public Naming_Part_From()
         {
@@ -61,57 +62,59 @@ namespace OJT___QR_Code_Generator
         {
             if (cmbBatch.SelectedItem == null)
             {
-                MessageBox.Show("Please select a Zone from the dropdown first.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a Zone from the dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             string selected = cmbBatch.SelectedItem.ToString();
-            int zoneNum;
-            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.myZones.ContainsKey(zoneNum))
+            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out int zoneNum) || !WarehouseData.myZones.ContainsKey(zoneNum))
             {
                 MessageBox.Show("Selected zone has no bin data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             string[] bins = WarehouseData.myZones[zoneNum];
-
             _batchPages.Clear();
-            foreach (string bin in bins)
+
+            // Group bin data into pairs of two
+            for (int i = 0; i < bins.Length; i += 2)
             {
-                var part = PartNumber_and_PartName_DATA.GetFirstPart(bin);
-                if (part.HasValue)
+                var part1 = PartNumber_and_PartName_DATA.GetFirstPart(bins[i]);
+                (string, string)? part2 = null;
+
+                if (i + 1 < bins.Length)
                 {
-                    _batchPages.Add((part.Value.PartName, part.Value.PartNumber));
+                    var p2 = PartNumber_and_PartName_DATA.GetFirstPart(bins[i + 1]);
+                    if (p2.HasValue) part2 = (p2.Value.PartName, p2.Value.PartNumber);
+                }
+
+                if (part1.HasValue)
+                {
+                    // Adding the tuple pair explicitly
+                    _batchPages.Add(((part1.Value.PartName, part1.Value.PartNumber), part2));
                 }
             }
 
             if (_batchPages.Count == 0)
             {
-                MessageBox.Show($"No Part Name/Number data found for any bin in Zone {zoneNum}.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("No data found to print.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             Size paperSize = GetTargetPaperSizeInHundredths();
-
             using (PrintDocument pd = new PrintDocument())
             {
-                pd.DefaultPageSettings.Landscape = paperSize.Width > paperSize.Height;
                 pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
-
                 pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
                 pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
 
                 using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
                 {
                     previewDlg.Document = pd;
-                    previewDlg.WindowState = FormWindowState.Maximized;
                     previewDlg.ShowDialog();
                 }
             }
-
-            pnlPreview.Invalidate();
         }
-
         private Size GetTargetPaperSizeInHundredths()
         {
             double widthInches = DefaultLabelWidthInches;
@@ -137,22 +140,16 @@ namespace OJT___QR_Code_Generator
                 return;
             }
 
-            string savedName = _activePartName;
-            string savedNumber = _activePartNumber;
-            string savedName2 = _activePartName2;
-            string savedNumber2 = _activePartNumber2;
+            // Assign the pair to the active variables for rendering
+            var pageData = _batchPages[_batchPageIndex];
+            _activePartName = pageData.p1.name;
+            _activePartNumber = pageData.p1.number;
 
-            _activePartName = _batchPages[_batchPageIndex].partName;
-            _activePartNumber = _batchPages[_batchPageIndex].partNumber;
-            _activePartName2 = string.Empty;
-            _activePartNumber2 = string.Empty;
+            // Use null-coalescing to handle the case where a page has only one part
+            _activePartName2 = pageData.p2?.name ?? string.Empty;
+            _activePartNumber2 = pageData.p2?.number ?? string.Empty;
 
             PrintLabelsHandler(sender, e);
-
-            _activePartName = savedName;
-            _activePartNumber = savedNumber;
-            _activePartName2 = savedName2;
-            _activePartNumber2 = savedNumber2;
 
             _batchPageIndex++;
             e.HasMorePages = _batchPageIndex < _batchPages.Count;
@@ -333,12 +330,12 @@ namespace OJT___QR_Code_Generator
                 safeX, strip2Top, safeWidth, stripHeight, isPrinting);
         }
 
-        private void RenderStrip(Graphics g, string partName, string partNumber,
-            int stripX, int stripY, int stripWidth, int stripHeight, bool isPrinting)
+        private void RenderStrip(Graphics g, string partName, string partNumber, int stripX, int stripY, int stripWidth, int stripHeight, bool isPrinting)
         {
             if (string.IsNullOrEmpty(partName) && string.IsNullOrEmpty(partNumber)) return;
 
-            int leftColWidth = (int)(stripWidth * 0.55);
+            // Layout: 75% text, 25% QR to close the gap
+            int leftColWidth = (int)(stripWidth * 0.75);
             int rightColX = stripX + leftColWidth;
             int rightColWidth = stripWidth - leftColWidth;
 
@@ -346,40 +343,19 @@ namespace OJT___QR_Code_Generator
             int numberAreaTop = stripY + headerHeight;
             int numberAreaHeight = stripHeight - headerHeight;
 
-            // 1. Solid black header bar block
-            using (SolidBrush headerBrush = new SolidBrush(Color.Black))
-            {
-                g.FillRectangle(headerBrush, stripX, stripY, leftColWidth, headerHeight);
-            }
-
-            // 2. Targeted border box around ONLY the lower part number text area
+            // Draw background and borders
+            g.FillRectangle(Brushes.Black, stripX, stripY, leftColWidth, headerHeight);
             using (Pen bodyPen = new Pen(Color.Black, isPrinting ? 2f : 1.5f))
             {
                 g.DrawRectangle(bodyPen, stripX, numberAreaTop, leftColWidth, numberAreaHeight);
             }
 
-            // 3. Render Header Text (Part Name)
-            int headerPadding = 6;
-            if (!string.IsNullOrEmpty(partName))
-            {
-                DrawTextAutofit(g, partName, "Arial", FontStyle.Bold, headerHeight * 0.7f,
-                    stripX + headerPadding, stripY + (headerPadding / 2),
-                    leftColWidth - (headerPadding * 2), headerHeight - headerPadding,
-                    Brushes.White);
-            }
+            // Draw the text
+            DrawTextAutofit(g, partName, "Arial", FontStyle.Bold, headerHeight * 0.7f, stripX + 6, stripY + 3, leftColWidth - 12, headerHeight - 6, Brushes.White);
+            DrawTextAutofit(g, partNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.7f, stripX + 6, numberAreaTop + 3, leftColWidth - 12, numberAreaHeight - 6, Brushes.Black);
 
-            // 4. Render Body Text (Part Number)
-            int textPadding = 6;
-            if (!string.IsNullOrEmpty(partNumber))
-            {
-                DrawTextAutofit(g, partNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.7f,
-                    stripX + textPadding, numberAreaTop + (textPadding / 2),
-                    leftColWidth - (textPadding * 2), numberAreaHeight - textPadding,
-                    Brushes.Black);
-            }
-
-            // 5. Render QR Code (Borderless and Maximized)
-            int qrSize = Math.Min(rightColWidth, stripHeight);
+            // Draw the QR Code
+            int qrSize = Math.Min(rightColWidth - 10, stripHeight - 10);
             string qrPayload = !string.IsNullOrEmpty(partNumber) ? partNumber : partName;
 
             if (!string.IsNullOrEmpty(qrPayload) && qrSize > 0)
@@ -388,28 +364,24 @@ namespace OJT___QR_Code_Generator
                 {
                     if (qrImg != null)
                     {
-                        int qrX = rightColX + (rightColWidth - qrSize) / 2;
-                        int qrY = stripY + (stripHeight - qrSize) / 2;
-
-                        InterpolationMode originalMode = g.InterpolationMode;
                         g.InterpolationMode = InterpolationMode.NearestNeighbor;
-
-                        g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
-
-                        g.InterpolationMode = originalMode;
+                        // Move QR code closer to text with + 5 padding
+                        g.DrawImage(qrImg, rightColX + 5, stripY + (stripHeight - qrSize) / 2, qrSize, qrSize);
                     }
                 }
             }
         }
 
-        private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight, Brush brush = null)
+        private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight, Brush brush)
         {
-            if (brush == null) brush = Brushes.Black;
+            // Fix: Set high-quality rendering to prevent "curvy" text
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
 
             float currentSize = maxFontSize;
             Font testFont = new Font(fontFamily, currentSize, style);
             SizeF size = g.MeasureString(text, testFont);
 
+            // Shrink text until it fits
             while ((size.Width > maxWidth || size.Height > maxHeight) && currentSize > 8f)
             {
                 currentSize -= 1f;
@@ -420,8 +392,10 @@ namespace OJT___QR_Code_Generator
 
             using (testFont)
             {
-                float posX = x + (maxWidth - size.Width) / 2;
-                float posY = y + (maxHeight - size.Height) / 2;
+                // Fix: Use Math.Round to snap to whole pixels, preventing blurry/wavy edges
+                float posX = (float)Math.Round(x + (maxWidth - size.Width) / 2);
+                float posY = (float)Math.Round(y + (maxHeight - size.Height) / 2);
+
                 g.DrawString(text, testFont, brush, posX, posY);
             }
         }
