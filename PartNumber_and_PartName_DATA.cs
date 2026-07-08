@@ -1013,7 +1013,13 @@ namespace OJT___QR_Code_Generator
             { "26B-5", new List<(string PartNumber, string PartName)> { ("ACXA60C84020", "LEADWIRE (COMMUNICATE)") } },
             { "26C-1", new List<(string PartNumber, string PartName)> { ("ACXA43C07320", "EXPANSION VALVE COIL") } },
             { "26C-2", new List<(string PartNumber, string PartName)> { ("ACXB05-01330", "EXP VALVE (SOLENOID VALVE)") } },
-            { "26C-3", new List<(string PartNumber, string PartName)> { ("ACXA43C07310", "EXPANSION VALVE COIL") } }
+            { "26C-3", new List<(string PartNumber, string PartName)> { ("ACXA43C07310", "EXPANSION VALVE COIL") } },
+            { "27A-4", new List<(string PartNumber, string PartName)> { ("B30N30-1200JL", "PU FOAM (FOAMATEX)") } },
+            { "27B-2", new List<(string PartNumber, string PartName)> { ("B15A30-415", "PU FOAM") } },
+            { "27B-3", new List<(string PartNumber, string PartName)> { ("B15A25-305", "PU FOAM_CABINET") } },
+            { "27C-3", new List<(string PartNumber, string PartName)> { ("B10N30-1550JLD", "PU FOAM") } },
+            { "27C-4", new List<(string PartNumber, string PartName)> { ("B30N30-1550JL", "PU FOAM (FOAMATEX)") } },
+            { "27C-6", new List<(string PartNumber, string PartName)> { ("B10N30-1350JLD", "PU FOAM (FOAMATEX)") } },
         };
 
         // Convenience lookup: returns the FIRST part found for a bin, or null if the bin has no data.
