@@ -1,6 +1,7 @@
 ﻿using QRCoder;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
@@ -10,21 +11,20 @@ namespace OJT___QR_Code_Generator
 {
     public partial class Naming_Part_From : Form
     {
-        // 1. Keep only this updated version of the list:
-        private List<((string name, string number) p1, (string name, string number)? p2)> _batchPages =
-            new List<((string, string), (string, string)?)>();
-
-        // 2. Keep your existing string variables:
+        // NOTE: renamed from _activeBin1 / _activeBin2 to reflect Part Name / Part Number usage
         private string _activePartName = string.Empty;
         private string _activePartNumber = string.Empty;
-        private string _activePartName2 = string.Empty;
-        private string _activePartNumber2 = string.Empty;
 
-        // 3. Keep the index and constants:
+        // NOTE: batch pages now hold (partName, partNumber) pairs instead of bin pairs.
+        // Uses WarehouseData.myZones (object-keyed: int zones 1-27 plus lettered/named areas) as the bin source.
+        private List<(string partName, string partNumber)> _batchPages = new List<(string, string)>();
         private int _batchPageIndex = 0;
-        private const double DefaultLabelWidthInches = 6.375;
-        private const double DefaultLabelHeightInches = 2.625;
 
+        // Fixed default label dimensions: 4.375" width x 1.625" height (landscape strip,
+        // split into TWO vertical columns like the physical bin-location sticker —
+        // left = Part Name + its own QR, right = Part Number + its own QR).
+        private const double DefaultLabelWidthInches = 4.375;
+        private const double DefaultLabelHeightInches = 1.625;
 
         public Naming_Part_From()
         {
@@ -39,6 +39,9 @@ namespace OJT___QR_Code_Generator
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
 
+            // NOTE: cmbBatch's SelectedIndexChanged is already wired to cmbBatch_SelectedIndexChanged_1
+            // by the Designer (from double-clicking the control) — no manual subscription needed here.
+
             this.PrintAllButt.Click += new System.EventHandler(this.btnPrintAll_Click);
         }
 
@@ -47,6 +50,7 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = DefaultLabelWidthInches.ToString();
             txtCustomHeight.Text = DefaultLabelHeightInches.ToString();
 
+            // Populate the dropdown with "Zone 1" through "Zone 26"
             cmbBatch.Items.Clear();
             for (int i = 1; i <= 26; i++)
             {
@@ -54,94 +58,73 @@ namespace OJT___QR_Code_Generator
             }
         }
 
+        // Selecting a zone just remembers which one is picked — the actual printing
+        // happens in bulk when "Print All" is clicked (see btnPrintAll_Click below).
         private void cmbBatch_SelectedIndexChanged_1(object sender, EventArgs e)
         {
+            // Intentionally left without per-item lookup now that cmbBatch shows Zones, not individual bins.
         }
 
+        // Prints one label per bin in the selected zone, each showing that bin's Part Name/Number + QR.
         private void btnPrintAll_Click(object sender, EventArgs e)
-{
-    if (cmbBatch.SelectedItem == null)
-    {
-        MessageBox.Show("Please select a Zone from the dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        return;
-    }
-
-    string selected = cmbBatch.SelectedItem.ToString();
-    if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out int zoneNum) || !WarehouseData.myZones.ContainsKey(zoneNum))
-    {
-        MessageBox.Show("Selected zone has no bin data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        return;
-    }
-
-    string[] bins = WarehouseData.myZones[zoneNum];
-    
-    // Ensure _batchPages is typed to your new struct
-    List<// csharp
-internal class PartNumber_and_PartName_DATA
-{
-    public static readonly Dictionary<string, List<(string PartNumber, string PartName)>> BinToParts
-        = new Dictionary<string, List<(string PartNumber, string PartName)>>();
-
-    static PartNumber_and_PartName_DATA()
-    {
-        void AddOrAppend(string key, (string PartNumber, string PartName) part)
         {
-            if (!BinToParts.TryGetValue(key, out var list))
+            if (cmbBatch.SelectedItem == null)
             {
-                list = new List<(string, string)>();
-                BinToParts[key] = list;
+                MessageBox.Show("Please select a Zone from the dropdown first.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
-            list.Add(part);
-        }
 
-        AddOrAppend("1-1A-1", ("ACXD90-26980", "PARTICULAR PLATE"));
-        AddOrAppend("1-1A-2", ("ACXD90-23310", "PARTICULAR METAL PIECE"));
-        // ...
-        // AddOrAppend("27A-4", ("PN1", "Name1"));
-        // AddOrAppend("27A-4", ("PN2", "Name2")); // will be appended instead of throwing
-    }
-}PrintPageData> _batchPages = new List<PrintPageData>();
-
-    // Group bin data into pairs of two
-    for (int i = 0; i < bins.Length; i += 2)
-    {
-        var p1 = PartNumber_and_PartName_DATA.GetFirstPart(bins[i]);
-        var p2 = (i + 1 < bins.Length) ? PartNumber_and_PartName_DATA.GetFirstPart(bins[i + 1]) : null;
-
-        // Create a pair only if at least one part exists
-        if (p1.HasValue || p2.HasValue)
-        {
-            _batchPages.Add(new PrintPageData
+            string selected = cmbBatch.SelectedItem.ToString();
+            int zoneNum;
+            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.myZones.ContainsKey(zoneNum))
             {
-                Item1 = p1.HasValue ? new PrintItem { PartNumber = p1.Value.PartNumber, PartName = p1.Value.PartName } : (PrintItem?)null,
-                Item2 = p2.HasValue ? new PrintItem { PartNumber = p2.Value.PartNumber, PartName = p2.Value.PartName } : (PrintItem?)null
-            });
+                MessageBox.Show("Selected zone has no bin data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string[] bins = WarehouseData.myZones[zoneNum];
+
+            _batchPages.Clear();
+            foreach (string bin in bins)
+            {
+                var part = PartNumber_and_PartName_DATA.GetFirstPart(bin);
+                if (part.HasValue)
+                {
+                    _batchPages.Add((part.Value.PartName, part.Value.PartNumber));
+                }
+                // Bins with no matching Part Name/Number (like "5-4C-1") are silently skipped.
+            }
+
+            if (_batchPages.Count == 0)
+            {
+                MessageBox.Show($"No Part Name/Number data found for any bin in Zone {zoneNum}.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            Size paperSize = GetTargetPaperSizeInHundredths();
+
+            using (PrintDocument pd = new PrintDocument())
+            {
+                pd.DefaultPageSettings.Landscape = (paperSize.Width > paperSize.Height) || (paperSize.Height > paperSize.Width);
+                pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
+
+                // Reset the page cursor every time this document starts a print/preview pass —
+                // PrintPreviewDialog can trigger BeginPrint more than once (resize, zoom, view switch)
+                pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
+
+                pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
+
+                using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
+                {
+                    previewDlg.Document = pd;
+                    previewDlg.WindowState = FormWindowState.Maximized;
+                    previewDlg.ShowDialog();
+                }
+            }
+
+            pnlPreview.Invalidate();
         }
-    }
 
-    if (_batchPages.Count == 0)
-    {
-        MessageBox.Show("No data found to print.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-        return;
-    }
-
-    // Proceed to print logic
-    Size paperSize = GetTargetPaperSizeInHundredths();
-    using (PrintDocument pd = new PrintDocument())
-    {
-        pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
-        
-        // Ensure your PrintBatchPageHandler is modified to use _batchPages[index].Item1 and .Item2
-        pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
-        pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
-
-        using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
-        {
-            previewDlg.Document = pd;
-            previewDlg.ShowDialog();
-        }
-    }
-}
         private Size GetTargetPaperSizeInHundredths()
         {
             double widthInches = DefaultLabelWidthInches;
@@ -167,16 +150,17 @@ internal class PartNumber_and_PartName_DATA
                 return;
             }
 
-            // Assign the pair to the active variables for rendering
-            var pageData = _batchPages[_batchPageIndex];
-            _activePartName = pageData.p1.name;
-            _activePartNumber = pageData.p1.number;
+            // Temporarily swap in this page's part values so the existing render path handles it
+            string savedName = _activePartName;
+            string savedNumber = _activePartNumber;
 
-            // Use null-coalescing to handle the case where a page has only one part
-            _activePartName2 = pageData.p2?.name ?? string.Empty;
-            _activePartNumber2 = pageData.p2?.number ?? string.Empty;
+            _activePartName = _batchPages[_batchPageIndex].partName;
+            _activePartNumber = _batchPages[_batchPageIndex].partNumber;
 
-            PrintLabelsHandler(sender, e);
+            PrintLabelsHandler(sender, e); // exact same rotation + RenderLabelLayout call as manual mode
+
+            _activePartName = savedName;
+            _activePartNumber = savedNumber;
 
             _batchPageIndex++;
             e.HasMorePages = _batchPageIndex < _batchPages.Count;
@@ -186,13 +170,10 @@ internal class PartNumber_and_PartName_DATA
         {
             _activePartName = txtBinLocation1.Text.Trim();
             _activePartNumber = txtBinLocation2.Text.Trim();
-            _activePartName2 = PartNamebox.Text.Trim();
-            _activePartNumber2 = PartNumberbox.Text.Trim();
 
-            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber) &&
-                string.IsNullOrEmpty(_activePartName2) && string.IsNullOrEmpty(_activePartNumber2))
+            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber))
             {
-                MessageBox.Show("Please enter at least one Part Name/Part Number pair to generate.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please enter Part Name and/or Part Number to generate.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -203,14 +184,8 @@ internal class PartNumber_and_PartName_DATA
         {
             txtBinLocation1.Clear();
             txtBinLocation2.Clear();
-            PartNamebox.Clear();
-            PartNumberbox.Clear();
-
             _activePartName = string.Empty;
             _activePartNumber = string.Empty;
-            _activePartName2 = string.Empty;
-            _activePartNumber2 = string.Empty;
-
             pnlPreview.Invalidate();
         }
 
@@ -236,13 +211,15 @@ internal class PartNumber_and_PartName_DATA
                 totalHeight = (int)(totalWidth / targetRatio);
             }
 
+            // Keep the label's own orientation (portrait 1.625 x 5.375 stays portrait) —
+            // no forced swap, since RenderLabelLayout now expects a tall/narrow canvas.
+
             RenderLabelLayout(g, totalWidth, totalHeight, isPrinting: false);
         }
 
         private void btnPrint_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber) &&
-                string.IsNullOrEmpty(_activePartName2) && string.IsNullOrEmpty(_activePartNumber2))
+            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber))
             {
                 MessageBox.Show("Please enter a Part Name/Number and click Generate before printing.", "Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -267,8 +244,7 @@ internal class PartNumber_and_PartName_DATA
 
         private void btnConvertToPdf_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber) &&
-                string.IsNullOrEmpty(_activePartName2) && string.IsNullOrEmpty(_activePartNumber2))
+            if (string.IsNullOrEmpty(_activePartName) && string.IsNullOrEmpty(_activePartNumber))
             {
                 MessageBox.Show("Please generate a Part Name/Number layout before converting to PDF.", "Export Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
@@ -280,8 +256,7 @@ internal class PartNumber_and_PartName_DATA
             {
                 saveDlg.Filter = "PDF Files (*.pdf)|*.pdf";
                 saveDlg.Title = "Save Part Label as PDF";
-                string fileNameSeed = !string.IsNullOrEmpty(_activePartNumber) ? _activePartNumber : _activePartNumber2;
-                saveDlg.FileName = $"Part_Label_{fileNameSeed.Replace("-", "_")}";
+                saveDlg.FileName = $"Part_Label_{_activePartNumber.Replace("-", "_")}";
 
                 if (saveDlg.ShowDialog() == DialogResult.OK)
                 {
@@ -315,128 +290,127 @@ internal class PartNumber_and_PartName_DATA
             Graphics g = e.Graphics;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            // Fetch your custom dimensions defined in your text inputs
-            Size paperSize = GetTargetPaperSizeInHundredths();
+            int printableWidth = e.PageBounds.Width;
+            int printableHeight = e.PageBounds.Height;
 
-            // Check if the hardware or driver settings are forcing a portrait bounding layout
-            if (e.PageBounds.Width < e.PageBounds.Height)
-            {
-                // 1. Pivot the graphics canvas coordinate space to align with landscape drawing
-                g.TranslateTransform(e.PageBounds.Width, 0);
-                g.RotateTransform(90f);
+            // NOTE: no rotate-if-width<height block here — the label IS portrait
+            // (1.625 wide x 5.375 tall) and RenderLabelLayout already expects that shape.
 
-                // 2. Render out passing the inverted height and width bounds
-                RenderLabelLayout(g, e.PageBounds.Height, e.PageBounds.Width, isPrinting: true);
-            }
-            else
-            {
-                // Otherwise, render cleanly inside the existing horizontal bounds
-                RenderLabelLayout(g, e.PageBounds.Width, e.PageBounds.Height, isPrinting: true);
-            }
+            RenderLabelLayout(g, printableWidth, printableHeight, isPrinting: true);
         }
 
+        // 🛠️ TWO-STRIP LABEL: the exact original single-strip design (black header bar with
+        // Part Name, Part Number below it, maximized QR to the right) tiled TWICE side-by-side,
+        // matching the two-cell look of the physical bin-location sticker. No rotated text.
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
+            // Safeguard border cutoff zone on physical thermal heads (Honeywell standard unprintable margins)
             int margin = isPrinting ? 20 : 8;
+
             int safeX = margin;
             int safeY = margin;
             int safeWidth = totalWidth - (margin * 2);
             int safeHeight = totalHeight - (margin * 2);
 
-            // 1. Draw the outer frame border
-            using (Pen borderPen = new Pen(Color.Black, isPrinting ? 4f : 2f))
+            int stripDividerX = safeX + (safeWidth / 2);
+            int stripWidth = stripDividerX - safeX;
+
+            int penThickness = isPrinting ? 4 : 2;
+            using (Pen blackPen = new Pen(Color.Black, penThickness))
             {
-                g.DrawRectangle(borderPen, safeX, safeY, safeWidth, safeHeight);
+                // Outer border around the whole label
+                g.DrawRectangle(blackPen, safeX, safeY, safeWidth, safeHeight);
+
+                // Vertical divider splitting the two strips
+                g.DrawLine(blackPen, stripDividerX, safeY, stripDividerX, safeY + safeHeight);
             }
 
-            // Adjust inner area
-            int innerPadding = 5;
-            int drawX = safeX + innerPadding;
-            int drawY = safeY + innerPadding;
-            int drawWidth = safeWidth - (innerPadding * 2);
-            int drawHeight = safeHeight - (innerPadding * 2);
-
-            int gap = isPrinting ? 10 : 5;
-            int stripHeight = (drawHeight - gap) / 2;
-
-            // 2. Render Strip 1 (Top)
-            RenderStrip(g, _activePartName, _activePartNumber, drawX, drawY, drawWidth, stripHeight, isPrinting);
-
-            // 3. Render Strip 2 (Bottom)
-            int strip2Top = drawY + stripHeight + gap;
-            RenderStrip(g, _activePartName2, _activePartNumber2, drawX, strip2Top, drawWidth, stripHeight, isPrinting);
-
-            // 4. ADD DIVIDER: Draw a line between the two strips
-            // This draws a horizontal line across the center gap
-            int lineY = drawY + stripHeight + (gap / 2);
-            using (Pen divPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
-            {
-                divPen.DashStyle = DashStyle.Dash; // Optional: Makes it look like a cut line
-                g.DrawLine(divPen, drawX, lineY, drawX + drawWidth, lineY);
-            }
+            // Left strip and right strip both render the SAME Name/Number/QR design
+            RenderSingleStrip(g, safeX, safeY, stripWidth, safeHeight, isPrinting);
+            RenderSingleStrip(g, stripDividerX, safeY, stripWidth, safeHeight, isPrinting);
         }
 
-        private void RenderStrip(Graphics g, string partName, string partNumber, int stripX, int stripY, int stripWidth, int stripHeight, bool isPrinting)
+        // The original single-strip design: black header bar (Part Name) on top,
+        // large Part Number below it, and ONE maximized QR to the right.
+        private void RenderSingleStrip(Graphics g, int stripX, int stripY, int stripWidth, int stripHeight, bool isPrinting)
         {
-            if (string.IsNullOrEmpty(partName) && string.IsNullOrEmpty(partNumber)) return;
+            int qrDividerX = stripX + (int)(stripWidth * 0.65);
+            int leftColumnWidth = qrDividerX - stripX;
 
-            // Define columns: 75% for text, 25% for QR
-            int leftColWidth = (int)(stripWidth * 0.75);
-            int rightColX = stripX + leftColWidth;
-            int rightColWidth = stripWidth - leftColWidth;
+            int headerHeight = (int)(stripHeight * 0.32);
+            int headerBottom = stripY + headerHeight;
 
-            // Adjust Ratio: 40% height for Name (Header), 60% for Number
-            int headerHeight = (int)(stripHeight * 0.40);
-            int numberAreaTop = stripY + headerHeight;
-            int numberAreaHeight = stripHeight - headerHeight;
-
-            // 1. Draw Text Backgrounds
-            // Name (Header) Background
-            g.FillRectangle(Brushes.Black, stripX, stripY, leftColWidth, headerHeight);
-
-            // Number (Body) Background / Border
-            using (Pen bodyPen = new Pen(Color.Black, isPrinting ? 2f : 1.5f))
+            int penThickness = isPrinting ? 4 : 2;
+            using (Pen blackPen = new Pen(Color.Black, penThickness))
             {
-                g.DrawRectangle(bodyPen, stripX, numberAreaTop, leftColWidth, numberAreaHeight);
+                g.DrawLine(blackPen, stripX, stripY, stripX, stripY + stripHeight);                 // left edge
+                g.DrawLine(blackPen, stripX, stripY, qrDividerX, stripY);                            // top edge (text column only)
+                g.DrawLine(blackPen, stripX, stripY + stripHeight, qrDividerX, stripY + stripHeight); // bottom edge (text column only)
+                g.DrawLine(blackPen, qrDividerX, stripY, qrDividerX, stripY + stripHeight);           // divider between text and QR
             }
 
-            // 2. Draw Text (Autofit)
-            // Part Name (White text on black background)
-            DrawTextAutofit(g, partName, "Arial", FontStyle.Bold, headerHeight * 0.7f,
-                            stripX + 6, stripY + 3, leftColWidth - 12, headerHeight - 6, Brushes.White);
-
-            // Part Number (Larger: 80% of area, black text)
-            DrawTextAutofit(g, partNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.8f,
-                            stripX + 6, numberAreaTop + 3, leftColWidth - 12, numberAreaHeight - 6, Brushes.Black);
-
-            // 3. Draw the QR Code
-            int qrSize = Math.Min(rightColWidth - 10, stripHeight - 10);
-            string qrPayload = !string.IsNullOrEmpty(partNumber) ? partNumber : partName;
-
-            if (!string.IsNullOrEmpty(qrPayload) && qrSize > 0)
+            // Black header bar with the Part Name in white bold text
+            using (SolidBrush headerBrush = new SolidBrush(Color.Black))
             {
-                using (Bitmap qrImg = CreateQRCodeImage(qrPayload))
+                g.FillRectangle(headerBrush, stripX, stripY, leftColumnWidth, headerHeight);
+            }
+
+            int headerPadding = 6;
+            if (!string.IsNullOrEmpty(_activePartName))
+            {
+                DrawTextAutofit(g, _activePartName, "Arial", FontStyle.Bold, headerHeight * 0.6f,
+                    stripX + headerPadding, stripY + (headerPadding / 2),
+                    leftColumnWidth - (headerPadding * 2), headerHeight - headerPadding,
+                    Brushes.White);
+            }
+
+            // Large bold Part Number filling the remaining left column space below the header
+            int numberAreaTop = headerBottom;
+            int numberAreaHeight = (stripY + stripHeight) - numberAreaTop;
+            int textPadding = 8;
+
+            if (!string.IsNullOrEmpty(_activePartNumber))
+            {
+                DrawTextAutofit(g, _activePartNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.75f,
+                    stripX + (textPadding / 2), numberAreaTop + (textPadding / 2),
+                    leftColumnWidth - textPadding, numberAreaHeight - textPadding,
+                    Brushes.Black);
+            }
+
+            // Maximized QR filling the right compartment of this strip
+            int rightCompartmentWidth = (stripX + stripWidth) - qrDividerX;
+            DrawMaximizedQr(g, _activePartNumber, qrDividerX, stripY, rightCompartmentWidth, stripHeight, isPrinting);
+        }
+
+        // Draws a QR code maximized to fill the given area, centered within it.
+        private void DrawMaximizedQr(Graphics g, string payload, int areaX, int areaY, int areaWidth, int areaHeight, bool isPrinting)
+        {
+            if (string.IsNullOrEmpty(payload)) return;
+
+            int qrPadding = isPrinting ? 8 : 4;
+            int qrSize = Math.Min(areaWidth, areaHeight) - (qrPadding * 2);
+            if (qrSize <= 0) return;
+
+            using (Bitmap qrImg = CreateQRCodeImage(payload))
+            {
+                if (qrImg != null)
                 {
-                    if (qrImg != null)
-                    {
-                        g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                        // Center QR vertically in the strip
-                        g.DrawImage(qrImg, rightColX + (rightColWidth - qrSize) / 2, stripY + (stripHeight - qrSize) / 2, qrSize, qrSize);
-                    }
+                    int qrX = areaX + (areaWidth - qrSize) / 2;
+                    int qrY = areaY + (areaHeight - qrSize) / 2;
+                    g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
                 }
             }
         }
 
-        private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight, Brush brush)
+        // Adaptive font crunching ruleset to ensure maximum enlargement without bounds breaches
+        private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight, Brush brush = null)
         {
-            // Fix: Set high-quality rendering to prevent "curvy" text
-            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+            if (brush == null) brush = Brushes.Black;
 
             float currentSize = maxFontSize;
             Font testFont = new Font(fontFamily, currentSize, style);
             SizeF size = g.MeasureString(text, testFont);
 
-            // Shrink text until it fits
             while ((size.Width > maxWidth || size.Height > maxHeight) && currentSize > 8f)
             {
                 currentSize -= 1f;
@@ -447,10 +421,8 @@ internal class PartNumber_and_PartName_DATA
 
             using (testFont)
             {
-                // Fix: Use Math.Round to snap to whole pixels, preventing blurry/wavy edges
-                float posX = (float)Math.Round(x + (maxWidth - size.Width) / 2);
-                float posY = (float)Math.Round(y + (maxHeight - size.Height) / 2);
-
+                float posX = x + (maxWidth - size.Width) / 2;
+                float posY = y + (maxHeight - size.Height) / 2;
                 g.DrawString(text, testFont, brush, posX, posY);
             }
         }
@@ -490,25 +462,15 @@ internal class PartNumber_and_PartName_DATA
             }
         }
 
+
+
         private void ReturnButt_Click(object sender, EventArgs e)
         {
             Form1 form1 = new Form1();
             form1.ShowDialog();
         }
 
-        private void PartNamebox_TextChanged(object sender, EventArgs e)
-        {
-            _activePartName2 = PartNamebox.Text.Trim();
-            pnlPreview.Invalidate();
-        }
-
-        private void PartNumberbox_TextChanged(object sender, EventArgs e)
-        {
-            _activePartNumber2 = PartNumberbox.Text.Trim();
-            pnlPreview.Invalidate();
-        }
-
-        private void PrintAllButt_Click(object sender, EventArgs e)
+        private void btnGenerate_Click_1(object sender, EventArgs e)
         {
 
         }
