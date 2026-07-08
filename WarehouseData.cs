@@ -523,11 +523,3 @@ namespace OJT___QR_Code_Generator
         };
     }
 };
-
-
-
-
-
-
-
-
