@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
+using System.Linq;
 using System.Windows.Forms;
 using QRCoder;
 
@@ -9,6 +11,11 @@ namespace OJT___QR_Code_Generator
     public partial class Floor_Bin : Form
     {
         private string _activeNumber = string.Empty;
+
+        // Holds the list of codes queued up for a "Print All" batch job,
+        // plus the index of which one is currently being printed
+        private List<string> _batchQueue = new List<string>();
+        private int _batchIndex = 0;
 
         public Floor_Bin()
         {
@@ -201,7 +208,43 @@ namespace OJT___QR_Code_Generator
 
         private void btnPrintAll_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Batch printing for Floor Bin isn't available yet - the data source hasn't been set up. Use manual mode (Generate + Print) for now.", "Coming Soon", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (cmbBatch.SelectedItem == null)
+            {
+                MessageBox.Show("Please select a WHA zone from the Batch dropdown before printing all.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            string selectedZonePrefix = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01"
+
+            // Gather every bin code belonging to the selected zone
+            _batchQueue = WHA_Data.BinToPartMapping
+                .Where(kvp => kvp.Key.StartsWith(selectedZonePrefix, StringComparison.OrdinalIgnoreCase))
+                .Select(kvp => kvp.Value)
+                .ToList();
+
+            if (_batchQueue.Count == 0)
+            {
+                MessageBox.Show($"No bin codes found for {selectedZonePrefix}.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            _batchIndex = 0;
+
+            Size paperSize = GetTargetPaperSizeInHundredths();
+
+            using (PrintDocument pd = new PrintDocument())
+            {
+                pd.DefaultPageSettings.Landscape = true;
+                pd.DefaultPageSettings.PaperSize = new PaperSize("FloorBinSticker", paperSize.Width, paperSize.Height);
+                pd.PrintPage += new PrintPageEventHandler(PrintAllFloorBinHandler);
+
+                using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
+                {
+                    previewDlg.Document = pd;
+                    previewDlg.WindowState = FormWindowState.Maximized;
+                    previewDlg.ShowDialog();
+                }
+            }
         }
 
         private void PrintFloorBinHandler(object sender, PrintPageEventArgs e)
@@ -224,11 +267,46 @@ namespace OJT___QR_Code_Generator
 
             RenderFloorBinLabel(g, printableWidth, printableHeight, isPrinting: true);
         }
-        // Single QR with border, no divider line, number below
+
+        // Multi-page handler for "Print All" - prints one label per page,
+        // advancing through _batchQueue and setting HasMorePages until done
+        private void PrintAllFloorBinHandler(object sender, PrintPageEventArgs e)
+        {
+            Graphics g = e.Graphics;
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+            int printableWidth = e.PageBounds.Width;
+            int printableHeight = e.PageBounds.Height;
+
+            if (printableWidth < printableHeight)
+            {
+                g.TranslateTransform(printableWidth, 0);
+                g.RotateTransform(90);
+
+                int temp = printableWidth;
+                printableWidth = printableHeight;
+                printableHeight = temp;
+            }
+
+            // Temporarily swap the active number to whichever bin code is next in the queue,
+            // reusing the exact same render method as single-label printing
+            string previousActiveNumber = _activeNumber;
+            _activeNumber = _batchQueue[_batchIndex];
+
+            RenderFloorBinLabel(g, printableWidth, printableHeight, isPrinting: true);
+
+            _activeNumber = previousActiveNumber;
+
+            _batchIndex++;
+            e.HasMorePages = _batchIndex < _batchQueue.Count;
+        }
 
         private void RenderFloorBinLabel(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
-            int margin = isPrinting ? 3 : 1;
+            // Bigger margin = more white space outside the border, protects against
+            // print/cut misalignment cutting into the border or content
+            int margin = isPrinting ? 14 : 7;
+
             int safeX = margin;
             int safeY = margin;
             int safeWidth = totalWidth - (margin * 2);
@@ -244,17 +322,15 @@ namespace OJT___QR_Code_Generator
             if (string.IsNullOrEmpty(_activeNumber))
                 return;
 
-            int gap = 2;
-            float qrHeightPercentage = 0.95f;
-            float textHeightPercentage = 0.30f;
+            int gap = (int)(safeHeight * 0.04f);
 
-            int textHeight = (int)(safeHeight * 0.24f);
+            int textHeight = (int)(safeHeight * 0.19f);
             float maxFontCeiling = textHeight;
 
-            // QR sized down slightly - was the full remaining space, now 90% of it
             int qrSize = (int)((safeHeight - gap - textHeight) * 0.90f);
             qrSize = Math.Min(qrSize, safeWidth);
-            int moveTextUpPixels = 39;
+
+            int moveTextUpPixels = 10;
 
             int contentHeight = qrSize + gap + textHeight;
             int blockStartY = safeY + (safeHeight - contentHeight) / 2;
@@ -282,13 +358,7 @@ namespace OJT___QR_Code_Generator
             int textY = qrY + qrSize + gap;
             textY -= moveTextUpPixels;
 
-            using (Pen dividerPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
-            {
-                g.DrawLine(dividerPen, safeX, textY, safeX + safeWidth, textY);
-            }
-
             DrawTextAutofit(g, _activeNumber, "Arial", FontStyle.Bold, maxFontCeiling, safeX, textY, safeWidth, textHeight);
-            DrawTextAutofit(g, _activeNumber, "Arial", FontStyle.Bold, textHeight, safeX, textY, safeWidth, textHeight);
         }
 
         private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight)
