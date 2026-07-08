@@ -27,22 +27,22 @@ namespace OJT___QR_Code_Generator
 
 
         public Naming_Part_From()
-{
-    InitializeComponent();
+        {
+            InitializeComponent();
 
-    // Existing event handlers
-    this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
-    this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
-    this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
-    this.btnConvertToPdf.Click += new System.EventHandler(this.btnConvertToPdf_Click);
-    this.pnlPreview.Paint += new PaintEventHandler(this.pnlPreview_Paint);
+            // Existing event handlers
+            this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
+            this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
+            this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
+            this.btnConvertToPdf.Click += new System.EventHandler(this.btnConvertToPdf_Click);
+            this.pnlPreview.Paint += new PaintEventHandler(this.pnlPreview_Paint);
 
-    this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
-    this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
+            this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
+            this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
 
-    // ADD THIS LINE TO CONNECT YOUR PRINT ALL BUTTON
-    this.PrintAllButt.Click += new System.EventHandler(this.PrintAllButt_Click); 
-}
+            // ADD THIS LINE TO CONNECT YOUR PRINT ALL BUTTON
+            this.PrintAllButt.Click += new System.EventHandler(this.PrintAllButt_Click);
+        }
 
         private void Naming_Part_From_Load(object sender, EventArgs e)
         {
@@ -50,9 +50,34 @@ namespace OJT___QR_Code_Generator
             txtCustomHeight.Text = DefaultLabelHeightInches.ToString();
 
             cmbBatch.Items.Clear();
-            for (int i = 1; i <= 26; i++)
+
+            // Use a HashSet to ensure we only get unique batch names
+            HashSet<string> uniqueBatches = new HashSet<string>();
+
+            foreach (string binKey in PartNumber_and_PartName_DATA.BinToParts.Keys)
             {
-                cmbBatch.Items.Add("Zone " + i);
+                // Extract the batch identifier. 
+                // If the key has a dash (e.g., "1-1A-1"), take the part before the dash ("1").
+                // If it doesn't (e.g., "COPPERAREA2"), take the whole string.
+                string batch = binKey.Contains("-") ? binKey.Split('-')[0] : binKey;
+
+                uniqueBatches.Add(batch);
+            }
+
+            // Sort them alphabetically/numerically for a cleaner UI
+            List<string> sortedBatches = new List<string>(uniqueBatches);
+            sortedBatches.Sort((x, y) => {
+                // Attempt to sort numbers numerically instead of textually (e.g., 1, 2, 10 instead of 1, 10, 2)
+                int xVal, yVal;
+                bool xIsNum = int.TryParse(x, out xVal);
+                bool yIsNum = int.TryParse(y, out yVal);
+                if (xIsNum && yIsNum) return xVal.CompareTo(yVal);
+                return string.Compare(x, y);
+            });
+
+            foreach (string batch in sortedBatches)
+            {
+                cmbBatch.Items.Add(batch);
             }
         }
 
