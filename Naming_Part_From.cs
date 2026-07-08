@@ -59,62 +59,89 @@ namespace OJT___QR_Code_Generator
         }
 
         private void btnPrintAll_Click(object sender, EventArgs e)
+{
+    if (cmbBatch.SelectedItem == null)
+    {
+        MessageBox.Show("Please select a Zone from the dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        return;
+    }
+
+    string selected = cmbBatch.SelectedItem.ToString();
+    if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out int zoneNum) || !WarehouseData.myZones.ContainsKey(zoneNum))
+    {
+        MessageBox.Show("Selected zone has no bin data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        return;
+    }
+
+    string[] bins = WarehouseData.myZones[zoneNum];
+    
+    // Ensure _batchPages is typed to your new struct
+    List<// csharp
+internal class PartNumber_and_PartName_DATA
+{
+    public static readonly Dictionary<string, List<(string PartNumber, string PartName)>> BinToParts
+        = new Dictionary<string, List<(string PartNumber, string PartName)>>();
+
+    static PartNumber_and_PartName_DATA()
+    {
+        void AddOrAppend(string key, (string PartNumber, string PartName) part)
         {
-            if (cmbBatch.SelectedItem == null)
+            if (!BinToParts.TryGetValue(key, out var list))
             {
-                MessageBox.Show("Please select a Zone from the dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                list = new List<(string, string)>();
+                BinToParts[key] = list;
             }
-
-            string selected = cmbBatch.SelectedItem.ToString();
-            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out int zoneNum) || !WarehouseData.myZones.ContainsKey(zoneNum))
-            {
-                MessageBox.Show("Selected zone has no bin data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string[] bins = WarehouseData.myZones[zoneNum];
-            _batchPages.Clear();
-
-            // Group bin data into pairs of two
-            for (int i = 0; i < bins.Length; i += 2)
-            {
-                var part1 = PartNumber_and_PartName_DATA.GetFirstPart(bins[i]);
-                (string, string)? part2 = null;
-
-                if (i + 1 < bins.Length)
-                {
-                    var p2 = PartNumber_and_PartName_DATA.GetFirstPart(bins[i + 1]);
-                    if (p2.HasValue) part2 = (p2.Value.PartName, p2.Value.PartNumber);
-                }
-
-                if (part1.HasValue)
-                {
-                    // Adding the tuple pair explicitly
-                    _batchPages.Add(((part1.Value.PartName, part1.Value.PartNumber), part2));
-                }
-            }
-
-            if (_batchPages.Count == 0)
-            {
-                MessageBox.Show("No data found to print.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            Size paperSize = GetTargetPaperSizeInHundredths();
-            using (PrintDocument pd = new PrintDocument())
-            {
-                pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
-                pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
-                pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
-
-                using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
-                {
-                    previewDlg.Document = pd;
-                    previewDlg.ShowDialog();
-                }
-            }
+            list.Add(part);
         }
+
+        AddOrAppend("1-1A-1", ("ACXD90-26980", "PARTICULAR PLATE"));
+        AddOrAppend("1-1A-2", ("ACXD90-23310", "PARTICULAR METAL PIECE"));
+        // ...
+        // AddOrAppend("27A-4", ("PN1", "Name1"));
+        // AddOrAppend("27A-4", ("PN2", "Name2")); // will be appended instead of throwing
+    }
+}PrintPageData> _batchPages = new List<PrintPageData>();
+
+    // Group bin data into pairs of two
+    for (int i = 0; i < bins.Length; i += 2)
+    {
+        var p1 = PartNumber_and_PartName_DATA.GetFirstPart(bins[i]);
+        var p2 = (i + 1 < bins.Length) ? PartNumber_and_PartName_DATA.GetFirstPart(bins[i + 1]) : null;
+
+        // Create a pair only if at least one part exists
+        if (p1.HasValue || p2.HasValue)
+        {
+            _batchPages.Add(new PrintPageData
+            {
+                Item1 = p1.HasValue ? new PrintItem { PartNumber = p1.Value.PartNumber, PartName = p1.Value.PartName } : (PrintItem?)null,
+                Item2 = p2.HasValue ? new PrintItem { PartNumber = p2.Value.PartNumber, PartName = p2.Value.PartName } : (PrintItem?)null
+            });
+        }
+    }
+
+    if (_batchPages.Count == 0)
+    {
+        MessageBox.Show("No data found to print.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        return;
+    }
+
+    // Proceed to print logic
+    Size paperSize = GetTargetPaperSizeInHundredths();
+    using (PrintDocument pd = new PrintDocument())
+    {
+        pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
+        
+        // Ensure your PrintBatchPageHandler is modified to use _batchPages[index].Item1 and .Item2
+        pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
+        pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
+
+        using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
+        {
+            previewDlg.Document = pd;
+            previewDlg.ShowDialog();
+        }
+    }
+}
         private Size GetTargetPaperSizeInHundredths()
         {
             double widthInches = DefaultLabelWidthInches;
