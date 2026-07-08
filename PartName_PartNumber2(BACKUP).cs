@@ -300,7 +300,7 @@ namespace OJT___QR_Code_Generator
 
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
-            int margin = 8;
+            int margin = 10;
             int drawingWidth = totalWidth - (margin * 2);
             int drawingHeight = totalHeight - (margin * 2);
 
@@ -314,8 +314,8 @@ namespace OJT___QR_Code_Generator
 
             // QR column widened from 0.25 -> 0.32 of drawingWidth so the QR has enough
             // room to actually fill its box instead of being capped small by width.
-            int qrSectionWidth = (int)(drawingWidth * 0.32);
-            int textSectionWidth = drawingWidth - qrSectionWidth;
+            int textSectionWidth = (int)(drawingWidth * 0.77f);
+            int qrSectionWidth = drawingWidth - textSectionWidth;
 
             using (Pen innerPen = new Pen(Color.Black, 2))
             using (Brush blackBrush = new SolidBrush(Color.Black))
