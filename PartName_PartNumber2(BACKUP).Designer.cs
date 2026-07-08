@@ -31,9 +31,9 @@
             label13 = new Label();
             label11 = new Label();
             Label12 = new Label();
-            numNameHeightPercent = new NumericUpDown();
+            numNameBarHeightPercent = new NumericUpDown();
             numQrSizePercent = new NumericUpDown();
-            numMargin = new NumericUpDown();
+            numMarginSize = new NumericUpDown();
             txtPartNumber2 = new TextBox();
             txtPartName2 = new TextBox();
             label8 = new Label();
@@ -58,9 +58,9 @@
             label2 = new Label();
             panel1 = new Panel();
             label1 = new Label();
-            ((System.ComponentModel.ISupportInitialize)numNameHeightPercent).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numNameBarHeightPercent).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numQrSizePercent).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)numMargin).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)numMarginSize).BeginInit();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -91,12 +91,12 @@
             Label12.TabIndex = 29;
             Label12.Text = "Margin size:";
             // 
-            // numNameHeightPercent
+            // numNameBarHeightPercent
             // 
-            numNameHeightPercent.Location = new Point(899, 308);
-            numNameHeightPercent.Name = "numNameHeightPercent";
-            numNameHeightPercent.Size = new Size(120, 23);
-            numNameHeightPercent.TabIndex = 28;
+            numNameBarHeightPercent.Location = new Point(899, 308);
+            numNameBarHeightPercent.Name = "numNameBarHeightPercent";
+            numNameBarHeightPercent.Size = new Size(120, 23);
+            numNameBarHeightPercent.TabIndex = 28;
             // 
             // numQrSizePercent
             // 
@@ -105,12 +105,12 @@
             numQrSizePercent.Size = new Size(120, 23);
             numQrSizePercent.TabIndex = 27;
             // 
-            // numMargin
+            // numMarginSize
             // 
-            numMargin.Location = new Point(899, 160);
-            numMargin.Name = "numMargin";
-            numMargin.Size = new Size(120, 23);
-            numMargin.TabIndex = 26;
+            numMarginSize.Location = new Point(899, 160);
+            numMarginSize.Name = "numMarginSize";
+            numMarginSize.Size = new Size(120, 23);
+            numMarginSize.TabIndex = 26;
             // 
             // txtPartNumber2
             // 
@@ -324,9 +324,9 @@
             panel1.Controls.Add(label13);
             panel1.Controls.Add(label11);
             panel1.Controls.Add(Label12);
-            panel1.Controls.Add(numNameHeightPercent);
+            panel1.Controls.Add(numNameBarHeightPercent);
             panel1.Controls.Add(numQrSizePercent);
-            panel1.Controls.Add(numMargin);
+            panel1.Controls.Add(numMarginSize);
             panel1.Controls.Add(txtPartNumber2);
             panel1.Controls.Add(txtPartName2);
             panel1.Controls.Add(label8);
@@ -374,9 +374,9 @@
             Controls.Add(panel1);
             Name = "PartName_PartNumber2_BACKUP_";
             Text = "PartName_PartNumber2_BACKUP_";
-            ((System.ComponentModel.ISupportInitialize)numNameHeightPercent).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numNameBarHeightPercent).EndInit();
             ((System.ComponentModel.ISupportInitialize)numQrSizePercent).EndInit();
-            ((System.ComponentModel.ISupportInitialize)numMargin).EndInit();
+            ((System.ComponentModel.ISupportInitialize)numMarginSize).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
             ResumeLayout(false);
@@ -387,9 +387,9 @@
         public Label label13;
         public Label label11;
         public Label Label12;
-        private NumericUpDown numNameHeightPercent;
+        private NumericUpDown numNameBarHeightPercent;
         private NumericUpDown numQrSizePercent;
-        private NumericUpDown numMargin;
+        private NumericUpDown numMarginSize;
         public TextBox txtPartNumber2;
         public TextBox txtPartName2;
         public Label label8;
