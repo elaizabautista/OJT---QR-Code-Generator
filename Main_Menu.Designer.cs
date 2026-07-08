@@ -40,6 +40,8 @@
             label5 = new Label();
             label6 = new Label();
             label7 = new Label();
+            PartName_PartNumber = new Button();
+            PartNamePartNumber2BACKUP = new Button();
             SuspendLayout();
             // 
             // label1
@@ -86,7 +88,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F);
-            label4.Location = new Point(28, 207);
+            label4.Location = new Point(28, 211);
             label4.Name = "label4";
             label4.Size = new Size(206, 21);
             label4.TabIndex = 9;
@@ -94,7 +96,7 @@
             // 
             // btnNamingPart
             // 
-            btnNamingPart.Location = new Point(240, 192);
+            btnNamingPart.Location = new Point(240, 196);
             btnNamingPart.Name = "btnNamingPart";
             btnNamingPart.Size = new Size(173, 36);
             btnNamingPart.TabIndex = 10;
@@ -104,7 +106,7 @@
             // 
             // btnFloorBin
             // 
-            btnFloorBin.Location = new Point(240, 230);
+            btnFloorBin.Location = new Point(240, 323);
             btnFloorBin.Name = "btnFloorBin";
             btnFloorBin.Size = new Size(173, 36);
             btnFloorBin.TabIndex = 11;
@@ -114,7 +116,7 @@
             // 
             // btnFinishedGoods
             // 
-            btnFinishedGoods.Location = new Point(240, 269);
+            btnFinishedGoods.Location = new Point(240, 365);
             btnFinishedGoods.Name = "btnFinishedGoods";
             btnFinishedGoods.Size = new Size(173, 36);
             btnFinishedGoods.TabIndex = 12;
@@ -124,7 +126,7 @@
             // 
             // btnForm5
             // 
-            btnForm5.Location = new Point(240, 308);
+            btnForm5.Location = new Point(240, 404);
             btnForm5.Name = "btnForm5";
             btnForm5.Size = new Size(173, 36);
             btnForm5.TabIndex = 13;
@@ -136,7 +138,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 12F);
-            label5.Location = new Point(28, 245);
+            label5.Location = new Point(28, 338);
             label5.Name = "label5";
             label5.Size = new Size(72, 21);
             label5.TabIndex = 14;
@@ -146,7 +148,7 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Segoe UI", 12F);
-            label6.Location = new Point(28, 284);
+            label6.Location = new Point(28, 380);
             label6.Name = "label6";
             label6.Size = new Size(117, 21);
             label6.TabIndex = 15;
@@ -156,18 +158,40 @@
             // 
             label7.AutoSize = true;
             label7.Font = new Font("Segoe UI", 12F);
-            label7.Location = new Point(28, 323);
+            label7.Location = new Point(28, 419);
             label7.Name = "label7";
             label7.Size = new Size(60, 21);
             label7.TabIndex = 16;
             label7.Text = "Form 5";
+            // 
+            // PartName_PartNumber
+            // 
+            PartName_PartNumber.Location = new Point(240, 238);
+            PartName_PartNumber.Name = "PartName_PartNumber";
+            PartName_PartNumber.Size = new Size(173, 36);
+            PartName_PartNumber.TabIndex = 17;
+            PartName_PartNumber.Text = "BACKUP";
+            PartName_PartNumber.UseVisualStyleBackColor = true;
+            PartName_PartNumber.Click += PartName_PartNumber_Click;
+            // 
+            // PartNamePartNumber2BACKUP
+            // 
+            PartNamePartNumber2BACKUP.Location = new Point(240, 280);
+            PartNamePartNumber2BACKUP.Name = "PartNamePartNumber2BACKUP";
+            PartNamePartNumber2BACKUP.Size = new Size(173, 36);
+            PartNamePartNumber2BACKUP.TabIndex = 18;
+            PartNamePartNumber2BACKUP.Text = "BACKUP";
+            PartNamePartNumber2BACKUP.UseVisualStyleBackColor = true;
+            PartNamePartNumber2BACKUP.Click += PartNamePartNumber2BACKUP_Click;
             // 
             // Main_Menu
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ActiveCaption;
-            ClientSize = new Size(425, 369);
+            ClientSize = new Size(425, 467);
+            Controls.Add(PartNamePartNumber2BACKUP);
+            Controls.Add(PartName_PartNumber);
             Controls.Add(label7);
             Controls.Add(label6);
             Controls.Add(label5);
@@ -201,5 +225,7 @@
         private Label label5;
         private Label label6;
         private Label label7;
+        private Button PartName_PartNumber;
+        private Button PartNamePartNumber2BACKUP;
     }
 }

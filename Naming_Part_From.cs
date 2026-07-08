@@ -311,50 +311,78 @@ namespace OJT___QR_Code_Generator
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
             int margin = isPrinting ? 20 : 8;
-
             int safeX = margin;
             int safeY = margin;
             int safeWidth = totalWidth - (margin * 2);
             int safeHeight = totalHeight - (margin * 2);
 
+            // 1. Draw the outer frame border
+            using (Pen borderPen = new Pen(Color.Black, isPrinting ? 4f : 2f))
+            {
+                g.DrawRectangle(borderPen, safeX, safeY, safeWidth, safeHeight);
+            }
+
+            // Adjust inner area
+            int innerPadding = 5;
+            int drawX = safeX + innerPadding;
+            int drawY = safeY + innerPadding;
+            int drawWidth = safeWidth - (innerPadding * 2);
+            int drawHeight = safeHeight - (innerPadding * 2);
+
             int gap = isPrinting ? 10 : 5;
-            int stripHeight = (safeHeight - gap) / 2;
+            int stripHeight = (drawHeight - gap) / 2;
 
-            // Strip 1: top half
-            RenderStrip(g, _activePartName, _activePartNumber,
-                safeX, safeY, safeWidth, stripHeight, isPrinting);
+            // 2. Render Strip 1 (Top)
+            RenderStrip(g, _activePartName, _activePartNumber, drawX, drawY, drawWidth, stripHeight, isPrinting);
 
-            // Strip 2: bottom half
-            int strip2Top = safeY + stripHeight + gap;
-            RenderStrip(g, _activePartName2, _activePartNumber2,
-                safeX, strip2Top, safeWidth, stripHeight, isPrinting);
+            // 3. Render Strip 2 (Bottom)
+            int strip2Top = drawY + stripHeight + gap;
+            RenderStrip(g, _activePartName2, _activePartNumber2, drawX, strip2Top, drawWidth, stripHeight, isPrinting);
+
+            // 4. ADD DIVIDER: Draw a line between the two strips
+            // This draws a horizontal line across the center gap
+            int lineY = drawY + stripHeight + (gap / 2);
+            using (Pen divPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
+            {
+                divPen.DashStyle = DashStyle.Dash; // Optional: Makes it look like a cut line
+                g.DrawLine(divPen, drawX, lineY, drawX + drawWidth, lineY);
+            }
         }
 
         private void RenderStrip(Graphics g, string partName, string partNumber, int stripX, int stripY, int stripWidth, int stripHeight, bool isPrinting)
         {
             if (string.IsNullOrEmpty(partName) && string.IsNullOrEmpty(partNumber)) return;
 
-            // Layout: 75% text, 25% QR to close the gap
+            // Define columns: 75% for text, 25% for QR
             int leftColWidth = (int)(stripWidth * 0.75);
             int rightColX = stripX + leftColWidth;
             int rightColWidth = stripWidth - leftColWidth;
 
-            int headerHeight = (int)(stripHeight * 0.55);
+            // Adjust Ratio: 40% height for Name (Header), 60% for Number
+            int headerHeight = (int)(stripHeight * 0.40);
             int numberAreaTop = stripY + headerHeight;
             int numberAreaHeight = stripHeight - headerHeight;
 
-            // Draw background and borders
+            // 1. Draw Text Backgrounds
+            // Name (Header) Background
             g.FillRectangle(Brushes.Black, stripX, stripY, leftColWidth, headerHeight);
+
+            // Number (Body) Background / Border
             using (Pen bodyPen = new Pen(Color.Black, isPrinting ? 2f : 1.5f))
             {
                 g.DrawRectangle(bodyPen, stripX, numberAreaTop, leftColWidth, numberAreaHeight);
             }
 
-            // Draw the text
-            DrawTextAutofit(g, partName, "Arial", FontStyle.Bold, headerHeight * 0.7f, stripX + 6, stripY + 3, leftColWidth - 12, headerHeight - 6, Brushes.White);
-            DrawTextAutofit(g, partNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.7f, stripX + 6, numberAreaTop + 3, leftColWidth - 12, numberAreaHeight - 6, Brushes.Black);
+            // 2. Draw Text (Autofit)
+            // Part Name (White text on black background)
+            DrawTextAutofit(g, partName, "Arial", FontStyle.Bold, headerHeight * 0.7f,
+                            stripX + 6, stripY + 3, leftColWidth - 12, headerHeight - 6, Brushes.White);
 
-            // Draw the QR Code
+            // Part Number (Larger: 80% of area, black text)
+            DrawTextAutofit(g, partNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.8f,
+                            stripX + 6, numberAreaTop + 3, leftColWidth - 12, numberAreaHeight - 6, Brushes.Black);
+
+            // 3. Draw the QR Code
             int qrSize = Math.Min(rightColWidth - 10, stripHeight - 10);
             string qrPayload = !string.IsNullOrEmpty(partNumber) ? partNumber : partName;
 
@@ -365,8 +393,8 @@ namespace OJT___QR_Code_Generator
                     if (qrImg != null)
                     {
                         g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                        // Move QR code closer to text with + 5 padding
-                        g.DrawImage(qrImg, rightColX + 5, stripY + (stripHeight - qrSize) / 2, qrSize, qrSize);
+                        // Center QR vertically in the strip
+                        g.DrawImage(qrImg, rightColX + (rightColWidth - qrSize) / 2, stripY + (stripHeight - qrSize) / 2, qrSize, qrSize);
                     }
                 }
             }
