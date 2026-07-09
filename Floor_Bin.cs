@@ -236,6 +236,15 @@ namespace OJT___QR_Code_Generator
             {
                 pd.DefaultPageSettings.Landscape = true;
                 pd.DefaultPageSettings.PaperSize = new PaperSize("FloorBinSticker", paperSize.Width, paperSize.Height);
+
+                // ROOT-CAUSE FIX: PrintPreviewDialog internally calls pd.Print() TWICE —
+                // once to build the on-screen preview, and again for the real print job
+                // when the user clicks Print inside the preview window. BeginPrint fires
+                // at the start of BOTH passes, so this guarantees _batchIndex is reset to 0
+                // before the real print pass too, instead of inheriting the exhausted index
+                // left behind by the preview pass (which was causing an out-of-range crash).
+                pd.BeginPrint += (s, ev) => { _batchIndex = 0; };
+
                 pd.PrintPage += new PrintPageEventHandler(PrintAllFloorBinHandler);
 
                 using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
@@ -246,7 +255,6 @@ namespace OJT___QR_Code_Generator
                 }
             }
         }
-
         private void PrintFloorBinHandler(object sender, PrintPageEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -272,6 +280,14 @@ namespace OJT___QR_Code_Generator
         // advancing through _batchQueue and setting HasMorePages until done
         private void PrintAllFloorBinHandler(object sender, PrintPageEventArgs e)
         {
+            // SAFETY GUARD: prevents ArgumentOutOfRangeException on _batchQueue[_batchIndex]
+            // below if this handler is ever invoked with an exhausted index.
+            if (_batchIndex >= _batchQueue.Count)
+            {
+                e.HasMorePages = false;
+                return;
+            }
+
             Graphics g = e.Graphics;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
