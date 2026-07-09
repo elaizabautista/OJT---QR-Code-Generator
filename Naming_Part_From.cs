@@ -151,17 +151,24 @@ namespace OJT___QR_Code_Generator
                 // Reset index before printing
                 _batchPageIndex = 0;
 
+                // ROOT-CAUSE FIX: PrintPreviewDialog calls pd.Print() twice internally —
+                // once to build the preview, once for the real print job. BeginPrint fires
+                // at the start of both, so this guarantees the real print pass also starts
+                // at page 0 instead of inheriting the exhausted index from the preview pass.
+                pd.BeginPrint += (s, ev) => { _batchPageIndex = 0; };
+
                 pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
 
                 // Show Preview
                 using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
                 {
-                    previewDlg.Document = pd;
                     previewDlg.WindowState = FormWindowState.Maximized;
+                    previewDlg.Document = pd;
                     previewDlg.ShowDialog();
                 }
             }
         }
+
         private Size GetTargetPaperSizeInHundredths()
         {
             double widthInches = DefaultLabelWidthInches;
@@ -187,12 +194,9 @@ namespace OJT___QR_Code_Generator
                 return;
             }
 
-            // Assign the pair to the active variables for rendering
             var pageData = _batchPages[_batchPageIndex];
             _activePartName = pageData.p1.name;
             _activePartNumber = pageData.p1.number;
-
-            // Use null-coalescing to handle the case where a page has only one part
             _activePartName2 = pageData.p2?.name ?? string.Empty;
             _activePartNumber2 = pageData.p2?.number ?? string.Empty;
 

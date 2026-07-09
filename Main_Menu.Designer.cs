@@ -104,7 +104,7 @@
             // 
             // btnFloorBin
             // 
-            btnFloorBin.Location = new Point(240, 323);
+            btnFloorBin.Location = new Point(240, 238);
             btnFloorBin.Name = "btnFloorBin";
             btnFloorBin.Size = new Size(173, 36);
             btnFloorBin.TabIndex = 11;
@@ -114,7 +114,7 @@
             // 
             // btnFinishedGoods
             // 
-            btnFinishedGoods.Location = new Point(240, 365);
+            btnFinishedGoods.Location = new Point(240, 281);
             btnFinishedGoods.Name = "btnFinishedGoods";
             btnFinishedGoods.Size = new Size(173, 36);
             btnFinishedGoods.TabIndex = 12;
@@ -124,7 +124,7 @@
             // 
             // btnForm5
             // 
-            btnForm5.Location = new Point(240, 404);
+            btnForm5.Location = new Point(240, 323);
             btnForm5.Name = "btnForm5";
             btnForm5.Size = new Size(173, 36);
             btnForm5.TabIndex = 13;
@@ -136,7 +136,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 12F);
-            label5.Location = new Point(28, 338);
+            label5.Location = new Point(28, 253);
             label5.Name = "label5";
             label5.Size = new Size(72, 21);
             label5.TabIndex = 14;
@@ -146,7 +146,7 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Segoe UI", 12F);
-            label6.Location = new Point(28, 380);
+            label6.Location = new Point(28, 296);
             label6.Name = "label6";
             label6.Size = new Size(117, 21);
             label6.TabIndex = 15;
@@ -156,7 +156,7 @@
             // 
             label7.AutoSize = true;
             label7.Font = new Font("Segoe UI", 12F);
-            label7.Location = new Point(28, 419);
+            label7.Location = new Point(28, 338);
             label7.Name = "label7";
             label7.Size = new Size(60, 21);
             label7.TabIndex = 16;
@@ -167,7 +167,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ActiveCaption;
-            ClientSize = new Size(425, 467);
+            ClientSize = new Size(425, 377);
             Controls.Add(label7);
             Controls.Add(label6);
             Controls.Add(label5);
