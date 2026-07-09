@@ -46,7 +46,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 27.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(28, 30);
+            label1.Location = new Point(55, 30);
             label1.Name = "label1";
             label1.Size = new Size(358, 50);
             label1.TabIndex = 1;
@@ -56,7 +56,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.Location = new Point(227, 80);
+            label2.Location = new Point(257, 80);
             label2.Name = "label2";
             label2.Size = new Size(156, 37);
             label2.TabIndex = 2;
@@ -64,7 +64,7 @@
             // 
             // btnBinLocation
             // 
-            btnBinLocation.Location = new Point(240, 154);
+            btnBinLocation.Location = new Point(257, 154);
             btnBinLocation.Name = "btnBinLocation";
             btnBinLocation.Size = new Size(173, 36);
             btnBinLocation.TabIndex = 3;
@@ -94,7 +94,7 @@
             // 
             // btnNamingPart
             // 
-            btnNamingPart.Location = new Point(240, 196);
+            btnNamingPart.Location = new Point(257, 196);
             btnNamingPart.Name = "btnNamingPart";
             btnNamingPart.Size = new Size(173, 36);
             btnNamingPart.TabIndex = 10;
@@ -104,7 +104,7 @@
             // 
             // btnFloorBin
             // 
-            btnFloorBin.Location = new Point(240, 238);
+            btnFloorBin.Location = new Point(257, 238);
             btnFloorBin.Name = "btnFloorBin";
             btnFloorBin.Size = new Size(173, 36);
             btnFloorBin.TabIndex = 11;
@@ -114,7 +114,7 @@
             // 
             // btnFinishedGoods
             // 
-            btnFinishedGoods.Location = new Point(240, 281);
+            btnFinishedGoods.Location = new Point(257, 281);
             btnFinishedGoods.Name = "btnFinishedGoods";
             btnFinishedGoods.Size = new Size(173, 36);
             btnFinishedGoods.TabIndex = 12;
@@ -124,7 +124,7 @@
             // 
             // btnForm5
             // 
-            btnForm5.Location = new Point(240, 323);
+            btnForm5.Location = new Point(257, 323);
             btnForm5.Name = "btnForm5";
             btnForm5.Size = new Size(173, 36);
             btnForm5.TabIndex = 13;
@@ -167,7 +167,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ActiveCaption;
-            ClientSize = new Size(425, 377);
+            ClientSize = new Size(471, 377);
             Controls.Add(label7);
             Controls.Add(label6);
             Controls.Add(label5);
