@@ -50,15 +50,5 @@ namespace OJT___QR_Code_Generator
         {
             OpenChildForm(new Form_5());
         }
-
-        private void PartName_PartNumber_Click(object sender, EventArgs e)
-        {
-            OpenChildForm(new PartName_PartNumber());
-        }
-
-        private void PartNamePartNumber2BACKUP_Click(object sender, EventArgs e)
-        {
-            OpenChildForm(new PartName_PartNumber2_BACKUP_());
-        }
     }
 }

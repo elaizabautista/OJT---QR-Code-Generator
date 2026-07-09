@@ -40,8 +40,6 @@
             label5 = new Label();
             label6 = new Label();
             label7 = new Label();
-            PartName_PartNumber = new Button();
-            PartNamePartNumber2BACKUP = new Button();
             SuspendLayout();
             // 
             // label1
@@ -164,34 +162,12 @@
             label7.TabIndex = 16;
             label7.Text = "Form 5";
             // 
-            // PartName_PartNumber
-            // 
-            PartName_PartNumber.Location = new Point(240, 238);
-            PartName_PartNumber.Name = "PartName_PartNumber";
-            PartName_PartNumber.Size = new Size(173, 36);
-            PartName_PartNumber.TabIndex = 17;
-            PartName_PartNumber.Text = "BACKUP";
-            PartName_PartNumber.UseVisualStyleBackColor = true;
-            PartName_PartNumber.Click += PartName_PartNumber_Click;
-            // 
-            // PartNamePartNumber2BACKUP
-            // 
-            PartNamePartNumber2BACKUP.Location = new Point(240, 280);
-            PartNamePartNumber2BACKUP.Name = "PartNamePartNumber2BACKUP";
-            PartNamePartNumber2BACKUP.Size = new Size(173, 36);
-            PartNamePartNumber2BACKUP.TabIndex = 18;
-            PartNamePartNumber2BACKUP.Text = "BACKUP";
-            PartNamePartNumber2BACKUP.UseVisualStyleBackColor = true;
-            PartNamePartNumber2BACKUP.Click += PartNamePartNumber2BACKUP_Click;
-            // 
             // Main_Menu
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ActiveCaption;
             ClientSize = new Size(425, 467);
-            Controls.Add(PartNamePartNumber2BACKUP);
-            Controls.Add(PartName_PartNumber);
             Controls.Add(label7);
             Controls.Add(label6);
             Controls.Add(label5);
@@ -225,7 +201,5 @@
         private Label label5;
         private Label label6;
         private Label label7;
-        private Button PartName_PartNumber;
-        private Button PartNamePartNumber2BACKUP;
     }
 }
