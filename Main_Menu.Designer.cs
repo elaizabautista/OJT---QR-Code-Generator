@@ -28,178 +28,202 @@
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
-            label2 = new Label();
             btnBinLocation = new Button();
-            label3 = new Label();
-            label4 = new Label();
             btnNamingPart = new Button();
             btnFloorBin = new Button();
             btnFinishedGoods = new Button();
             btnForm5 = new Button();
-            label5 = new Label();
-            label6 = new Label();
-            label7 = new Label();
+            panel1 = new Panel();
+            label9 = new Label();
+            panel2 = new Panel();
+            label8 = new Label();
+            panel3 = new Panel();
+            label1 = new Label();
+            label10 = new Label();
+            label2 = new Label();
+            panel1.SuspendLayout();
+            panel2.SuspendLayout();
+            panel3.SuspendLayout();
             SuspendLayout();
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 27.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(55, 30);
-            label1.Name = "label1";
-            label1.Size = new Size(358, 50);
-            label1.TabIndex = 1;
-            label1.Text = "QR Code Generator";
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Segoe UI Semibold", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.Location = new Point(257, 80);
-            label2.Name = "label2";
-            label2.Size = new Size(156, 37);
-            label2.TabIndex = 2;
-            label2.Text = "Main menu";
             // 
             // btnBinLocation
             // 
-            btnBinLocation.Location = new Point(257, 154);
+            btnBinLocation.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnBinLocation.Location = new Point(134, 359);
             btnBinLocation.Name = "btnBinLocation";
-            btnBinLocation.Size = new Size(173, 36);
+            btnBinLocation.Size = new Size(243, 57);
             btnBinLocation.TabIndex = 3;
-            btnBinLocation.Text = "Click here";
+            btnBinLocation.Text = "BIN LOCATION";
             btnBinLocation.UseVisualStyleBackColor = true;
             btnBinLocation.Click += btnBinLocation_Click;
             // 
-            // label3
-            // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Segoe UI", 12F);
-            label3.Location = new Point(28, 169);
-            label3.Name = "label3";
-            label3.Size = new Size(95, 21);
-            label3.TabIndex = 8;
-            label3.Text = "Bin Location";
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.Font = new Font("Segoe UI", 12F);
-            label4.Location = new Point(28, 211);
-            label4.Name = "label4";
-            label4.Size = new Size(206, 21);
-            label4.TabIndex = 9;
-            label4.Text = "Part Number and Part Name";
-            // 
             // btnNamingPart
             // 
-            btnNamingPart.Location = new Point(257, 196);
+            btnNamingPart.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+            btnNamingPart.Location = new Point(134, 422);
             btnNamingPart.Name = "btnNamingPart";
-            btnNamingPart.Size = new Size(173, 36);
+            btnNamingPart.Size = new Size(243, 57);
             btnNamingPart.TabIndex = 10;
-            btnNamingPart.Text = "Click here";
+            btnNamingPart.Text = "PART NAME AND NUMBER";
             btnNamingPart.UseVisualStyleBackColor = true;
             btnNamingPart.Click += btnNamingPart_Click;
             // 
             // btnFloorBin
             // 
-            btnFloorBin.Location = new Point(257, 238);
+            btnFloorBin.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+            btnFloorBin.Location = new Point(714, 360);
             btnFloorBin.Name = "btnFloorBin";
-            btnFloorBin.Size = new Size(173, 36);
+            btnFloorBin.Size = new Size(243, 57);
             btnFloorBin.TabIndex = 11;
-            btnFloorBin.Text = "Click here";
+            btnFloorBin.Text = "FLOOR BIN";
             btnFloorBin.UseVisualStyleBackColor = true;
             btnFloorBin.Click += btnFloorBin_Click;
             // 
             // btnFinishedGoods
             // 
-            btnFinishedGoods.Location = new Point(257, 281);
+            btnFinishedGoods.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+            btnFinishedGoods.Location = new Point(426, 360);
             btnFinishedGoods.Name = "btnFinishedGoods";
-            btnFinishedGoods.Size = new Size(173, 36);
+            btnFinishedGoods.Size = new Size(243, 57);
             btnFinishedGoods.TabIndex = 12;
-            btnFinishedGoods.Text = "Click here";
+            btnFinishedGoods.Text = "FINISHED GOODS";
             btnFinishedGoods.UseVisualStyleBackColor = true;
             btnFinishedGoods.Click += btnFinishedGoods_Click;
             // 
             // btnForm5
             // 
-            btnForm5.Location = new Point(257, 323);
+            btnForm5.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+            btnForm5.Location = new Point(426, 423);
             btnForm5.Name = "btnForm5";
-            btnForm5.Size = new Size(173, 36);
+            btnForm5.Size = new Size(243, 57);
             btnForm5.TabIndex = 13;
             btnForm5.Text = "Click here";
             btnForm5.UseVisualStyleBackColor = true;
             btnForm5.Click += btnForm5_Click;
             // 
-            // label5
+            // panel1
             // 
-            label5.AutoSize = true;
-            label5.Font = new Font("Segoe UI", 12F);
-            label5.Location = new Point(28, 253);
-            label5.Name = "label5";
-            label5.Size = new Size(72, 21);
-            label5.TabIndex = 14;
-            label5.Text = "Floor Bin";
+            panel1.BackColor = Color.MediumBlue;
+            panel1.Controls.Add(label9);
+            panel1.Location = new Point(-4, -6);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1088, 78);
+            panel1.TabIndex = 17;
             // 
-            // label6
+            // label9
             // 
-            label6.AutoSize = true;
-            label6.Font = new Font("Segoe UI", 12F);
-            label6.Location = new Point(28, 296);
-            label6.Name = "label6";
-            label6.Size = new Size(117, 21);
-            label6.TabIndex = 15;
-            label6.Text = "Finished Goods";
+            label9.AutoSize = true;
+            label9.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label9.ForeColor = SystemColors.ButtonHighlight;
+            label9.Location = new Point(16, 25);
+            label9.Name = "label9";
+            label9.Size = new Size(264, 30);
+            label9.TabIndex = 20;
+            label9.Text = "Panasonic | QR Generator";
             // 
-            // label7
+            // panel2
             // 
-            label7.AutoSize = true;
-            label7.Font = new Font("Segoe UI", 12F);
-            label7.Location = new Point(28, 338);
-            label7.Name = "label7";
-            label7.Size = new Size(60, 21);
-            label7.TabIndex = 16;
-            label7.Text = "Form 5";
+            panel2.BackColor = Color.RoyalBlue;
+            panel2.Controls.Add(label8);
+            panel2.Location = new Point(-4, 70);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(1088, 51);
+            panel2.TabIndex = 18;
+            // 
+            // label8
+            // 
+            label8.AutoSize = true;
+            label8.Font = new Font("Segoe UI Semibold", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label8.ForeColor = SystemColors.ButtonHighlight;
+            label8.Location = new Point(16, 14);
+            label8.Name = "label8";
+            label8.Size = new Size(111, 25);
+            label8.TabIndex = 19;
+            label8.Text = "Main Menu";
+            // 
+            // panel3
+            // 
+            panel3.BackColor = Color.MediumBlue;
+            panel3.Controls.Add(label2);
+            panel3.Controls.Add(label1);
+            panel3.Controls.Add(label10);
+            panel3.Location = new Point(121, 164);
+            panel3.Name = "panel3";
+            panel3.Size = new Size(823, 119);
+            panel3.TabIndex = 19;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label1.ForeColor = SystemColors.ButtonHighlight;
+            label1.Location = new Point(32, 86);
+            label1.Name = "label1";
+            label1.Size = new Size(453, 20);
+            label1.TabIndex = 20;
+            label1.Text = "Select a form type to generate QR code labels for your application.";
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label10.ForeColor = SystemColors.ButtonHighlight;
+            label10.Location = new Point(13, 10);
+            label10.Name = "label10";
+            label10.Size = new Size(102, 20);
+            label10.TabIndex = 21;
+            label10.Text = "QR Generator";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI Semibold", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label2.ForeColor = SystemColors.ButtonHighlight;
+            label2.Location = new Point(32, 39);
+            label2.Name = "label2";
+            label2.Size = new Size(156, 37);
+            label2.TabIndex = 22;
+            label2.Text = "Main menu";
             // 
             // Main_Menu
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.ActiveCaption;
-            ClientSize = new Size(471, 377);
-            Controls.Add(label7);
-            Controls.Add(label6);
-            Controls.Add(label5);
+            BackColor = SystemColors.ButtonFace;
+            ClientSize = new Size(1088, 570);
+            Controls.Add(panel3);
+            Controls.Add(panel2);
+            Controls.Add(panel1);
             Controls.Add(btnForm5);
             Controls.Add(btnFinishedGoods);
             Controls.Add(btnFloorBin);
             Controls.Add(btnNamingPart);
-            Controls.Add(label4);
-            Controls.Add(label3);
             Controls.Add(btnBinLocation);
-            Controls.Add(label2);
-            Controls.Add(label1);
             Name = "Main_Menu";
             Text = "Main_Menu";
             Load += Main_Menu_Load;
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
+            panel2.ResumeLayout(false);
+            panel2.PerformLayout();
+            panel3.ResumeLayout(false);
+            panel3.PerformLayout();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
-
-        public Label label1;
-        public Label label2;
         private Button btnBinLocation;
-        private Label label3;
-        private Label label4;
         private Button btnNamingPart;
         private Button btnFloorBin;
         private Button btnFinishedGoods;
         private Button btnForm5;
-        private Label label5;
-        private Label label6;
-        private Label label7;
+        private Panel panel1;
+        private Panel panel2;
+        private Label label8;
+        private Label label9;
+        private Panel panel3;
+        private Label label10;
+        private Label label1;
+        public Label label2;
     }
 }

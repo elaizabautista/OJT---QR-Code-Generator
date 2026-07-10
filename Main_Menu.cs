@@ -21,9 +21,17 @@ namespace OJT___QR_Code_Generator
             childForm.FormClosed += (s, e) => this.Show();
             childForm.Show();
         }
+
+        private void CenterPanel()
+        {
+            panel3.Left = (this.ClientSize.Width - panel3.Width) / 2;
+            panel3.Top = (this.ClientSize.Height - panel3.Height) / 2;
+        }
+
         private void Main_Menu_Load(object sender, EventArgs e)
         {
-
+            CenterPanel();
+            this.Resize += (s, e) => CenterPanel();
         }
 
         private void btnBinLocation_Click(object sender, EventArgs e)

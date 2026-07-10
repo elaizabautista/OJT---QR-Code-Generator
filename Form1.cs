@@ -31,6 +31,13 @@ namespace OJT___QR_Code_Generator
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
         }
 
+        private void btnExit_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        
+
         private void Form1_Load(object sender, EventArgs e)
         {
             txtCustomWidth.Text = "3";
@@ -419,11 +426,6 @@ namespace OJT___QR_Code_Generator
             pnlPreview.Invalidate();
         }
 
-        private void GenerateNameNNumberButt_Click(object sender, EventArgs e)
-        {
-            Naming_Part_From namingForm = new Naming_Part_From();
-            namingForm.ShowDialog();
-        }
         private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
         {
 

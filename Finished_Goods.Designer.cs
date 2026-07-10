@@ -48,14 +48,22 @@
             label2 = new Label();
             label1 = new Label();
             panel1 = new Panel();
+            groupBox1 = new GroupBox();
+            panel2 = new Panel();
+            label11 = new Label();
+            panel3 = new Panel();
+            label12 = new Label();
             panel1.SuspendLayout();
+            groupBox1.SuspendLayout();
+            panel2.SuspendLayout();
+            panel3.SuspendLayout();
             SuspendLayout();
             // 
             // btnPrintAll
             // 
-            btnPrintAll.BackColor = Color.AliceBlue;
+            btnPrintAll.BackColor = Color.LightSkyBlue;
             btnPrintAll.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnPrintAll.Location = new Point(64, 423);
+            btnPrintAll.Location = new Point(23, 392);
             btnPrintAll.Name = "btnPrintAll";
             btnPrintAll.Size = new Size(151, 48);
             btnPrintAll.TabIndex = 19;
@@ -67,7 +75,7 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label8.Location = new Point(61, 203);
+            label8.Location = new Point(20, 172);
             label8.Name = "label8";
             label8.Size = new Size(55, 21);
             label8.TabIndex = 18;
@@ -76,21 +84,21 @@
             // cmbBatch
             // 
             cmbBatch.FormattingEnabled = true;
-            cmbBatch.Location = new Point(64, 227);
+            cmbBatch.Location = new Point(23, 196);
             cmbBatch.Name = "cmbBatch";
             cmbBatch.Size = new Size(298, 23);
             cmbBatch.TabIndex = 17;
             // 
             // txtCustomHeight
             // 
-            txtCustomHeight.Location = new Point(277, 315);
+            txtCustomHeight.Location = new Point(236, 284);
             txtCustomHeight.Name = "txtCustomHeight";
             txtCustomHeight.Size = new Size(50, 23);
             txtCustomHeight.TabIndex = 16;
             // 
             // txtCustomWidth
             // 
-            txtCustomWidth.Location = new Point(156, 315);
+            txtCustomWidth.Location = new Point(115, 284);
             txtCustomWidth.Name = "txtCustomWidth";
             txtCustomWidth.Size = new Size(51, 23);
             txtCustomWidth.TabIndex = 15;
@@ -98,7 +106,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(225, 320);
+            label7.Location = new Point(184, 289);
             label7.Name = "label7";
             label7.Size = new Size(46, 15);
             label7.TabIndex = 14;
@@ -107,7 +115,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(108, 320);
+            label6.Location = new Point(67, 289);
             label6.Name = "label6";
             label6.Size = new Size(42, 15);
             label6.TabIndex = 13;
@@ -117,7 +125,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label5.Location = new Point(61, 273);
+            label5.Location = new Point(20, 242);
             label5.Name = "label5";
             label5.Size = new Size(89, 21);
             label5.TabIndex = 12;
@@ -127,7 +135,7 @@
             // 
             btnConvertToPdf.BackColor = Color.AliceBlue;
             btnConvertToPdf.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnConvertToPdf.Location = new Point(830, 432);
+            btnConvertToPdf.Location = new Point(679, 441);
             btnConvertToPdf.Name = "btnConvertToPdf";
             btnConvertToPdf.Size = new Size(165, 39);
             btnConvertToPdf.TabIndex = 10;
@@ -137,9 +145,9 @@
             // 
             // btnPrint
             // 
-            btnPrint.BackColor = Color.AliceBlue;
+            btnPrint.BackColor = Color.LightSkyBlue;
             btnPrint.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnPrint.Location = new Point(231, 423);
+            btnPrint.Location = new Point(190, 392);
             btnPrint.Name = "btnPrint";
             btnPrint.Size = new Size(151, 48);
             btnPrint.TabIndex = 9;
@@ -149,9 +157,10 @@
             // 
             // btnClear
             // 
-            btnClear.BackColor = Color.AliceBlue;
+            btnClear.BackColor = Color.Brown;
             btnClear.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            btnClear.Location = new Point(231, 369);
+            btnClear.ForeColor = SystemColors.ControlLightLight;
+            btnClear.Location = new Point(190, 338);
             btnClear.Name = "btnClear";
             btnClear.Size = new Size(151, 48);
             btnClear.TabIndex = 8;
@@ -161,9 +170,10 @@
             // 
             // btnGenerate
             // 
-            btnGenerate.BackColor = Color.AliceBlue;
+            btnGenerate.BackColor = Color.MediumBlue;
             btnGenerate.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            btnGenerate.Location = new Point(64, 369);
+            btnGenerate.ForeColor = SystemColors.ControlLightLight;
+            btnGenerate.Location = new Point(23, 338);
             btnGenerate.Name = "btnGenerate";
             btnGenerate.Size = new Size(151, 48);
             btnGenerate.TabIndex = 7;
@@ -173,16 +183,16 @@
             // 
             // pnlPreview
             // 
-            pnlPreview.Location = new Point(446, 134);
+            pnlPreview.Location = new Point(522, 143);
             pnlPreview.Name = "pnlPreview";
-            pnlPreview.Size = new Size(549, 292);
+            pnlPreview.Size = new Size(473, 292);
             pnlPreview.TabIndex = 6;
             // 
             // label4
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label4.Location = new Point(446, 107);
+            label4.Location = new Point(522, 119);
             label4.Name = "label4";
             label4.Size = new Size(109, 21);
             label4.TabIndex = 5;
@@ -190,14 +200,14 @@
             // 
             // txtFinishedGoodsLocation2
             // 
-            txtFinishedGoodsLocation2.Location = new Point(64, 171);
+            txtFinishedGoodsLocation2.Location = new Point(23, 140);
             txtFinishedGoodsLocation2.Name = "txtFinishedGoodsLocation2";
             txtFinishedGoodsLocation2.Size = new Size(298, 23);
             txtFinishedGoodsLocation2.TabIndex = 4;
             // 
             // txtFinishedGoodsLocation1
             // 
-            txtFinishedGoodsLocation1.Location = new Point(64, 109);
+            txtFinishedGoodsLocation1.Location = new Point(23, 78);
             txtFinishedGoodsLocation1.Name = "txtFinishedGoodsLocation1";
             txtFinishedGoodsLocation1.Size = new Size(298, 23);
             txtFinishedGoodsLocation1.TabIndex = 3;
@@ -206,7 +216,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.Location = new Point(61, 147);
+            label3.Location = new Point(20, 116);
             label3.Name = "label3";
             label3.Size = new Size(139, 21);
             label3.TabIndex = 2;
@@ -216,7 +226,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label2.Location = new Point(64, 85);
+            label2.Location = new Point(23, 54);
             label2.Name = "label2";
             label2.Size = new Size(136, 21);
             label2.TabIndex = 1;
@@ -225,52 +235,109 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 27.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(353, 25);
+            label1.Font = new Font("Segoe UI", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.Location = new Point(3, 36);
             label1.Name = "label1";
-            label1.Size = new Size(358, 50);
+            label1.Size = new Size(483, 37);
             label1.TabIndex = 0;
-            label1.Text = "QR Code Generator";
+            label1.Text = "QR Code Generator | Finished Goods";
             // 
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
-            panel1.Controls.Add(btnPrintAll);
-            panel1.Controls.Add(label8);
-            panel1.Controls.Add(cmbBatch);
-            panel1.Controls.Add(txtCustomHeight);
-            panel1.Controls.Add(txtCustomWidth);
-            panel1.Controls.Add(label7);
-            panel1.Controls.Add(label6);
-            panel1.Controls.Add(label5);
-            panel1.Controls.Add(btnConvertToPdf);
-            panel1.Controls.Add(btnPrint);
-            panel1.Controls.Add(btnClear);
-            panel1.Controls.Add(btnGenerate);
-            panel1.Controls.Add(pnlPreview);
             panel1.Controls.Add(label4);
-            panel1.Controls.Add(txtFinishedGoodsLocation2);
-            panel1.Controls.Add(txtFinishedGoodsLocation1);
-            panel1.Controls.Add(label3);
-            panel1.Controls.Add(label2);
+            panel1.Controls.Add(groupBox1);
+            panel1.Controls.Add(btnConvertToPdf);
+            panel1.Controls.Add(pnlPreview);
             panel1.Controls.Add(label1);
-            panel1.Location = new Point(16, 24);
+            panel1.Location = new Point(27, 156);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1046, 544);
+            panel1.Size = new Size(1046, 592);
             panel1.TabIndex = 1;
+            // 
+            // groupBox1
+            // 
+            groupBox1.Controls.Add(btnPrintAll);
+            groupBox1.Controls.Add(label2);
+            groupBox1.Controls.Add(label8);
+            groupBox1.Controls.Add(label3);
+            groupBox1.Controls.Add(cmbBatch);
+            groupBox1.Controls.Add(txtFinishedGoodsLocation1);
+            groupBox1.Controls.Add(txtCustomHeight);
+            groupBox1.Controls.Add(txtFinishedGoodsLocation2);
+            groupBox1.Controls.Add(txtCustomWidth);
+            groupBox1.Controls.Add(btnGenerate);
+            groupBox1.Controls.Add(label7);
+            groupBox1.Controls.Add(btnClear);
+            groupBox1.Controls.Add(label6);
+            groupBox1.Controls.Add(btnPrint);
+            groupBox1.Controls.Add(label5);
+            groupBox1.Location = new Point(66, 107);
+            groupBox1.Name = "groupBox1";
+            groupBox1.Size = new Size(361, 463);
+            groupBox1.TabIndex = 20;
+            groupBox1.TabStop = false;
+            // 
+            // panel2
+            // 
+            panel2.BackColor = Color.RoyalBlue;
+            panel2.Controls.Add(label11);
+            panel2.Location = new Point(1, 76);
+            panel2.Name = "panel2";
+            panel2.Size = new Size(1150, 60);
+            panel2.TabIndex = 30;
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Font = new Font("Segoe UI Semibold", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label11.ForeColor = SystemColors.ButtonHighlight;
+            label11.Location = new Point(18, 14);
+            label11.Name = "label11";
+            label11.Size = new Size(142, 25);
+            label11.TabIndex = 19;
+            label11.Text = "Finished Goods";
+            // 
+            // panel3
+            // 
+            panel3.BackColor = Color.MediumBlue;
+            panel3.Controls.Add(label12);
+            panel3.Location = new Point(1, 0);
+            panel3.Name = "panel3";
+            panel3.Size = new Size(1150, 87);
+            panel3.TabIndex = 29;
+            // 
+            // label12
+            // 
+            label12.AutoSize = true;
+            label12.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label12.ForeColor = SystemColors.ButtonHighlight;
+            label12.Location = new Point(16, 25);
+            label12.Name = "label12";
+            label12.Size = new Size(264, 30);
+            label12.TabIndex = 20;
+            label12.Text = "Panasonic | QR Generator";
             // 
             // Finished_Goods
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.AliceBlue;
-            ClientSize = new Size(1074, 592);
+            BackColor = Color.LightSlateGray;
+            ClientSize = new Size(1105, 793);
+            Controls.Add(panel2);
+            Controls.Add(panel3);
             Controls.Add(panel1);
             Name = "Finished_Goods";
             Text = "Finished_Goods";
             Load += Finished_Goods_Load;
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
+            groupBox1.ResumeLayout(false);
+            groupBox1.PerformLayout();
+            panel2.ResumeLayout(false);
+            panel2.PerformLayout();
+            panel3.ResumeLayout(false);
+            panel3.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -295,5 +362,10 @@
         public Label label2;
         public Label label1;
         public Panel panel1;
+        private Panel panel2;
+        private Label label11;
+        private Panel panel3;
+        private Label label12;
+        private GroupBox groupBox1;
     }
 }
