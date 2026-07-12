@@ -204,8 +204,26 @@ namespace OJT___QR_Code_Generator
                         pd.DefaultPageSettings.Landscape = true;
                         pd.DefaultPageSettings.PaperSize = new PaperSize("FinishedGoodsSticker", paperSize.Width, paperSize.Height);
 
+                        // ROOT-CAUSE FIX: PrintPreviewDialog internally calls pd.Print() TWICE —
+                        // once to build the on-screen preview, and again for the real print job
+                        // when the user clicks Print inside the preview window. BeginPrint fires
+                        // at the start of BOTH passes, so this guarantees _batchCurrentIndex is
+                        // reset to 0 before the real print pass too, instead of inheriting the
+                        // exhausted index left behind by the preview pass (which was causing the
+                        // IndexOutOfRangeException you're seeing).
+                        pd.BeginPrint += (s, ev) => { _batchCurrentIndex = 0; };
+
                         pd.PrintPage += (s, ev) =>
                         {
+                            // SAFETY GUARD: prevents IndexOutOfRangeException on
+                            // locations[_batchCurrentIndex] below if this handler is ever
+                            // invoked with an exhausted index.
+                            if (_batchCurrentIndex >= locations.Length)
+                            {
+                                ev.HasMorePages = false;
+                                return;
+                            }
+
                             // Use the class-level variable to persist state across pages
                             _activeNumber1 = locations[_batchCurrentIndex];
                             _activeNumber2 = (_batchCurrentIndex + 1 < locations.Length) ? locations[_batchCurrentIndex + 1] : "N/A";
@@ -261,7 +279,11 @@ namespace OJT___QR_Code_Generator
 
         private void RenderFinishedGoodsLabel(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
-            int margin = 0;
+            // Small inset so the border pen stroke stays fully inside the printable area —
+            // printers have a hardware non-printable margin at the physical edge, and a
+            // border drawn at margin=0 gets its outer half clipped there (right/bottom
+            // edges disappearing on the printed label).
+            int margin = isPrinting ? 14 : 4;
             int safeWidth = totalWidth - (margin * 2);
             int safeHeight = totalHeight - (margin * 2);
 
