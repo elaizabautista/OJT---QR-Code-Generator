@@ -40,11 +40,33 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = "4";
             txtCustomHeight.Text = "6";
 
-            // Populate the ComboBox with options WHA01 to WHA15
+            // Populate the ComboBox directly from FloorBin_Data, instead of hardcoding
+            // "WHA01".."WHA15" here. This automatically includes every zone that exists
+            // in the data (WHA01-WHA15, WHA-CP, WHA-FM, WHC) and stays correct if more
+            // zones get added to FloorBin_Data later without touching this form again.
             cmbBatch.Items.Clear();
-            for (int i = 1; i <= 15; i++)
+
+            List<string> sortedZones = FloorBin_Data.ZoneToBins.Keys.ToList();
+            sortedZones.Sort((x, y) => GetZoneSortKey(x).CompareTo(GetZoneSortKey(y)));
+
+            foreach (string zone in sortedZones)
             {
-                cmbBatch.Items.Add($"WHA{i:D2}");
+                cmbBatch.Items.Add(zone);
+            }
+        }
+
+        // Keeps WHA01..WHA15 in numeric order, followed by WHA-CP, WHA-FM, then WHC.
+        private static int GetZoneSortKey(string zone)
+        {
+            if (zone.Length == 5 && zone.StartsWith("WHA") && int.TryParse(zone.Substring(3), out int n))
+                return n; // WHA01..WHA15 -> 1..15
+
+            switch (zone)
+            {
+                case "WHA-CP": return 100;
+                case "WHA-FM": return 101;
+                case "WHC": return 102;
+                default: return 999;
             }
         }
 
@@ -52,21 +74,17 @@ namespace OJT___QR_Code_Generator
         {
             if (cmbBatch.SelectedItem == null) return;
 
-            string selectedZonePrefix = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01"
+            string selectedZone = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01" or "WHA-CP"
 
-            // Query the WHA_Data dictionary for any matches starting with our prefix
-            foreach (var key in WHA_Data.BinToPartMapping.Keys)
+            // Direct dictionary lookup - no more scanning every key with StartsWith.
+            // Preview the first bin code in the zone so the user has something to look at
+            // right after picking a zone; Print All still prints every code in the zone.
+            if (FloorBin_Data.ZoneToBins.TryGetValue(selectedZone, out string[] binsInZone) &&
+                binsInZone.Length > 0)
             {
-                if (key.StartsWith(selectedZonePrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    // Update textbox with the associated value/part number found
-                    txtNumber.Text = WHA_Data.BinToPartMapping[key];
-
-                    // Automatically trigger label preview updating
-                    _activeNumber = txtNumber.Text.Trim();
-                    pnlPreview.Invalidate();
-                    break;
-                }
+                txtNumber.Text = binsInZone[0];
+                _activeNumber = txtNumber.Text.Trim();
+                pnlPreview.Invalidate();
             }
         }
 
@@ -214,20 +232,17 @@ namespace OJT___QR_Code_Generator
                 return;
             }
 
-            string selectedZonePrefix = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01"
+            string selectedZone = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01" or "WHA-CP"
 
-            // Gather every bin code belonging to the selected zone
-            _batchQueue = WHA_Data.BinToPartMapping
-                .Where(kvp => kvp.Key.StartsWith(selectedZonePrefix, StringComparison.OrdinalIgnoreCase))
-                .Select(kvp => kvp.Value)
-                .ToList();
-
-            if (_batchQueue.Count == 0)
+            // Direct dictionary lookup instead of scanning every key with StartsWith.
+            if (!FloorBin_Data.ZoneToBins.TryGetValue(selectedZone, out string[] binsInZone) ||
+                binsInZone.Length == 0)
             {
-                MessageBox.Show($"No bin codes found for {selectedZonePrefix}.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show($"No bin codes found for {selectedZone}.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
+            _batchQueue = binsInZone.ToList();
             _batchIndex = 0;
 
             Size paperSize = GetTargetPaperSizeInHundredths();
