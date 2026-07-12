@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
 namespace OJT___QR_Code_Generator
@@ -22,8 +23,8 @@ namespace OJT___QR_Code_Generator
 
         // 3. Keep the index and constants:
         private int _batchPageIndex = 0;
-        private const double DefaultLabelWidthInches = 6.375;
-        private const double DefaultLabelHeightInches = 2.625;
+        private const double DefaultLabelWidthInches = 2.755;
+        private const double DefaultLabelHeightInches = 5;
 
 
         public Naming_Part_From()
@@ -51,33 +52,150 @@ namespace OJT___QR_Code_Generator
 
             cmbBatch.Items.Clear();
 
-            // Use a HashSet to ensure we only get unique batch names
-            HashSet<string> uniqueBatches = new HashSet<string>();
+            // Use a HashSet to ensure we only get unique GROUP names.
+            // GetZoneGroup rolls related sub-bins together (A1..A8 -> "Zone A",
+            // B5/B5R1..B5R13 -> "Zone B5", WHA01..WHA15 stay individual, etc.)
+            // instead of listing every raw prefix separately.
+            HashSet<string> uniqueGroups = new HashSet<string>();
 
             foreach (string binKey in PartNumber_and_PartName_DATA.BinToParts.Keys)
             {
-                // Extract the batch identifier. 
-                // If the key has a dash (e.g., "1-1A-1"), take the part before the dash ("1").
-                // If it doesn't (e.g., "COPPERAREA2"), take the whole string.
-                string batch = binKey.Contains("-") ? binKey.Split('-')[0] : binKey;
-
-                uniqueBatches.Add(batch);
+                uniqueGroups.Add(GetZoneGroup(binKey));
             }
 
-            // Sort them alphabetically/numerically for a cleaner UI
-            List<string> sortedBatches = new List<string>(uniqueBatches);
-            sortedBatches.Sort((x, y) => {
-                // Attempt to sort numbers numerically instead of textually (e.g., 1, 2, 10 instead of 1, 10, 2)
-                int xVal, yVal;
-                bool xIsNum = int.TryParse(x, out xVal);
-                bool yIsNum = int.TryParse(y, out yVal);
-                if (xIsNum && yIsNum) return xVal.CompareTo(yVal);
-                return string.Compare(x, y);
-            });
+            // Sort using the defined warehouse-group order (numeric zones first,
+            // then lettered zones, then the named areas, then WHA01-15, then WHC)
+            List<string> sortedGroups = new List<string>(uniqueGroups);
+            sortedGroups.Sort((x, y) => GetGroupSortKey(x).CompareTo(GetGroupSortKey(y)));
 
-            foreach (string batch in sortedBatches)
+            foreach (string group in sortedGroups)
             {
-                cmbBatch.Items.Add(batch);
+                cmbBatch.Items.Add(group);
+            }
+        }
+
+        /// <summary>
+        /// Maps a raw bin location (e.g. "A3-B-1", "B5R7-AC2", "ANX5", "WHA01-B-1")
+        /// to the warehouse zone GROUP it belongs to (e.g. "Zone A", "Zone B5", "ANX",
+        /// "Zone WHA01"). This is the single source of truth for grouping, used by
+        /// both the dropdown population (Naming_Part_From_Load) and the print filter
+        /// (PrintAllButt_Click), so they can never fall out of sync with each other.
+        /// </summary>
+        private static string GetZoneGroup(string binKey)
+        {
+            string prefix = binKey.Contains("-") ? binKey.Split('-')[0] : binKey;
+
+            // Pure numeric zones, including lettered sub-areas (18A, 19B, 26C, 27C...)
+            Match numMatch = Regex.Match(prefix, @"^(\d+)[A-C]?$");
+            if (numMatch.Success)
+                return "Zone " + numMatch.Groups[1].Value;
+
+            if (Regex.IsMatch(prefix, @"^A[1-8]$"))
+                return "Zone A";
+
+            // B5 and its B5R1..B5R13 sub-rooms are their own group
+            if (prefix == "B5" || Regex.IsMatch(prefix, @"^B5R\d+$"))
+                return "Zone B5";
+
+            if (Regex.IsMatch(prefix, @"^B[1-8]$"))
+                return "Zone B";
+
+            if (Regex.IsMatch(prefix, @"^C[1-7]$"))
+                return "Zone C";
+
+            if (Regex.IsMatch(prefix, @"^D[1-6]$"))
+                return "Zone D";
+
+            if (Regex.IsMatch(prefix, @"^E[3-6]$"))
+                return "Zone E";
+
+            // "B-STOCK" has no further suffix, so its prefix is just "B"
+            if (prefix == "B")
+                return "B-STOCK";
+
+            if (prefix == "5TH BLDG" || prefix == "5THBLDG")
+                return "5TH BLDG";
+
+            if (prefix == "ANX" || Regex.IsMatch(prefix, @"^ANX\d+$") ||
+                Regex.IsMatch(prefix, @"^ANXL\d+$") || Regex.IsMatch(prefix, @"^ANXR\d+$"))
+                return "ANX";
+
+            if (prefix == "CHEMROOM")
+                return "CHEM";
+
+            if (prefix == "CNPYA")
+                return "CNPYA";
+
+            if (prefix == "CNPYB")
+                return "CNPYB";
+
+            if (Regex.IsMatch(prefix, @"^CNPYR\d+$"))
+                return "CNPYR";
+
+            if (Regex.IsMatch(prefix, @"^COPPERAREA\d+$"))
+                return "COPPER";
+
+            if (prefix == "FREONRACK")
+                return "FREON";
+
+            if (Regex.IsMatch(prefix, @"^SCR\d+$"))
+                return "SCR";
+
+            if (Regex.IsMatch(prefix, @"^STRPNGP\d+$"))
+                return "STRPNG";
+
+            if (prefix == "WHA")
+                return "WHA";
+
+            Match whaMatch = Regex.Match(prefix, @"^WHA(\d+)$");
+            if (whaMatch.Success)
+                return "Zone WHA" + whaMatch.Groups[1].Value.PadLeft(2, '0');
+
+            if (prefix == "WHC")
+                return "WHC";
+
+            // Fallback: anything unrecognized keeps its own raw prefix as its group,
+            // so new/unexpected bin naming never silently disappears from the dropdown.
+            return prefix;
+        }
+
+        /// <summary>
+        /// Defines the dropdown display order: Zone 1-27, Zone A-E, B-STOCK, 5TH BLDG,
+        /// ANX, Zone B5, CHEM, CNPYA, CNPYB, CNPYR, COPPER, FREON, SCR, STRPNG,
+        /// WHA, Zone WHA01-15, WHC. Unrecognized groups sort to the very end.
+        /// </summary>
+        private static int GetGroupSortKey(string group)
+        {
+            Match zoneMatch = Regex.Match(group, @"^Zone (\d+)$");
+            if (zoneMatch.Success)
+                return 1000 + int.Parse(zoneMatch.Groups[1].Value);
+
+            Match whaMatch = Regex.Match(group, @"^Zone WHA(\d+)$");
+            if (whaMatch.Success)
+                return 5000 + int.Parse(whaMatch.Groups[1].Value);
+
+            switch (group)
+            {
+                case "Zone A": return 2000;
+                case "Zone B": return 2001;
+                case "Zone C": return 2002;
+                case "Zone D": return 2003;
+                case "Zone E": return 2004;
+                case "B-STOCK": return 3000;
+                case "5TH BLDG": return 3001;
+                case "ANX": return 3002;
+                case "Zone B5": return 3003;
+                case "CHEM": return 3004;
+                case "CNPYA": return 3005;
+                case "CNPYB": return 3006;
+                case "CNPYR": return 3007;
+                case "COPPER": return 3008;
+                case "FREON": return 3009;
+                case "SCR": return 3010;
+                case "STRPNG": return 3011;
+                case "WHA": return 4000;
+                case "WHC": return 6000;
+                default: return 9999;
             }
         }
 
@@ -94,10 +212,7 @@ namespace OJT___QR_Code_Generator
                 return;
             }
 
-            string selected = cmbBatch.SelectedItem.ToString();
-
-            // Extract just the number from "Zone X"
-            string zoneString = selected.Replace("Zone ", "").Trim();
+            string selectedGroup = cmbBatch.SelectedItem.ToString();
 
             // 2. Collect parts directly from PartNumber_and_PartName_DATA
             var zoneParts = new List<(string name, string number)>();
@@ -106,9 +221,11 @@ namespace OJT___QR_Code_Generator
             {
                 string binLocation = kvp.Key;
 
-                // Check if the bin starts with the zone number and a dash (e.g., "1-" or "13-")
-                // The dash is crucial so "Zone 1" doesn't accidentally grab "Zone 13" bins
-                if (binLocation.StartsWith(zoneString + "-"))
+                // Use the SAME grouping helper that built the dropdown, so a bin only
+                // matches when it belongs to the exact group the user selected
+                // (e.g. selecting "Zone A" now correctly pulls A1..A8, and "Zone B5"
+                // pulls B5 + B5R1..B5R13, instead of each sub-bin being its own entry).
+                if (GetZoneGroup(binLocation) == selectedGroup)
                 {
                     // Add all parts stored inside this bin to our print list
                     foreach (var part in kvp.Value)
