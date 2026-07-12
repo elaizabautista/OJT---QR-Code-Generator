@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Windows.Forms;
@@ -31,8 +32,12 @@ namespace OJT___QR_Code_Generator
             txtCustomHeight.Text = "6";
 
             // 1. Convert to a list of KeyValuePairs
-            var comboSource = new List<KeyValuePair<object, string[]>>();
-            foreach (var kvp in WarehouseData.myZones)
+            // NOTE: FinishedGoods_Data.ZoneToBins is a Dictionary<string, string[]>, so its
+            // pairs are KeyValuePair<string, string[]> - NOT KeyValuePair<object, string[]>.
+            // Generic type parameters are invariant in C#, so the list type has to match
+            // exactly or this won't compile.
+            var comboSource = new List<KeyValuePair<string, string[]>>();
+            foreach (var kvp in FGData.ZoneToBins)
             {
                 comboSource.Add(kvp);
             }
@@ -189,7 +194,7 @@ namespace OJT___QR_Code_Generator
 
         private void btnPrintAll_Click(object sender, EventArgs e)
         {
-            if (cmbBatch.SelectedItem is KeyValuePair<object, string[]> selectedPair)
+            if (cmbBatch.SelectedItem is KeyValuePair<string, string[]> selectedPair)
             {
                 string[] locations = selectedPair.Value;
 

@@ -38,10 +38,12 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
 
+            // Populate the batch dropdown directly from Form5Data's zone/building keys
+            // (e.g. "5THBLDG") instead of the old hard-coded "Zone 1".."Zone 26" list.
             cmbBatch.Items.Clear();
-            for (int i = 1; i <= 26; i++)
+            foreach (string zoneKey in Form5Data.ZoneToMaterials.Keys)
             {
-                cmbBatch.Items.Add("Zone " + i);
+                cmbBatch.Items.Add(zoneKey);
             }
         }
 
@@ -158,32 +160,34 @@ namespace OJT___QR_Code_Generator
                 return;
             }
 
-            string selected = cmbBatch.SelectedItem.ToString();
-            int zoneNum;
-            if (!int.TryParse(selected.Replace("Zone ", "").Trim(), out zoneNum) || !WarehouseData.myZones.ContainsKey(zoneNum))
+            // Key is now a string (e.g. "5THBLDG") straight from the dropdown,
+            // matched directly against Form5Data.ZoneToMaterials — no int parsing needed.
+            string selectedZone = cmbBatch.SelectedItem.ToString();
+
+            if (!Form5Data.ZoneToMaterials.ContainsKey(selectedZone))
             {
-                MessageBox.Show("Selected zone has no bin location data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selected zone has no material data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string[] bins = WarehouseData.myZones[zoneNum];
-            if (bins == null || bins.Length == 0)
+            string[] materials = Form5Data.ZoneToMaterials[selectedZone];
+            if (materials == null || materials.Length == 0)
             {
-                MessageBox.Show("Selected zone has no bin locations.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selected zone has no materials.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             _batchPages.Clear();
 
             // Loop steps by 6 instead of 3
-            for (int i = 0; i < bins.Length; i += 6)
+            for (int i = 0; i < materials.Length; i += 6)
             {
-                string b1 = bins[i];
-                string b2 = (i + 1 < bins.Length) ? bins[i + 1] : string.Empty;
-                string b3 = (i + 2 < bins.Length) ? bins[i + 2] : string.Empty;
-                string b4 = (i + 3 < bins.Length) ? bins[i + 3] : string.Empty;
-                string b5 = (i + 4 < bins.Length) ? bins[i + 4] : string.Empty;
-                string b6 = (i + 5 < bins.Length) ? bins[i + 5] : string.Empty;
+                string b1 = materials[i];
+                string b2 = (i + 1 < materials.Length) ? materials[i + 1] : string.Empty;
+                string b3 = (i + 2 < materials.Length) ? materials[i + 2] : string.Empty;
+                string b4 = (i + 3 < materials.Length) ? materials[i + 3] : string.Empty;
+                string b5 = (i + 4 < materials.Length) ? materials[i + 4] : string.Empty;
+                string b6 = (i + 5 < materials.Length) ? materials[i + 5] : string.Empty;
 
                 _batchPages.Add((b1, b2, b3, b4, b5, b6));
             }

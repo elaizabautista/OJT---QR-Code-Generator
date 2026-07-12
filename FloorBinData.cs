@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 namespace OJT___QR_Code_Generator
 {
     public static class FloorBin_Data
