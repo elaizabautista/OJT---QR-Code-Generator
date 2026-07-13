@@ -6,8 +6,12 @@ namespace OJT___QR_Code_Generator
 {
     public static class FGData
     {
-        // Maps each Finished Goods zone to every bin location code within it.
-        // Sourced directly from the FINAL_MARD_Material_Bin_AC Excel export.
+        // Maps each Finished Goods zone to every bin/part location code within it.
+        // B5 sourced from the FINAL_MARD_Material_Bin_AC Excel export.
+        // 5TH BLDG / CHEM / CNPYA / CNPYB / B-STOCK sourced from Compayl.pdf.
+        // NOTE: Key strings for the Compayl zones match GetZoneGroup()'s output in
+        // GeneralForm.cs / Naming_Part_Form (5TH BLDG, CHEM, CNPYA, CNPYB, B-STOCK),
+        // so this data plugs straight into the existing zone dropdown logic there too.
         public static readonly Dictionary<string, string[]> ZoneToBins =
             new Dictionary<string, string[]>
         {
@@ -270,6 +274,194 @@ namespace OJT___QR_Code_Generator
                 "B5R13-A2",
                 "B5R13-D1",
                 "B5R13-D2"
+                }
+            },
+            {
+                "5TH BLDG", new string[]
+                {
+                "ACXA58-03640",
+                "ACXA58-03770",
+                "ACXA58-03920",
+                "ACXA58-03930",
+                "ACXA58-04040",
+                "ACXA58-04110",
+                "ACXA70-13391",
+                "ACXA70-13450",
+                "ACXA70-13860",
+                "ACXA70-15340",
+                "ACXA70-16040",
+                "ACXA70-17570",
+                "ACXD93-23960",
+                "G80P5-20",
+                "110 K8EM",
+                "PP 36370G-2",
+                "D001271C",
+                "DYNA COM 602-G20",
+                "H001010L",
+                "ACXG50-58130",
+                "ACXG50-58180",
+                "ACXG50-59460",
+                "ACXG50-59470",
+                "ACXG50-59480",
+                "ACXG50-59490",
+                "ACXG50-59850",
+                "ACXG50-59860",
+                "ACXG50-59870",
+                "ACXG50-59880",
+                "ACXG50-62950",
+                "ACXG50-63120",
+                "ACXG50-63130",
+                "ACXG50-63140",
+                "ACXG50-63552",
+                "ACXG50-63562",
+                "ACXG50-63572",
+                "ACXG50-63582",
+                "ACXG50-63601",
+                "ACXG50-63623",
+                "ACXG50-63643",
+                "ACXG50-63652",
+                "ACXG50-63662",
+                "ACXG50-63672",
+                "ACXG50-63682",
+                "ACXG50-63733",
+                "ACXG50-63743",
+                "ACXG50-64480",
+                "ACXG50-64490",
+                "ACXG50-64500",
+                "ACXG50-64510",
+                "ACXG50-64520",
+                "ACXG50-65160",
+                "ACXG50-65170",
+                "ACXG50-67410",
+                "ACXG50-67420",
+                "ACXG50-67440",
+                "ACXG50-67450",
+                "ACXG50-67460",
+                "ACXG50-67610",
+                "ACXG50-67630",
+                "ACXG50-67640",
+                "ACXG50-67990",
+                "ACXG50-68000",
+                "ACXG50-68010",
+                "ACXG50-68020",
+                "ACXG50-68030",
+                "ACXG50-68040",
+                "ACXA60C84310-CJT",
+                "ACXA60C86860-CJT",
+                "ACXG57-10620",
+                "ACXG57-12530",
+                "G572557L"
+                }
+            },
+            {
+                "CHEM", new string[]
+                {
+                "GS-5",
+                "PBL3150RL",
+                "PR26",
+                "RF-502"
+                }
+            },
+            {
+                "CNPYA", new string[]
+                {
+                "ACXD31-00221",
+                "ACXD32-01890",
+                "ACXD53-02001",
+                "ACXE10C12131",
+                "ACXE10C14071",
+                "ACXE10C14081",
+                "ACXE10C14121",
+                "ACXE10C14131",
+                "ACXE10C15321",
+                "ACXE10C20601",
+                "ACXE10C20610",
+                "ACXE10C20611",
+                "ACXE10C20840",
+                "ACXE10C20850-N",
+                "ACXE12C00692",
+                "ACXE12C00701",
+                "ACXE12C00702",
+                "ACXE12C00712",
+                "ACXE12C01062",
+                "ACXE12C01182",
+                "ACXE12C01192",
+                "ACXE12C01212",
+                "ACXE12C01222",
+                "ACXE24-03900",
+                "ACXE24-04190",
+                "ACXH00-00170",
+                "ACXH00-00320",
+                "ACXH00-00340",
+                "ACXH00-00490",
+                "ACXH00-00500",
+                "ACXH01K00240",
+                "ACXH01K00500",
+                "ACXH01K00520",
+                "ACXH01K00610",
+                "ACXH03K01120",
+                "ACXH10-10350",
+                "D311018L",
+                "D311018L-A",
+                "D531012L",
+                "D531012L-A",
+                "E241125L",
+                "H001017L",
+                "H031004L",
+                "H102352AL"
+                }
+            },
+            {
+                "CNPYB", new string[]
+                {
+                "ACXE24-04940",
+                "ACXB80-00370",
+                "ACXD32-01660",
+                "ACXD32-02010",
+                "ACXD93-21380",
+                "ACXD93-21400",
+                "ACXD93-23010",
+                "ACXD93-23020",
+                "ACXD93-23030",
+                "ACXD93-23040",
+                "ACXD93-23050",
+                "ACXD93-23060",
+                "ACXD93-23070",
+                "ACXE10C11581",
+                "ACXE10C11591",
+                "ACXE10C11600",
+                "ACXE10C14051",
+                "ACXE10C14101",
+                "ACXE10C15251",
+                "ACXE10C15351",
+                "ACXE10C15361",
+                "ACXE10C19670",
+                "ACXE10C19680",
+                "ACXE10C20561",
+                "ACXE10C20581",
+                "ACXE10C20860-N",
+                "ACXE24-03880",
+                "ACXH10-08261",
+                "ACXH10-08270",
+                "ACXH10-08281",
+                "ACXH22-00010",
+                "ACXH40-00090",
+                "D321042L",
+                "E11C6042",
+                "H001005L",
+                "VACANT",
+                "H01K056LD",
+                "H01K1006L",
+                "H221008L"
+                }
+            },
+            {
+                "B-STOCK", new string[]
+                {
+                "B3RBB0000032",
+                "F2A0J151B170",
+                "F2A1C101B250",
+                "F2G1V1000037"
                 }
             },
         };

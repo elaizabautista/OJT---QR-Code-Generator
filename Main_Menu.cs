@@ -59,5 +59,10 @@ namespace OJT___QR_Code_Generator
             OpenChildForm(new Form_5());
             //
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            OpenChildForm(new GeneralForm());
+        }
     }
 }

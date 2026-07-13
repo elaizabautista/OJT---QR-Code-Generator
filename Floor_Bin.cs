@@ -355,13 +355,15 @@ namespace OJT___QR_Code_Generator
 
             int gap = (int)(safeHeight * 0.04f);
 
-            int textHeight = (int)(safeHeight * 0.19f);
+            // Bigger text box = DrawTextAutofit is allowed to grow the font further
+            // before it has to shrink to fit. Bumped from 0.19 to 0.30 of safeHeight.
+            int textHeight = (int)(safeHeight * 0.22f);
             float maxFontCeiling = textHeight;
 
             int qrSize = (int)((safeHeight - gap - textHeight) * 0.90f);
             qrSize = Math.Min(qrSize, safeWidth);
 
-            int moveTextUpPixels = 10;
+            int moveTextUpPixels = 6;
 
             int contentHeight = qrSize + gap + textHeight;
             int blockStartY = safeY + (safeHeight - contentHeight) / 2;

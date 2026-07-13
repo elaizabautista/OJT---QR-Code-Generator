@@ -38,9 +38,10 @@
             panel2 = new Panel();
             label8 = new Label();
             panel3 = new Panel();
+            label2 = new Label();
             label1 = new Label();
             label10 = new Label();
-            label2 = new Label();
+            button1 = new Button();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
@@ -152,6 +153,17 @@
             panel3.Size = new Size(823, 119);
             panel3.TabIndex = 19;
             // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI Semibold", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label2.ForeColor = SystemColors.ButtonHighlight;
+            label2.Location = new Point(32, 39);
+            label2.Name = "label2";
+            label2.Size = new Size(156, 37);
+            label2.TabIndex = 22;
+            label2.Text = "Main menu";
+            // 
             // label1
             // 
             label1.AutoSize = true;
@@ -174,16 +186,16 @@
             label10.TabIndex = 21;
             label10.Text = "QR Generator";
             // 
-            // label2
+            // button1
             // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Segoe UI Semibold", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.ForeColor = SystemColors.ButtonHighlight;
-            label2.Location = new Point(32, 39);
-            label2.Name = "label2";
-            label2.Size = new Size(156, 37);
-            label2.TabIndex = 22;
-            label2.Text = "Main menu";
+            button1.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
+            button1.Location = new Point(714, 423);
+            button1.Name = "button1";
+            button1.Size = new Size(243, 57);
+            button1.TabIndex = 20;
+            button1.Text = "GENERAL BIN";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // Main_Menu
             // 
@@ -191,6 +203,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ButtonFace;
             ClientSize = new Size(1088, 570);
+            Controls.Add(button1);
             Controls.Add(panel3);
             Controls.Add(panel2);
             Controls.Add(panel1);
@@ -225,5 +238,6 @@
         private Label label10;
         private Label label1;
         public Label label2;
+        private Button button1;
     }
 }

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using QRCoder;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.Windows.Forms;
-using QRCoder;
+using System.Xml.Linq;
 
 namespace OJT___QR_Code_Generator
 {
@@ -31,21 +32,20 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = "4";
             txtCustomHeight.Text = "6";
 
-            // 1. Convert to a list of KeyValuePairs
-            // NOTE: FinishedGoods_Data.ZoneToBins is a Dictionary<string, string[]>, so its
-            // pairs are KeyValuePair<string, string[]> - NOT KeyValuePair<object, string[]>.
-            // Generic type parameters are invariant in C#, so the list type has to match
-            // exactly or this won't compile.
+            // Combine both zone data sources into a single flat list so entries from
+            // FGData (Finished Goods bins) and CompaylData (Compayl part zones) both
+            // appear together in the same batch dropdown.
+            // Both dictionaries are Dictionary<string, string[]>, so their
+            // KeyValuePairs are the same concrete type and can share one list.
             var comboSource = new List<KeyValuePair<string, string[]>>();
-            foreach (var kvp in FGData.ZoneToBins)
-            {
-                comboSource.Add(kvp);
-            }
 
-            // 2. Bind the list
+            foreach (var kvp in FGData.ZoneToBins)
+                comboSource.Add(kvp);
+
+            // Bind the combined list
             cmbBatch.DataSource = comboSource;
 
-            // 3. ONLY set DisplayMember. Do NOT set ValueMember.
+            // ONLY set DisplayMember. Do NOT set ValueMember.
             cmbBatch.DisplayMember = "Key";
         }
 
