@@ -210,73 +210,64 @@ namespace OJT___QR_Code_Generator
         }
 
         // ── PrintDocument factory ─────────────────────────────────────────────
-        private PrintDocument BuildPrintDocument()
+        private PrintDocument BuildPrintDocument(string printerName = null)
         {
             var pd = new PrintDocument();
 
-            // Try to pick a real A4 PaperSize from the printer's own supported list
+            if (!string.IsNullOrEmpty(printerName))
+                pd.PrinterSettings.PrinterName = printerName;
+
             PaperSize a4 = null;
             foreach (PaperSize ps in pd.PrinterSettings.PaperSizes)
             {
-                if (ps.PaperName.Equals("A4", StringComparison.OrdinalIgnoreCase))
+                if (ps.PaperName.IndexOf("A4", StringComparison.OrdinalIgnoreCase) >= 0)
                 {
                     a4 = ps;
                     break;
                 }
             }
 
-            // IMPORTANT: force Portrait feed — we rotate manually, so the driver
-            // never gets a chance to mishandle Landscape
-            pd.DefaultPageSettings.Landscape = false;
-            if (a4 != null)
-                pd.DefaultPageSettings.PaperSize = a4;
-            else
-                pd.DefaultPageSettings.PaperSize =
-                    new PaperSize("A4", A4WidthHundredths, A4HeightHundredths);
+            pd.DefaultPageSettings.Landscape = true;
+            pd.DefaultPageSettings.PaperSize = a4 ??
+                new PaperSize("A4", A4WidthHundredths, A4HeightHundredths);
 
             pd.BeginPrint += (s, ev) => { _pageIndex = 0; };
             pd.PrintPage += PrintA4PageHandler;
-
             return pd;
         }
 
-        // ── PrintPage handler ─────────────────────────────────────────────────
         private void PrintA4PageHandler(object sender, PrintPageEventArgs e)
         {
             int startIndex = _pageIndex * LabelsPerPage;
-
             if (rdoBlank.Checked)
             {
                 if (_pageIndex > 0) { e.HasMorePages = false; return; }
                 startIndex = 0;
             }
-            else
+            else if (startIndex >= _allLabels.Count)
             {
-                if (startIndex >= _allLabels.Count)
-                {
-                    e.HasMorePages = false;
-                    return;
-                }
+                e.HasMorePages = false;
+                return;
             }
 
             Graphics g = e.Graphics;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            // Page is always fed as Portrait now (A4: width < height).
-            // We always rotate 90° ourselves to draw our Landscape content.
-            g.TranslateTransform(e.PageBounds.Width, 0);
-            g.RotateTransform(90f);
-
-            RenderA4Page(g, e.PageBounds.Height, e.PageBounds.Width, startIndex, isPrinting: true);
+            // Check the ACTUAL bounds reported at print time — don't assume either way
+            if (e.PageBounds.Width < e.PageBounds.Height)
+            {
+                g.TranslateTransform(e.PageBounds.Width, 0);
+                g.RotateTransform(90f);
+                RenderA4Page(g, e.PageBounds.Height, e.PageBounds.Width, startIndex, isPrinting: true);
+            }
+            else
+            {
+                RenderA4Page(g, e.PageBounds.Width, e.PageBounds.Height, startIndex, isPrinting: true);
+            }
 
             _pageIndex++;
-
-            if (rdoBlank.Checked)
-                e.HasMorePages = false;
-            else
-                e.HasMorePages = (_pageIndex * LabelsPerPage) < _allLabels.Count;
+            e.HasMorePages = rdoBlank.Checked ? false : (_pageIndex * LabelsPerPage) < _allLabels.Count;
         }
-
         // ── Page rendering engine ─────────────────────────────────────────────
 
         /// <summary>
