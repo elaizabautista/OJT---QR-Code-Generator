@@ -108,7 +108,7 @@
             // 
             btnConvertToPdf.BackColor = Color.AliceBlue;
             btnConvertToPdf.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnConvertToPdf.Location = new Point(1069, 390);
+            btnConvertToPdf.Location = new Point(1408, 456);
             btnConvertToPdf.Name = "btnConvertToPdf";
             btnConvertToPdf.Size = new Size(165, 39);
             btnConvertToPdf.TabIndex = 10;
@@ -118,7 +118,7 @@
             // 
             // pnlPreview
             // 
-            pnlPreview.Location = new Point(768, 78);
+            pnlPreview.Location = new Point(1107, 144);
             pnlPreview.Name = "pnlPreview";
             pnlPreview.Size = new Size(466, 292);
             pnlPreview.TabIndex = 6;
@@ -128,7 +128,7 @@
             // 
             btnGenerate.BackColor = Color.LimeGreen;
             btnGenerate.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            btnGenerate.Location = new Point(775, 573);
+            btnGenerate.Location = new Point(1114, 639);
             btnGenerate.Name = "btnGenerate";
             btnGenerate.Size = new Size(161, 48);
             btnGenerate.TabIndex = 7;
@@ -142,7 +142,7 @@
             panel2.Controls.Add(lblSubtitle);
             panel2.Location = new Point(1, 76);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1379, 60);
+            panel2.Size = new Size(1820, 60);
             panel2.TabIndex = 37;
             // 
             // lblSubtitle
@@ -160,7 +160,7 @@
             // 
             btnClear.BackColor = Color.IndianRed;
             btnClear.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            btnClear.Location = new Point(942, 573);
+            btnClear.Location = new Point(1281, 639);
             btnClear.Name = "btnClear";
             btnClear.Size = new Size(161, 48);
             btnClear.TabIndex = 8;
@@ -172,7 +172,7 @@
             // 
             btnPrint.BackColor = Color.LightSkyBlue;
             btnPrint.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnPrint.Location = new Point(775, 627);
+            btnPrint.Location = new Point(1114, 693);
             btnPrint.Name = "btnPrint";
             btnPrint.Size = new Size(161, 39);
             btnPrint.TabIndex = 9;
@@ -183,7 +183,7 @@
             // lblWidth
             // 
             lblWidth.AutoSize = true;
-            lblWidth.Location = new Point(778, 458);
+            lblWidth.Location = new Point(1117, 524);
             lblWidth.Name = "lblWidth";
             lblWidth.Size = new Size(42, 15);
             lblWidth.TabIndex = 13;
@@ -193,7 +193,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(65, 35);
+            label1.Location = new Point(27, 19);
             label1.Name = "label1";
             label1.Size = new Size(265, 37);
             label1.TabIndex = 0;
@@ -213,7 +213,7 @@
             // lblHeight
             // 
             lblHeight.AutoSize = true;
-            lblHeight.Location = new Point(907, 458);
+            lblHeight.Location = new Point(1246, 524);
             lblHeight.Name = "lblHeight";
             lblHeight.Size = new Size(46, 15);
             lblHeight.TabIndex = 14;
@@ -221,7 +221,7 @@
             // 
             // txtWidth
             // 
-            txtWidth.Location = new Point(826, 453);
+            txtWidth.Location = new Point(1165, 519);
             txtWidth.Name = "txtWidth";
             txtWidth.Size = new Size(51, 23);
             txtWidth.TabIndex = 15;
@@ -230,7 +230,7 @@
             // 
             lblBatch.AutoSize = true;
             lblBatch.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            lblBatch.Location = new Point(778, 510);
+            lblBatch.Location = new Point(1117, 576);
             lblBatch.Name = "lblBatch";
             lblBatch.Size = new Size(55, 21);
             lblBatch.TabIndex = 24;
@@ -238,7 +238,7 @@
             // 
             // txtHeight
             // 
-            txtHeight.Location = new Point(959, 453);
+            txtHeight.Location = new Point(1298, 519);
             txtHeight.Name = "txtHeight";
             txtHeight.Size = new Size(51, 23);
             txtHeight.TabIndex = 16;
@@ -246,7 +246,7 @@
             // cmbBatch
             // 
             cmbBatch.FormattingEnabled = true;
-            cmbBatch.Location = new Point(781, 534);
+            cmbBatch.Location = new Point(1120, 600);
             cmbBatch.Name = "cmbBatch";
             cmbBatch.Size = new Size(299, 23);
             cmbBatch.TabIndex = 23;
@@ -258,14 +258,14 @@
             panel3.Controls.Add(lblTitle);
             panel3.Location = new Point(1, 0);
             panel3.Name = "panel3";
-            panel3.Size = new Size(1379, 87);
+            panel3.Size = new Size(1820, 87);
             panel3.TabIndex = 36;
             // 
             // lblPrintPreview
             // 
             lblPrintPreview.AutoSize = true;
             lblPrintPreview.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            lblPrintPreview.Location = new Point(768, 35);
+            lblPrintPreview.Location = new Point(1107, 101);
             lblPrintPreview.Name = "lblPrintPreview";
             lblPrintPreview.Size = new Size(109, 21);
             lblPrintPreview.TabIndex = 5;
@@ -321,9 +321,9 @@
             groupBox1.Controls.Add(txtPartName1);
             groupBox1.Controls.Add(label5);
             groupBox1.Controls.Add(label10);
-            groupBox1.Location = new Point(24, 12);
+            groupBox1.Location = new Point(280, 78);
             groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(705, 755);
+            groupBox1.Size = new Size(705, 840);
             groupBox1.TabIndex = 34;
             groupBox1.TabStop = false;
             // 
@@ -739,7 +739,7 @@
             // 
             btnPrintAll.BackColor = Color.LightSkyBlue;
             btnPrintAll.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnPrintAll.Location = new Point(942, 627);
+            btnPrintAll.Location = new Point(1281, 693);
             btnPrintAll.Name = "btnPrintAll";
             btnPrintAll.Size = new Size(161, 39);
             btnPrintAll.TabIndex = 21;
@@ -769,13 +769,13 @@
             panel1.Controls.Add(rdoBlank);
             panel1.Location = new Point(57, 175);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1300, 796);
+            panel1.Size = new Size(1774, 874);
             panel1.TabIndex = 35;
             // 
             // rdoWithData
             // 
             rdoWithData.AutoSize = true;
-            rdoWithData.Location = new Point(775, 405);
+            rdoWithData.Location = new Point(1114, 471);
             rdoWithData.Name = "rdoWithData";
             rdoWithData.Size = new Size(141, 19);
             rdoWithData.TabIndex = 11;
@@ -786,7 +786,7 @@
             // rdoBlank
             // 
             rdoBlank.AutoSize = true;
-            rdoBlank.Location = new Point(775, 430);
+            rdoBlank.Location = new Point(1114, 496);
             rdoBlank.Name = "rdoBlank";
             rdoBlank.Size = new Size(134, 19);
             rdoBlank.TabIndex = 12;
@@ -801,7 +801,7 @@
             AutoScroll = true;
             AutoValidate = AutoValidate.EnablePreventFocusChange;
             BackColor = Color.LightSlateGray;
-            ClientSize = new Size(1382, 978);
+            ClientSize = new Size(1818, 1061);
             Controls.Add(panel2);
             Controls.Add(panel3);
             Controls.Add(panel1);
