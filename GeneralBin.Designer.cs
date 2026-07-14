@@ -747,28 +747,6 @@
             btnPrintAll.UseVisualStyleBackColor = false;
             btnPrintAll.Click += btnPrintAll_Click;
             // 
-            // rdoWithData
-            // 
-            rdoWithData.AutoSize = true;
-            rdoWithData.Location = new Point(775, 405);
-            rdoWithData.Name = "rdoWithData";
-            rdoWithData.Size = new Size(130, 19);
-            rdoWithData.TabIndex = 11;
-            rdoWithData.TabStop = true;
-            rdoWithData.Text = "Print Labels With Data";
-            rdoWithData.UseVisualStyleBackColor = true;
-            // 
-            // rdoBlank
-            // 
-            rdoBlank.AutoSize = true;
-            rdoBlank.Location = new Point(775, 430);
-            rdoBlank.Name = "rdoBlank";
-            rdoBlank.Size = new Size(140, 19);
-            rdoBlank.TabIndex = 12;
-            rdoBlank.TabStop = true;
-            rdoBlank.Text = "Print Blank Template";
-            rdoBlank.UseVisualStyleBackColor = true;
-            // 
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
@@ -794,10 +772,34 @@
             panel1.Size = new Size(1300, 796);
             panel1.TabIndex = 35;
             // 
+            // rdoWithData
+            // 
+            rdoWithData.AutoSize = true;
+            rdoWithData.Location = new Point(775, 405);
+            rdoWithData.Name = "rdoWithData";
+            rdoWithData.Size = new Size(141, 19);
+            rdoWithData.TabIndex = 11;
+            rdoWithData.TabStop = true;
+            rdoWithData.Text = "Print Labels With Data";
+            rdoWithData.UseVisualStyleBackColor = true;
+            // 
+            // rdoBlank
+            // 
+            rdoBlank.AutoSize = true;
+            rdoBlank.Location = new Point(775, 430);
+            rdoBlank.Name = "rdoBlank";
+            rdoBlank.Size = new Size(134, 19);
+            rdoBlank.TabIndex = 12;
+            rdoBlank.TabStop = true;
+            rdoBlank.Text = "Print Blank Template";
+            rdoBlank.UseVisualStyleBackColor = true;
+            // 
             // GeneralForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            AutoScroll = true;
+            AutoValidate = AutoValidate.EnablePreventFocusChange;
             BackColor = Color.LightSlateGray;
             ClientSize = new Size(1382, 978);
             Controls.Add(panel2);
@@ -805,6 +807,7 @@
             Controls.Add(panel1);
             Name = "GeneralForm";
             Text = "GeneralForm";
+            WindowState = FormWindowState.Maximized;
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
             panel3.ResumeLayout(false);

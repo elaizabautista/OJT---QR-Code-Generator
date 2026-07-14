@@ -47,8 +47,8 @@ namespace OJT___QR_Code_Generator
             rdoWithData.Checked = true;
 
             // Default size
-            txtWidth.Text = "11.69";
-            txtHeight.Text = "8.27";
+            txtWidth.Text = "8.27";
+            txtHeight.Text = "11.69";
         }
 
         // ── Event wiring ──────────────────────────────────────────────────────
@@ -273,6 +273,9 @@ namespace OJT___QR_Code_Generator
         /// <summary>
         /// Renders one full A4 Landscape page of 12 label slots.
         /// Depending on the selected mode, each slot is either blank or filled.
+        /// A 0.3" vertical gap is inserted between consecutive labels in each column.
+        /// The whole grid is centered within the printable area to compensate for
+        /// integer-division rounding in labelHeight/colWidth.
         /// </summary>
         private void RenderA4Page(Graphics g, int pageWidth, int pageHeight,
                                    int startIndex, bool isPrinting)
@@ -293,22 +296,32 @@ namespace OJT___QR_Code_Generator
             int areaHeight = pageHeight - marginTop - marginBottom;
 
             int colWidth = (areaWidth - centerGap) / 2;
-            int labelHeight = areaHeight / Rows;
+
+            // Vertical gap between labels (0.3 inch), scaled to device pixels
+            const double LabelGapIn = 0.3;
+            int labelGap = (int)(LabelGapIn * 100 * sy);
+
+            int totalGapHeight = labelGap * (Rows - 1);
+            int labelHeight = (areaHeight - totalGapHeight) / Rows;
+
+            // ── NEW: center the grid within the printable area ──
+            // Integer division above always leaves a small remainder (a few px)
+            // that was previously pushed entirely to the right/bottom of the
+            // printable area. We compute that leftover and split it evenly so
+            // the grid sits dead-center between the margins.
+            int contentWidth = colWidth * 2 + centerGap;
+            int contentHeight = labelHeight * Rows + totalGapHeight;
+
+            int horizontalOffset = (areaWidth - contentWidth) / 2;
+            int verticalOffset = (areaHeight - contentHeight) / 2;
+
+            int gridLeft = areaLeft + horizontalOffset;
+            int gridTop = areaTop + verticalOffset;
 
             bool isBlank = rdoBlank.Checked;
 
-            // ── Outer page border ──
-            using (Pen outerPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
-            {
-                g.DrawRectangle(outerPen, areaLeft, areaTop, areaWidth, areaHeight);
-            }
-
-            // ── Column separator line ──
-            int separatorX = areaLeft + colWidth + centerGap / 2;
-            using (Pen sepPen = new Pen(Color.Black, isPrinting ? 1f : 0.5f))
-            {
-                g.DrawLine(sepPen, separatorX, areaTop, separatorX, areaTop + areaHeight);
-            }
+            // Outer page border: removed
+            // Column separator line: removed
 
             // ── Draw each of the 12 label slots ──
             for (int slot = 0; slot < LabelsPerPage; slot++)
@@ -316,12 +329,12 @@ namespace OJT___QR_Code_Generator
                 int row = slot % Rows;   // 0–5  (fill top-to-bottom in each column)
                 int col = slot / Rows;   // 0 or 1
 
-                int labelX = areaLeft + col * (colWidth + centerGap);
-                int labelY = areaTop + row * labelHeight;
+                // NEW: positions now originate from gridLeft/gridTop instead of areaLeft/areaTop
+                int labelX = gridLeft + col * (colWidth + centerGap);
+                int labelY = gridTop + row * (labelHeight + labelGap);
 
                 if (isBlank)
                 {
-                    // Blank template: draw border + dashed cut guide only
                     DrawBlankSlot(g, labelX, labelY, colWidth, labelHeight, isPrinting);
                 }
                 else
@@ -330,20 +343,10 @@ namespace OJT___QR_Code_Generator
                     string name = (dataIndex < _allLabels.Count) ? _allLabels[dataIndex].Name : string.Empty;
                     string number = (dataIndex < _allLabels.Count) ? _allLabels[dataIndex].Number : string.Empty;
 
-                    // Reuse existing RenderStrip logic
                     RenderStrip(g, name, number, labelX, labelY, colWidth, labelHeight, isPrinting);
                 }
 
-                // ── Dashed cut line between rows ──
-                if (row < Rows - 1)
-                {
-                    int cutY = labelY + labelHeight;
-                    using (Pen cutPen = new Pen(Color.Gray, isPrinting ? 1f : 0.5f))
-                    {
-                        cutPen.DashStyle = DashStyle.Dash;
-                        g.DrawLine(cutPen, labelX, cutY, labelX + colWidth, cutY);
-                    }
-                }
+                // Dashed cut guide between rows: removed (0.3" gap already separates labels)
             }
         }
 
