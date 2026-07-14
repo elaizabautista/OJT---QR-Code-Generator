@@ -40,18 +40,18 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = "4";
             txtCustomHeight.Text = "6";
 
-            // Populate the ComboBox directly from FloorBin_Data, instead of hardcoding
-            // "WHA01".."WHA15" here. This automatically includes every zone that exists
-            // in the data (WHA01-WHA15, WHA-CP, WHA-FM, WHC) and stays correct if more
-            // zones get added to FloorBin_Data later without touching this form again.
+            // Populate the ComboBox directly from WarehouseData, instead of hardcoding
+            // zone names here. This automatically includes every zone that exists
+            // in the data and stays correct if more zones get added to WarehouseData
+            // later without touching this form again.
             cmbBatch.Items.Clear();
 
-            List<string> sortedZones = FloorBin_Data.ZoneToBins.Keys.ToList();
-            sortedZones.Sort((x, y) => GetZoneSortKey(x).CompareTo(GetZoneSortKey(y)));
+            List<object> sortedZones = WarehouseData.myZones.Keys.ToList();
+            sortedZones.Sort((x, y) => GetZoneSortKey(x.ToString()).CompareTo(GetZoneSortKey(y.ToString())));
 
-            foreach (string zone in sortedZones)
+            foreach (object zone in sortedZones)
             {
-                cmbBatch.Items.Add(zone);
+                cmbBatch.Items.Add(zone.ToString());
             }
         }
 
@@ -79,7 +79,7 @@ namespace OJT___QR_Code_Generator
             // Direct dictionary lookup - no more scanning every key with StartsWith.
             // Preview the first bin code in the zone so the user has something to look at
             // right after picking a zone; Print All still prints every code in the zone.
-            if (FloorBin_Data.ZoneToBins.TryGetValue(selectedZone, out string[] binsInZone) &&
+            if (WarehouseData.myZones.TryGetValue(selectedZone, out string[] binsInZone) &&
                 binsInZone.Length > 0)
             {
                 txtNumber.Text = binsInZone[0];
@@ -235,7 +235,7 @@ namespace OJT___QR_Code_Generator
             string selectedZone = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01" or "WHA-CP"
 
             // Direct dictionary lookup instead of scanning every key with StartsWith.
-            if (!FloorBin_Data.ZoneToBins.TryGetValue(selectedZone, out string[] binsInZone) ||
+            if (!WarehouseData.myZones.TryGetValue(selectedZone, out string[] binsInZone) ||
                 binsInZone.Length == 0)
             {
                 MessageBox.Show($"No bin codes found for {selectedZone}.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -270,6 +270,7 @@ namespace OJT___QR_Code_Generator
                 }
             }
         }
+
         private void PrintFloorBinHandler(object sender, PrintPageEventArgs e)
         {
             Graphics g = e.Graphics;
