@@ -142,7 +142,7 @@
             panel2.Controls.Add(lblSubtitle);
             panel2.Location = new Point(1, 76);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1820, 60);
+            panel2.Size = new Size(1936, 60);
             panel2.TabIndex = 37;
             // 
             // lblSubtitle
@@ -258,7 +258,7 @@
             panel3.Controls.Add(lblTitle);
             panel3.Location = new Point(1, 0);
             panel3.Name = "panel3";
-            panel3.Size = new Size(1820, 87);
+            panel3.Size = new Size(1924, 87);
             panel3.TabIndex = 36;
             // 
             // lblPrintPreview
@@ -321,7 +321,7 @@
             groupBox1.Controls.Add(txtPartName1);
             groupBox1.Controls.Add(label5);
             groupBox1.Controls.Add(label10);
-            groupBox1.Location = new Point(280, 78);
+            groupBox1.Location = new Point(238, 101);
             groupBox1.Name = "groupBox1";
             groupBox1.Size = new Size(705, 840);
             groupBox1.TabIndex = 34;
