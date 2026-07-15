@@ -650,5 +650,10 @@ namespace OJT___QR_Code_Generator
                 default: return 9999;
             }
         }
+
+        private void GeneralForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

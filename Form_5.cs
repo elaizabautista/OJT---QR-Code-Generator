@@ -33,8 +33,17 @@ namespace OJT___QR_Code_Generator
             this.pnlPreview.Paint += new PaintEventHandler(this.pnlPreview_Paint);
         }
 
+        private void CenterPanel()
+        {
+            panel4.Left = (this.ClientSize.Width - panel4.Width) / 2;
+            panel4.Top = (this.ClientSize.Height - panel4.Height) / 2;
+        }
+
         private void Form_5_Load(object sender, EventArgs e)
         {
+            CenterPanel();
+            this.Resize += (s, e) => CenterPanel();
+
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
 

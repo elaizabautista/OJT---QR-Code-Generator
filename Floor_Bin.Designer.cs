@@ -44,10 +44,12 @@
             label11 = new Label();
             panel3 = new Panel();
             label12 = new Label();
+            panel4 = new Panel();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
+            panel4.SuspendLayout();
             SuspendLayout();
             // 
             // btnPrintAll
@@ -224,7 +226,7 @@
             panel1.Controls.Add(pnlPreview);
             panel1.Controls.Add(label4);
             panel1.Controls.Add(label1);
-            panel1.Location = new Point(50, 162);
+            panel1.Location = new Point(62, 164);
             panel1.Name = "panel1";
             panel1.Size = new Size(997, 520);
             panel1.TabIndex = 1;
@@ -254,9 +256,9 @@
             // 
             panel2.BackColor = Color.RoyalBlue;
             panel2.Controls.Add(label11);
-            panel2.Location = new Point(0, 76);
+            panel2.Location = new Point(-1, 75);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1150, 60);
+            panel2.Size = new Size(1154, 64);
             panel2.TabIndex = 32;
             // 
             // label11
@@ -264,7 +266,7 @@
             label11.AutoSize = true;
             label11.Font = new Font("Segoe UI Semibold", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label11.ForeColor = SystemColors.ButtonHighlight;
-            label11.Location = new Point(18, 14);
+            label11.Location = new Point(16, 27);
             label11.Name = "label11";
             label11.Size = new Size(88, 25);
             label11.TabIndex = 19;
@@ -274,9 +276,9 @@
             // 
             panel3.BackColor = Color.MediumBlue;
             panel3.Controls.Add(label12);
-            panel3.Location = new Point(0, 0);
+            panel3.Location = new Point(-1, -1);
             panel3.Name = "panel3";
-            panel3.Size = new Size(1150, 87);
+            panel3.Size = new Size(1154, 91);
             panel3.TabIndex = 31;
             // 
             // label12
@@ -284,21 +286,30 @@
             label12.AutoSize = true;
             label12.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label12.ForeColor = SystemColors.ButtonHighlight;
-            label12.Location = new Point(16, 25);
+            label12.Location = new Point(16, 34);
             label12.Name = "label12";
             label12.Size = new Size(264, 30);
             label12.TabIndex = 20;
             label12.Text = "Panasonic | QR Generator";
             // 
+            // panel4
+            // 
+            panel4.BackColor = SystemColors.ActiveBorder;
+            panel4.Controls.Add(panel3);
+            panel4.Controls.Add(panel2);
+            panel4.Controls.Add(panel1);
+            panel4.Location = new Point(45, 27);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(1117, 760);
+            panel4.TabIndex = 33;
+            // 
             // Floor_Bin
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.LightSlateGray;
-            ClientSize = new Size(1097, 728);
-            Controls.Add(panel2);
-            Controls.Add(panel1);
-            Controls.Add(panel3);
+            BackColor = Color.Snow;
+            ClientSize = new Size(1202, 799);
+            Controls.Add(panel4);
             Name = "Floor_Bin";
             Text = "Floor_Bin";
             Load += Floor_Bin_Load;
@@ -310,6 +321,7 @@
             panel2.PerformLayout();
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
+            panel4.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -337,5 +349,6 @@
         private Label label11;
         private Panel panel3;
         private Label label12;
+        private Panel panel4;
     }
 }

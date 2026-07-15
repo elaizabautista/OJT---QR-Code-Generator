@@ -36,10 +36,17 @@ namespace OJT___QR_Code_Generator
             this.Close();
         }
 
-        
+        private void CenterPanel()
+        {
+            panel4.Left = (this.ClientSize.Width - panel4.Width) / 2;
+            panel4.Top = (this.ClientSize.Height - panel4.Height) / 2;
+        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            CenterPanel();
+            this.Resize += (s, e) => CenterPanel();
+
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
 
@@ -57,8 +64,8 @@ namespace OJT___QR_Code_Generator
 
         private Size GetTargetPaperSizeInHundredths()
         {
-            double widthInches = 3.0;
-            double heightInches = 6.0;
+            double widthInches = 3.2;
+            double heightInches = 5.8;
 
             double.TryParse(txtCustomWidth.Text, out widthInches);
             double.TryParse(txtCustomHeight.Text, out heightInches);
@@ -66,8 +73,8 @@ namespace OJT___QR_Code_Generator
             int w = (int)(widthInches * 100);
             int h = (int)(heightInches * 100);
 
-            if (w <= 0) w = 300;
-            if (h <= 0) h = 600;
+            if (w <= 0) w = 320;
+            if (h <= 0) h = 580;
 
             return new Size(w, h);
         }

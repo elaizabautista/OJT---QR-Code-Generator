@@ -35,8 +35,17 @@ namespace OJT___QR_Code_Generator
             this.cmbBatch.SelectedIndexChanged += new EventHandler(this.cmbWhaZones_SelectedIndexChanged);
         }
 
+        private void CenterPanel()
+        {
+            panel4.Left = (this.ClientSize.Width - panel4.Width) / 2;
+            panel4.Top = (this.ClientSize.Height - panel4.Height) / 2;
+        }
+
         private void Floor_Bin_Load(object sender, EventArgs e)
         {
+            CenterPanel();
+            this.Resize += (s, e) => CenterPanel();
+
             txtCustomWidth.Text = "4";
             txtCustomHeight.Text = "6";
 

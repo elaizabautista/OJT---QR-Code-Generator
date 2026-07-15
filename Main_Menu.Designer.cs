@@ -42,17 +42,19 @@
             label1 = new Label();
             label10 = new Label();
             button1 = new Button();
+            panel4 = new Panel();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
+            panel4.SuspendLayout();
             SuspendLayout();
             // 
             // btnBinLocation
             // 
             btnBinLocation.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnBinLocation.Location = new Point(134, 359);
+            btnBinLocation.Location = new Point(121, 341);
             btnBinLocation.Name = "btnBinLocation";
-            btnBinLocation.Size = new Size(243, 57);
+            btnBinLocation.Size = new Size(203, 57);
             btnBinLocation.TabIndex = 3;
             btnBinLocation.Text = "BIN LOCATION";
             btnBinLocation.UseVisualStyleBackColor = true;
@@ -61,9 +63,9 @@
             // btnNamingPart
             // 
             btnNamingPart.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            btnNamingPart.Location = new Point(134, 422);
+            btnNamingPart.Location = new Point(121, 404);
             btnNamingPart.Name = "btnNamingPart";
-            btnNamingPart.Size = new Size(243, 57);
+            btnNamingPart.Size = new Size(203, 57);
             btnNamingPart.TabIndex = 10;
             btnNamingPart.Text = "PART NAME AND NUMBER";
             btnNamingPart.UseVisualStyleBackColor = true;
@@ -72,9 +74,9 @@
             // btnFloorBin
             // 
             btnFloorBin.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            btnFloorBin.Location = new Point(714, 360);
+            btnFloorBin.Location = new Point(701, 342);
             btnFloorBin.Name = "btnFloorBin";
-            btnFloorBin.Size = new Size(243, 57);
+            btnFloorBin.Size = new Size(203, 57);
             btnFloorBin.TabIndex = 11;
             btnFloorBin.Text = "FLOOR BIN";
             btnFloorBin.UseVisualStyleBackColor = true;
@@ -83,9 +85,9 @@
             // btnFinishedGoods
             // 
             btnFinishedGoods.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            btnFinishedGoods.Location = new Point(426, 360);
+            btnFinishedGoods.Location = new Point(413, 342);
             btnFinishedGoods.Name = "btnFinishedGoods";
-            btnFinishedGoods.Size = new Size(243, 57);
+            btnFinishedGoods.Size = new Size(203, 57);
             btnFinishedGoods.TabIndex = 12;
             btnFinishedGoods.Text = "FINISHED GOODS";
             btnFinishedGoods.UseVisualStyleBackColor = true;
@@ -94,9 +96,9 @@
             // btnForm5
             // 
             btnForm5.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            btnForm5.Location = new Point(426, 423);
+            btnForm5.Location = new Point(413, 405);
             btnForm5.Name = "btnForm5";
-            btnForm5.Size = new Size(243, 57);
+            btnForm5.Size = new Size(203, 57);
             btnForm5.TabIndex = 13;
             btnForm5.Text = "Click here";
             btnForm5.UseVisualStyleBackColor = true;
@@ -106,9 +108,9 @@
             // 
             panel1.BackColor = Color.MediumBlue;
             panel1.Controls.Add(label9);
-            panel1.Location = new Point(-4, -6);
+            panel1.Location = new Point(0, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(1088, 78);
+            panel1.Size = new Size(1015, 85);
             panel1.TabIndex = 17;
             // 
             // label9
@@ -126,9 +128,9 @@
             // 
             panel2.BackColor = Color.RoyalBlue;
             panel2.Controls.Add(label8);
-            panel2.Location = new Point(-4, 70);
+            panel2.Location = new Point(0, 76);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1088, 51);
+            panel2.Size = new Size(1012, 59);
             panel2.TabIndex = 18;
             // 
             // label8
@@ -148,7 +150,7 @@
             panel3.Controls.Add(label2);
             panel3.Controls.Add(label1);
             panel3.Controls.Add(label10);
-            panel3.Location = new Point(121, 164);
+            panel3.Location = new Point(96, 180);
             panel3.Name = "panel3";
             panel3.Size = new Size(823, 119);
             panel3.TabIndex = 19;
@@ -189,29 +191,38 @@
             // button1
             // 
             button1.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
-            button1.Location = new Point(714, 423);
+            button1.Location = new Point(701, 405);
             button1.Name = "button1";
-            button1.Size = new Size(243, 57);
+            button1.Size = new Size(203, 57);
             button1.TabIndex = 20;
             button1.Text = "GENERAL BIN";
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
+            // panel4
+            // 
+            panel4.BackColor = SystemColors.ControlLight;
+            panel4.Controls.Add(panel1);
+            panel4.Controls.Add(button1);
+            panel4.Controls.Add(btnBinLocation);
+            panel4.Controls.Add(panel2);
+            panel4.Controls.Add(panel3);
+            panel4.Controls.Add(btnNamingPart);
+            panel4.Controls.Add(btnFloorBin);
+            panel4.Controls.Add(btnFinishedGoods);
+            panel4.Controls.Add(btnForm5);
+            panel4.Location = new Point(47, 49);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(1009, 565);
+            panel4.TabIndex = 21;
+            // 
             // Main_Menu
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = SystemColors.ButtonFace;
-            ClientSize = new Size(1088, 570);
-            Controls.Add(button1);
-            Controls.Add(panel3);
-            Controls.Add(panel2);
-            Controls.Add(panel1);
-            Controls.Add(btnForm5);
-            Controls.Add(btnFinishedGoods);
-            Controls.Add(btnFloorBin);
-            Controls.Add(btnNamingPart);
-            Controls.Add(btnBinLocation);
+            BackColor = Color.Snow;
+            ClientSize = new Size(1196, 662);
+            Controls.Add(panel4);
             Name = "Main_Menu";
             Text = "Main_Menu";
             Load += Main_Menu_Load;
@@ -221,6 +232,7 @@
             panel2.PerformLayout();
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
+            panel4.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -239,5 +251,6 @@
         private Label label1;
         public Label label2;
         private Button button1;
+        private Panel panel4;
     }
 }

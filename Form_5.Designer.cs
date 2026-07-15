@@ -60,10 +60,12 @@
             label13 = new Label();
             panel3 = new Panel();
             label14 = new Label();
+            panel4 = new Panel();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
+            panel4.SuspendLayout();
             SuspendLayout();
             // 
             // PrintAllButt
@@ -86,7 +88,7 @@
             panel1.Controls.Add(btnConvertToPdf);
             panel1.Controls.Add(pnlPreview);
             panel1.Controls.Add(label1);
-            panel1.Location = new Point(58, 176);
+            panel1.Location = new Point(59, 178);
             panel1.Name = "panel1";
             panel1.Size = new Size(1043, 562);
             panel1.TabIndex = 2;
@@ -360,9 +362,9 @@
             // 
             panel2.BackColor = Color.RoyalBlue;
             panel2.Controls.Add(label13);
-            panel2.Location = new Point(2, 77);
+            panel2.Location = new Point(-1, 79);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1150, 60);
+            panel2.Size = new Size(1154, 60);
             panel2.TabIndex = 34;
             // 
             // label13
@@ -370,7 +372,7 @@
             label13.AutoSize = true;
             label13.Font = new Font("Segoe UI Semibold", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label13.ForeColor = SystemColors.ButtonHighlight;
-            label13.Location = new Point(18, 14);
+            label13.Location = new Point(16, 23);
             label13.Name = "label13";
             label13.Size = new Size(88, 25);
             label13.TabIndex = 19;
@@ -380,9 +382,9 @@
             // 
             panel3.BackColor = Color.MediumBlue;
             panel3.Controls.Add(label14);
-            panel3.Location = new Point(2, 1);
+            panel3.Location = new Point(-1, 0);
             panel3.Name = "panel3";
-            panel3.Size = new Size(1150, 87);
+            panel3.Size = new Size(1154, 90);
             panel3.TabIndex = 33;
             // 
             // label14
@@ -390,21 +392,30 @@
             label14.AutoSize = true;
             label14.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label14.ForeColor = SystemColors.ButtonHighlight;
-            label14.Location = new Point(16, 25);
+            label14.Location = new Point(16, 33);
             label14.Name = "label14";
             label14.Size = new Size(264, 30);
             label14.TabIndex = 20;
             label14.Text = "Panasonic | QR Generator";
             // 
+            // panel4
+            // 
+            panel4.BackColor = SystemColors.ActiveBorder;
+            panel4.Controls.Add(panel3);
+            panel4.Controls.Add(panel2);
+            panel4.Controls.Add(panel1);
+            panel4.Location = new Point(29, 39);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(1146, 765);
+            panel4.TabIndex = 35;
+            // 
             // Form_5
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.LightSlateGray;
-            ClientSize = new Size(1150, 750);
-            Controls.Add(panel2);
-            Controls.Add(panel3);
-            Controls.Add(panel1);
+            BackColor = Color.Snow;
+            ClientSize = new Size(1202, 836);
+            Controls.Add(panel4);
             Name = "Form_5";
             Text = "Form_5";
             Load += Form_5_Load;
@@ -416,6 +427,7 @@
             panel2.PerformLayout();
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
+            panel4.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -453,5 +465,6 @@
         private Panel panel3;
         private Label label14;
         private GroupBox groupBox1;
+        private Panel panel4;
     }
 }

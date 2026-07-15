@@ -45,8 +45,17 @@ namespace OJT___QR_Code_Generator
             this.PrintAllButt.Click += new System.EventHandler(this.PrintAllButt_Click);
         }
 
+        private void CenterPanel()
+        {
+            panel4.Left = (this.ClientSize.Width - panel4.Width) / 2;
+            panel4.Top = (this.ClientSize.Height - panel4.Height) / 2;
+        }
+
         private void Naming_Part_From_Load(object sender, EventArgs e)
         {
+            CenterPanel();
+            this.Resize += (s, e) => CenterPanel();
+
             txtCustomWidth.Text = DefaultLabelWidthInches.ToString();
             txtCustomHeight.Text = DefaultLabelHeightInches.ToString();
 
