@@ -335,42 +335,31 @@ namespace OJT___QR_Code_Generator
 
         private void RenderFloorBinLabel(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
-            // Bigger margin = more white space outside the border, protects against
-            // print/cut misalignment cutting into the border or content
-            int margin = isPrinting ? 14 : 7;
-
+            int margin = isPrinting ? 10 : 5;
             int safeX = margin;
             int safeY = margin;
             int safeWidth = totalWidth - (margin * 2);
             int safeHeight = totalHeight - (margin * 2);
 
-            // Border around the whole label - the only line drawn, no divider
-            int penThickness = isPrinting ? 4 : 2;
-            using (Pen borderPen = new Pen(Color.Black, penThickness))
+            if (string.IsNullOrEmpty(_activeNumber))
             {
-                g.DrawRectangle(borderPen, safeX, safeY, safeWidth, safeHeight);
+                DrawBorder(g, safeX, safeY, safeWidth, safeHeight, isPrinting);
+                return;
             }
 
-            if (string.IsNullOrEmpty(_activeNumber))
-                return;
-
-            int gap = (int)(safeHeight * 0.04f);
-
-            // Bigger text box = DrawTextAutofit is allowed to grow the font further
-            // before it has to shrink to fit. Bumped from 0.19 to 0.25 of safeHeight.
-            int textHeight = (int)(safeHeight * 0.29f);
+            int gap = 4;
+            int textHeight = (int)(safeHeight * 0.27f);
             float maxFontCeiling = textHeight;
+            int qrSizeByHeight = safeHeight - gap - textHeight;
+            int qrSizeByWidth = safeWidth;
+            int qrSize = (int)(Math.Min(qrSizeByHeight, qrSizeByWidth) * 1.22f);
 
-            int qrSize = (int)((safeHeight - gap - textHeight) * 0.95f);
-            qrSize = Math.Min(qrSize, safeWidth);
-
-            int moveTextUpPixels = 12;
-
+            int moveTextUpPixels = 30;
             int contentHeight = qrSize + gap + textHeight;
-            int blockStartY = safeY + (safeHeight - contentHeight) / 2;
+            int blockStartY = safeY + Math.Max(0, (safeHeight - contentHeight) / 2);
 
             int qrX = safeX + (safeWidth - qrSize) / 2;
-            int qrY = blockStartY;
+            int qrY = blockStartY - 15;
 
             using (Bitmap qrImg = CreateQRCodeImage(_activeNumber))
             {
@@ -378,12 +367,9 @@ namespace OJT___QR_Code_Generator
                 {
                     var oldInterpolation = g.InterpolationMode;
                     var oldPixelOffset = g.PixelOffsetMode;
-
                     g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
                     g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.Half;
-
                     g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
-
                     g.InterpolationMode = oldInterpolation;
                     g.PixelOffsetMode = oldPixelOffset;
                 }
@@ -393,27 +379,42 @@ namespace OJT___QR_Code_Generator
             textY -= moveTextUpPixels;
 
             DrawTextAutofit(g, _activeNumber, "Arial", FontStyle.Bold, maxFontCeiling, safeX, textY, safeWidth, textHeight);
+            DrawBorder(g, safeX, safeY, safeWidth, safeHeight, isPrinting);
+        }
+
+        private void DrawBorder(Graphics g, int safeX, int safeY, int safeWidth, int safeHeight, bool isPrinting)
+        {
+            int borderThickness = isPrinting ? 3 : 2; // thinner, as requested
+            using (SolidBrush borderBrush = new SolidBrush(Color.Black))
+            {
+                g.FillRectangle(borderBrush, safeX, safeY, safeWidth, borderThickness); // top
+                g.FillRectangle(borderBrush, safeX, safeY + safeHeight - borderThickness, safeWidth, borderThickness); // bottom
+                g.FillRectangle(borderBrush, safeX, safeY, borderThickness, safeHeight); // left
+                g.FillRectangle(borderBrush, safeX + safeWidth - borderThickness, safeY, borderThickness, safeHeight); // right
+            }
         }
 
         private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight)
         {
+            StringFormat format = StringFormat.GenericTypographic; // add this
+
             float currentSize = maxFontSize;
             Font testFont = new Font(fontFamily, currentSize, style);
-            SizeF size = g.MeasureString(text, testFont);
+            SizeF size = g.MeasureString(text, testFont, int.MaxValue, format); // pass format
 
             while ((size.Width > maxWidth || size.Height > maxHeight) && currentSize > 8f)
             {
                 currentSize -= 1f;
                 testFont.Dispose();
                 testFont = new Font(fontFamily, currentSize, style);
-                size = g.MeasureString(text, testFont);
+                size = g.MeasureString(text, testFont, int.MaxValue, format); // pass format
             }
 
             using (testFont)
             {
                 float posX = x + (maxWidth - size.Width) / 2;
                 float posY = y + (maxHeight - size.Height) / 2;
-                g.DrawString(text, testFont, Brushes.Black, posX, posY);
+                g.DrawString(text, testFont, Brushes.Black, posX, posY, format); // pass format
             }
         }
 
