@@ -54,6 +54,7 @@
             panel3 = new Panel();
             label10 = new Label();
             panel4 = new Panel();
+            Uploadbutt = new Button();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
             panel2.SuspendLayout();
@@ -64,6 +65,7 @@
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
+            panel1.Controls.Add(Uploadbutt);
             panel1.Controls.Add(groupBox1);
             panel1.Controls.Add(btnConvertToPdf);
             panel1.Controls.Add(pnlPreview);
@@ -334,6 +336,17 @@
             panel4.Size = new Size(1137, 713);
             panel4.TabIndex = 22;
             // 
+            // Uploadbutt
+            // 
+            Uploadbutt.BackColor = Color.LightBlue;
+            Uploadbutt.Location = new Point(921, 467);
+            Uploadbutt.Name = "Uploadbutt";
+            Uploadbutt.Size = new Size(89, 23);
+            Uploadbutt.TabIndex = 22;
+            Uploadbutt.Text = "Upload";
+            Uploadbutt.UseVisualStyleBackColor = false;
+            Uploadbutt.Click += Uploadbutt_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -384,5 +397,6 @@
         private Panel panel3;
         private Label label10;
         private Panel panel4;
+        private Button Uploadbutt;
     }
 }

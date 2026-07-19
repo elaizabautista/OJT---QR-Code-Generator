@@ -1,10 +1,15 @@
+using QRCoder;
 using System;
+using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
 using System.Windows.Forms;
-using QRCoder;
-using System.Collections.Generic;
+
+using ExcelDataReader;
+using System.IO;
+using System.Linq;
 
 namespace OJT___QR_Code_Generator
 {
@@ -50,16 +55,23 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
 
-            // Use 'object' to match the actual key type in your dictionary
-            var comboSource = new List<KeyValuePair<object, string[]>>();
+            // Seed default data from the old hardcoded WarehouseData so the app works
+            // before any file is uploaded. Uploading a file later will overwrite this.
+            SharedWarehouseData.UploadedZones.Clear();
             foreach (var kvp in WarehouseData.myZones)
             {
-                comboSource.Add(kvp);
+                string zoneKey = kvp.Key.ToString();
+                SharedWarehouseData.UploadedZones[zoneKey] = kvp.Value
+                    .Select(bin => new BinEntry { BinLocation = bin, Material = "", MaterialDescription = "" })
+                    .ToList();
             }
 
-            cmbBatch.DataSource = comboSource;
-            cmbBatch.DisplayMember = "Key";
-            // Do NOT set ValueMember
+            var sortedZones = SharedWarehouseData.UploadedZones.Keys.ToList();
+            sortedZones.Sort(new NaturalStringComparer());
+
+            cmbBatch.DataSource = null;
+            cmbBatch.Items.Clear();
+            cmbBatch.DataSource = sortedZones;
         }
 
         private Size GetTargetPaperSizeInHundredths()
@@ -387,22 +399,22 @@ namespace OJT___QR_Code_Generator
                 return;
             }
 
-            var selectedKvp = (KeyValuePair<object, string[]>)cmbBatch.SelectedItem;
-            object selectedKey = selectedKvp.Key;
+            string selectedZone = cmbBatch.SelectedItem.ToString();
 
-            if (!WarehouseData.myZones.ContainsKey(selectedKey))
+            if (!SharedWarehouseData.UploadedZones.ContainsKey(selectedZone) ||
+                SharedWarehouseData.UploadedZones[selectedZone].Count == 0)
             {
-                MessageBox.Show("Selected zone has no bin location data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selected zone has no bin location data. Please upload an Excel file first.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string[] bins = WarehouseData.myZones[selectedKey];
+            List<BinEntry> entries = SharedWarehouseData.UploadedZones[selectedZone];
 
             _batchPages.Clear();
-            for (int i = 0; i < bins.Length; i += 2)
+            for (int i = 0; i < entries.Count; i += 2)
             {
-                string bin1 = bins[i];
-                string bin2 = (i + 1 < bins.Length) ? bins[i + 1] : string.Empty;
+                string bin1 = entries[i].BinLocation;
+                string bin2 = (i + 1 < entries.Count) ? entries[i + 1].BinLocation : string.Empty;
                 _batchPages.Add((bin1, bin2));
             }
 
@@ -410,13 +422,7 @@ namespace OJT___QR_Code_Generator
 
             using (PrintDocument pd = new PrintDocument())
             {
-                // 1. DO NOT set Landscape = true here if your PrintLabelsHandler 
-                // already handles rotation.
                 pd.DefaultPageSettings.Landscape = false;
-
-                // 2. Set the PaperSize to the physical dimensions. 
-                // Your PrintLabelsHandler logic checks (printableWidth < printableHeight)
-                // and rotates based on that.
                 pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
 
                 pd.BeginPrint += (s, ea) => { _batchPageIndex = 0; };
@@ -442,5 +448,138 @@ namespace OJT___QR_Code_Generator
         {
 
         }
+
+        // Zone is now read directly from a column (with forward-fill for merged-style cells),
+        // NOT derived from the Bin Location text.
+        // Helper to find the correct column index regardless of header name variations
+        private int GetColumnIndex(DataColumnCollection columns, params string[] possibleNames)
+        {
+            foreach (string name in possibleNames)
+            {
+                if (columns.Contains(name))
+                    return columns.IndexOf(name);
+            }
+            return -1;
+        }
+
+        private int GetZoneColumnIndex(DataTable dt, int binCol, int matCol, int descCol)
+        {
+            // 1. Try an explicit "Zone" header first (in case some files do label it)
+            int zoneCol = GetColumnIndex(dt.Columns, "Zone", "Zone Name", "Area");
+            if (zoneCol != -1) return zoneCol;
+
+            // 2. Fallback: if column 0 exists and isn't already used for Bin/Material/Description,
+            //    treat it as the (unlabeled) Zone column — matches your real file's layout.
+            if (dt.Columns.Count > 0 && 0 != binCol && 0 != matCol && 0 != descCol)
+                return 0;
+
+            return -1;
+        }
+
+        private void Uploadbutt_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Excel Files|*.xls;*.xlsx;*.xlsm";
+                openFileDialog.Title = "Select the Master Excel File";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+                        using (var stream = File.Open(openFileDialog.FileName, FileMode.Open, FileAccess.Read))
+                        using (var reader = ExcelReaderFactory.CreateReader(stream))
+                        {
+                            var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                            {
+                                ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = true }
+                            });
+
+                            if (result.Tables.Count == 0)
+                            {
+                                MessageBox.Show("The Excel workbook is empty.", "Empty File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                return;
+                            }
+
+                            DataTable dt = result.Tables[0];
+
+                            int binCol = GetColumnIndex(dt.Columns, "Bin Location", "Bin(FINAL)", "Bin");
+                            int matCol = GetColumnIndex(dt.Columns, "Material", "Material Code");
+                            int descCol = GetColumnIndex(dt.Columns, "Material Description", "Description");
+
+                            if (binCol == -1 || matCol == -1)
+                            {
+                                var headers = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName);
+                                MessageBox.Show($"Could not confidently match required columns (Bin Location and Material).\n\nHeaders found:\n{string.Join(", ", headers)}",
+                                    "Header Mismatch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            int zoneCol = GetZoneColumnIndex(dt, binCol, matCol, descCol);
+                            if (zoneCol == -1)
+                            {
+                                MessageBox.Show("Could not find a Zone column in this file.", "Header Mismatch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            SharedWarehouseData.UploadedZones.Clear();
+                            int totalBins = 0;
+                            string lastSeenZone = string.Empty;
+
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                string binLoc = row[binCol]?.ToString().Trim();
+                                string material = row[matCol]?.ToString().Trim();
+                                string description = descCol != -1 ? row[descCol]?.ToString().Trim() : string.Empty;
+
+                                // Forward-fill: if this row has a zone value, remember it;
+                                // otherwise reuse the last zone seen above it (merged-cell behavior).
+                                string zoneCell = row[zoneCol]?.ToString().Trim();
+                                if (!string.IsNullOrWhiteSpace(zoneCell))
+                                    lastSeenZone = zoneCell;
+
+                                if (string.IsNullOrWhiteSpace(binLoc) || string.IsNullOrWhiteSpace(material))
+                                    continue;
+
+                                string zone = string.IsNullOrWhiteSpace(lastSeenZone) ? "Unassigned" : lastSeenZone;
+
+                                if (!SharedWarehouseData.UploadedZones.ContainsKey(zone))
+                                    SharedWarehouseData.UploadedZones[zone] = new List<BinEntry>();
+
+                                SharedWarehouseData.UploadedZones[zone].Add(new BinEntry
+                                {
+                                    BinLocation = binLoc,
+                                    Material = material,
+                                    MaterialDescription = description
+                                });
+                                totalBins++;
+                            }
+
+                            var sortedZones = SharedWarehouseData.UploadedZones.Keys.ToList();
+                            sortedZones.Sort(new NaturalStringComparer());
+
+                            cmbBatch.DataSource = null;
+                            cmbBatch.Items.Clear();
+                            cmbBatch.DataSource = sortedZones;
+
+                            MessageBox.Show($"Successfully loaded {totalBins} bins across {sortedZones.Count} zones.",
+                                "Upload Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        MessageBox.Show("The file is currently in use by another program. Please close Excel and try again.", "File Lock Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error reading file: {ex.Message}", "Excel Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+
     }
 }
