@@ -1,27 +1,35 @@
 ﻿using QRCoder;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using ExcelDataReader;
 
 namespace OJT___QR_Code_Generator
 {
     public partial class Naming_Part_From : Form
     {
-        // 1. Keep only this updated version of the list:
+        // 1. Updated version of the list for batch pages:
         private List<((string name, string number) p1, (string name, string number)? p2)> _batchPages =
             new List<((string, string), (string, string)?)>();
 
-        // 2. Keep your existing string variables:
+        // Master dictionary to hold both Hardcoded + Excel Uploaded data, grouped by Zone
+        private Dictionary<string, List<(string name, string number)>> _masterGroupedData =
+            new Dictionary<string, List<(string, string)>>();
+
+        // 2. Existing string variables:
         private string _activePartName = string.Empty;
         private string _activePartNumber = string.Empty;
         private string _activePartName2 = string.Empty;
         private string _activePartNumber2 = string.Empty;
 
-        // 3. Keep the index and constants:
+        // 3. Index and constants:
         private int _batchPageIndex = 0;
         private const double DefaultLabelWidthInches = 2.755;
         private const double DefaultLabelHeightInches = 5;
@@ -31,7 +39,6 @@ namespace OJT___QR_Code_Generator
         {
             InitializeComponent();
 
-            // Existing event handlers
             this.btnGenerate.Click += new System.EventHandler(this.btnGenerate_Click);
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
@@ -41,7 +48,6 @@ namespace OJT___QR_Code_Generator
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
 
-            // ADD THIS LINE TO CONNECT YOUR PRINT ALL BUTTON
             this.PrintAllButt.Click += new System.EventHandler(this.PrintAllButt_Click);
         }
 
@@ -59,129 +65,105 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = DefaultLabelWidthInches.ToString();
             txtCustomHeight.Text = DefaultLabelHeightInches.ToString();
 
-            cmbBatch.Items.Clear();
-
-            // Use a HashSet to ensure we only get unique GROUP names.
-            // GetZoneGroup rolls related sub-bins together (A1..A8 -> "Zone A",
-            // B5/B5R1..B5R13 -> "Zone B5", WHA01..WHA15 stay individual, etc.)
-            // instead of listing every raw prefix separately.
-            HashSet<string> uniqueGroups = new HashSet<string>();
-
-            foreach (string binKey in PartNumber_and_PartName_DATA.BinToParts.Keys)
+            // Seed default data from the hardcoded PartNumber_and_PartName_DATA
+            _masterGroupedData.Clear();
+            foreach (var kvp in PartNumber_and_PartName_DATA.BinToParts)
             {
-                uniqueGroups.Add(GetZoneGroup(binKey));
+                string group = GetZoneGroup(kvp.Key);
+                if (!_masterGroupedData.ContainsKey(group))
+                {
+                    _masterGroupedData[group] = new List<(string, string)>();
+                }
+
+                foreach (var part in kvp.Value)
+                {
+                    // Assuming your part object has PartName and PartNumber properties
+                    _masterGroupedData[group].Add((part.PartName, part.PartNumber));
+                }
             }
 
-            // Sort using the defined warehouse-group order (numeric zones first,
-            // then lettered zones, then the named areas, then WHA01-15, then WHC)
-            List<string> sortedGroups = new List<string>(uniqueGroups);
-            sortedGroups.Sort((x, y) => GetGroupSortKey(x).CompareTo(GetGroupSortKey(y)));
+            RefreshBatchDropdowns();
+        }
 
-            foreach (string group in sortedGroups)
+        private void RefreshBatchDropdowns(List<string> newUploadZones = null)
+        {
+            // Update Old/Master Batch Dropdown
+            List<string> allGroups = _masterGroupedData.Keys.ToList();
+            allGroups.Sort((x, y) => GetGroupSortKey(x).CompareTo(GetGroupSortKey(y)));
+
+            string previousBatchSelection = cmbBatch.SelectedItem?.ToString();
+            cmbBatch.DataSource = null;
+            cmbBatch.Items.Clear();
+            cmbBatch.DataSource = allGroups;
+
+            if (!string.IsNullOrEmpty(previousBatchSelection) && allGroups.Contains(previousBatchSelection))
+                cmbBatch.SelectedItem = previousBatchSelection;
+            else if (cmbBatch.Items.Count > 0)
+                cmbBatch.SelectedIndex = 0;
+
+            // Update New Batch Dropdown if applicable
+            if (newUploadZones != null && newUploadZones.Count > 0)
             {
-                cmbBatch.Items.Add(group);
+                newUploadZones.Sort((x, y) => GetGroupSortKey(x).CompareTo(GetGroupSortKey(y)));
+                cmbNewBatch2.DataSource = null;
+                cmbNewBatch2.Items.Clear();
+                cmbNewBatch2.DataSource = newUploadZones;
+
+                cmbNewBatch2.SelectedIndex = 0;
+                cmbBatch.SelectedIndex = -1; // Deselect old batch to focus on the newly uploaded one
             }
         }
 
         /// <summary>
-        /// Maps a raw bin location (e.g. "A3-B-1", "B5R7-AC2", "ANX5", "WHA01-B-1")
-        /// to the warehouse zone GROUP it belongs to (e.g. "Zone A", "Zone B5", "ANX",
-        /// "Zone WHA01"). This is the single source of truth for grouping, used by
-        /// both the dropdown population (Naming_Part_From_Load) and the print filter
-        /// (PrintAllButt_Click), so they can never fall out of sync with each other.
+        /// Maps a raw bin location to the warehouse zone GROUP it belongs to.
         /// </summary>
         private static string GetZoneGroup(string binKey)
         {
+            if (string.IsNullOrEmpty(binKey)) return "Unassigned";
+
             string prefix = binKey.Contains("-") ? binKey.Split('-')[0] : binKey;
 
-            // Pure numeric zones, including lettered sub-areas (18A, 19B, 26C, 27C...)
             Match numMatch = Regex.Match(prefix, @"^(\d+)[A-C]?$");
-            if (numMatch.Success)
-                return "Zone " + numMatch.Groups[1].Value;
+            if (numMatch.Success) return "Zone " + numMatch.Groups[1].Value;
 
-            if (Regex.IsMatch(prefix, @"^A[1-8]$"))
-                return "Zone A";
-
-            // B5 and its B5R1..B5R13 sub-rooms are their own group
-            if (prefix == "B5" || Regex.IsMatch(prefix, @"^B5R\d+$"))
-                return "Zone B5";
-
-            if (Regex.IsMatch(prefix, @"^B[1-8]$"))
-                return "Zone B";
-
-            if (Regex.IsMatch(prefix, @"^C[1-7]$"))
-                return "Zone C";
-
-            if (Regex.IsMatch(prefix, @"^D[1-6]$"))
-                return "Zone D";
-
-            if (Regex.IsMatch(prefix, @"^E[3-6]$"))
-                return "Zone E";
-
-            // "B-STOCK" has no further suffix, so its prefix is just "B"
-            if (prefix == "B")
-                return "B-STOCK";
-
-            if (prefix == "5TH BLDG" || prefix == "5THBLDG")
-                return "5TH BLDG";
+            if (Regex.IsMatch(prefix, @"^A[1-8]$")) return "Zone A";
+            if (prefix == "B5" || Regex.IsMatch(prefix, @"^B5R\d+$")) return "Zone B5";
+            if (Regex.IsMatch(prefix, @"^B[1-8]$")) return "Zone B";
+            if (Regex.IsMatch(prefix, @"^C[1-7]$")) return "Zone C";
+            if (Regex.IsMatch(prefix, @"^D[1-6]$")) return "Zone D";
+            if (Regex.IsMatch(prefix, @"^E[3-6]$")) return "Zone E";
+            if (prefix == "B") return "B-STOCK";
+            if (prefix == "5TH BLDG" || prefix == "5THBLDG") return "5TH BLDG";
 
             if (prefix == "ANX" || Regex.IsMatch(prefix, @"^ANX\d+$") ||
                 Regex.IsMatch(prefix, @"^ANXL\d+$") || Regex.IsMatch(prefix, @"^ANXR\d+$"))
                 return "ANX";
 
-            if (prefix == "CHEMROOM")
-                return "CHEM";
-
-            if (prefix == "CNPYA")
-                return "CNPYA";
-
-            if (prefix == "CNPYB")
-                return "CNPYB";
-
-            if (Regex.IsMatch(prefix, @"^CNPYR\d+$"))
-                return "CNPYR";
-
-            if (Regex.IsMatch(prefix, @"^COPPERAREA\d+$"))
-                return "COPPER";
-
-            if (prefix == "FREONRACK")
-                return "FREON";
-
-            if (Regex.IsMatch(prefix, @"^SCR\d+$"))
-                return "SCR";
-
-            if (Regex.IsMatch(prefix, @"^STRPNGP\d+$"))
-                return "STRPNG";
-
-            if (prefix == "WHA")
-                return "WHA";
+            if (prefix == "CHEMROOM") return "CHEM";
+            if (prefix == "CNPYA") return "CNPYA";
+            if (prefix == "CNPYB") return "CNPYB";
+            if (Regex.IsMatch(prefix, @"^CNPYR\d+$")) return "CNPYR";
+            if (Regex.IsMatch(prefix, @"^COPPERAREA\d+$")) return "COPPER";
+            if (prefix == "FREONRACK") return "FREON";
+            if (Regex.IsMatch(prefix, @"^SCR\d+$")) return "SCR";
+            if (Regex.IsMatch(prefix, @"^STRPNGP\d+$")) return "STRPNG";
+            if (prefix == "WHA") return "WHA";
 
             Match whaMatch = Regex.Match(prefix, @"^WHA(\d+)$");
-            if (whaMatch.Success)
-                return "Zone WHA" + whaMatch.Groups[1].Value.PadLeft(2, '0');
+            if (whaMatch.Success) return "Zone WHA" + whaMatch.Groups[1].Value.PadLeft(2, '0');
 
-            if (prefix == "WHC")
-                return "WHC";
+            if (prefix == "WHC") return "WHC";
 
-            // Fallback: anything unrecognized keeps its own raw prefix as its group,
-            // so new/unexpected bin naming never silently disappears from the dropdown.
             return prefix;
         }
 
-        /// <summary>
-        /// Defines the dropdown display order: Zone 1-27, Zone A-E, B-STOCK, 5TH BLDG,
-        /// ANX, Zone B5, CHEM, CNPYA, CNPYB, CNPYR, COPPER, FREON, SCR, STRPNG,
-        /// WHA, Zone WHA01-15, WHC. Unrecognized groups sort to the very end.
-        /// </summary>
         private static int GetGroupSortKey(string group)
         {
             Match zoneMatch = Regex.Match(group, @"^Zone (\d+)$");
-            if (zoneMatch.Success)
-                return 1000 + int.Parse(zoneMatch.Groups[1].Value);
+            if (zoneMatch.Success) return 1000 + int.Parse(zoneMatch.Groups[1].Value);
 
             Match whaMatch = Regex.Match(group, @"^Zone WHA(\d+)$");
-            if (whaMatch.Success)
-                return 5000 + int.Parse(whaMatch.Groups[1].Value);
+            if (whaMatch.Success) return 5000 + int.Parse(whaMatch.Groups[1].Value);
 
             switch (group)
             {
@@ -210,45 +192,43 @@ namespace OJT___QR_Code_Generator
 
         private void cmbBatch_SelectedIndexChanged_1(object sender, EventArgs e)
         {
+            // Clear New Batch if Old Batch is selected
+            if (cmbBatch.SelectedItem != null && cmbNewBatch2.Items.Count > 0)
+            {
+                cmbNewBatch2.SelectedIndex = -1;
+            }
+        }
+
+        private void cmbNewBatch2_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Clear Old Batch if New Batch is selected
+            if (cmbNewBatch2.SelectedItem != null && cmbBatch.Items.Count > 0)
+            {
+                cmbBatch.SelectedIndex = -1;
+            }
         }
 
         private void PrintAllButt_Click(object sender, EventArgs e)
         {
-            // 1. Validation
-            if (cmbBatch.SelectedItem == null)
+            // 1. Validation - Find Active Dropdown
+            ComboBox activeCombo = cmbBatch.SelectedItem != null ? cmbBatch : cmbNewBatch2;
+
+            if (activeCombo.SelectedItem == null)
             {
-                MessageBox.Show("Please select a Zone from the dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a Zone from the Batch or New Batch dropdown.", "Selection Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string selectedGroup = cmbBatch.SelectedItem.ToString();
+            string selectedGroup = activeCombo.SelectedItem.ToString();
 
-            // 2. Collect parts directly from PartNumber_and_PartName_DATA
-            var zoneParts = new List<(string name, string number)>();
-
-            foreach (var kvp in PartNumber_and_PartName_DATA.BinToParts)
+            // 2. Collect parts directly from our Master Dictionary
+            if (!_masterGroupedData.ContainsKey(selectedGroup) || _masterGroupedData[selectedGroup].Count == 0)
             {
-                string binLocation = kvp.Key;
-
-                // Use the SAME grouping helper that built the dropdown, so a bin only
-                // matches when it belongs to the exact group the user selected
-                // (e.g. selecting "Zone A" now correctly pulls A1..A8, and "Zone B5"
-                // pulls B5 + B5R1..B5R13, instead of each sub-bin being its own entry).
-                if (GetZoneGroup(binLocation) == selectedGroup)
-                {
-                    // Add all parts stored inside this bin to our print list
-                    foreach (var part in kvp.Value)
-                    {
-                        zoneParts.Add((part.PartName, part.PartNumber));
-                    }
-                }
-            }
-
-            if (zoneParts.Count == 0)
-            {
-                MessageBox.Show("Selected zone has no bin data.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selected zone has no part data.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
+
+            var zoneParts = _masterGroupedData[selectedGroup];
 
             // 3. Clear and Populate _batchPages with pairs of parts
             _batchPages.Clear();
@@ -257,14 +237,12 @@ namespace OJT___QR_Code_Generator
             {
                 var p1 = zoneParts[i];
 
-                // Get part 2 (if we haven't reached the end of the list)
                 (string name, string number)? p2 = null;
                 if (i + 1 < zoneParts.Count)
                 {
                     p2 = zoneParts[i + 1];
                 }
 
-                // Add the pair to the batch
                 _batchPages.Add((p1, p2));
             }
 
@@ -274,23 +252,137 @@ namespace OJT___QR_Code_Generator
             {
                 pd.DefaultPageSettings.PaperSize = new PaperSize("CustomSticker", paperSize.Width, paperSize.Height);
 
-                // Reset index before printing
-                _batchPageIndex = 0;
-
-                // ROOT-CAUSE FIX: PrintPreviewDialog calls pd.Print() twice internally —
-                // once to build the preview, once for the real print job. BeginPrint fires
-                // at the start of both, so this guarantees the real print pass also starts
-                // at page 0 instead of inheriting the exhausted index from the preview pass.
+                // Start indexing at 0
                 pd.BeginPrint += (s, ev) => { _batchPageIndex = 0; };
-
                 pd.PrintPage += new PrintPageEventHandler(PrintBatchPageHandler);
 
-                // Show Preview
                 using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
                 {
                     previewDlg.WindowState = FormWindowState.Maximized;
                     previewDlg.Document = pd;
                     previewDlg.ShowDialog();
+                }
+            }
+        }
+
+        private int GetColumnIndex(DataColumnCollection columns, params string[] possibleNames)
+        {
+            foreach (string name in possibleNames)
+            {
+                if (columns.Contains(name))
+                    return columns.IndexOf(name);
+            }
+            return -1;
+        }
+
+        private void Uploadbutt_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Excel Files|*.xls;*.xlsx;*.xlsm";
+                openFileDialog.Title = "Select the Master Excel File";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+                        using (var stream = File.Open(openFileDialog.FileName, FileMode.Open, FileAccess.Read))
+                        using (var reader = ExcelReaderFactory.CreateReader(stream))
+                        {
+                            var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                            {
+                                ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = true }
+                            });
+
+                            if (result.Tables.Count == 0)
+                            {
+                                MessageBox.Show("The Excel workbook is empty.", "Empty File", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                return;
+                            }
+
+                            DataTable dt = result.Tables[0];
+
+                            int nameCol = GetColumnIndex(dt.Columns, "Part Name", "Name", "Material Description", "Description", "Desc", "MaterialDesc", "Mat Desc");
+                            int numCol = GetColumnIndex(dt.Columns, "Part Number", "Number", "Material Code", "Material", "PartNo", "Part No", "MaterialNo");
+                            int zoneCol = GetColumnIndex(dt.Columns, "Zone", "Area", "Zone Name", "Group", "Column0");
+                            int binCol = GetColumnIndex(dt.Columns, "Bin Location", "Bin(FINAL)", "Bin");
+
+                            if (nameCol == -1 && numCol == -1)
+                            {
+                                var headers = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName);
+                                MessageBox.Show($"Could not find a valid Material/Part Number or Description column.\n\nHeaders found:\n{string.Join(", ", headers)}",
+                                    "Header Mismatch", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                                return;
+                            }
+
+                            // CLEAR OLD / DEFAULT DATA BEFORE LOADING NEW EXCEL DATA
+                            _masterGroupedData.Clear();
+
+                            int totalParts = 0;
+                            string lastSeenGroup = string.Empty;
+                            List<string> currentUploadZones = new List<string>();
+
+                            foreach (DataRow row in dt.Rows)
+                            {
+                                string partName = nameCol != -1 ? (row[nameCol]?.ToString().Trim() ?? string.Empty) : string.Empty;
+                                string partNumber = numCol != -1 ? (row[numCol]?.ToString().Trim() ?? string.Empty) : string.Empty;
+
+                                if (string.IsNullOrWhiteSpace(partName) && string.IsNullOrWhiteSpace(partNumber))
+                                    continue;
+
+                                string group = string.Empty;
+
+                                if (zoneCol != -1)
+                                {
+                                    string rawZone = row[zoneCol]?.ToString().Trim();
+                                    if (!string.IsNullOrWhiteSpace(rawZone))
+                                    {
+                                        group = GetZoneGroup(rawZone);
+                                    }
+                                }
+
+                                if (string.IsNullOrEmpty(group) && binCol != -1 && zoneCol == -1)
+                                {
+                                    string rawBin = row[binCol]?.ToString().Trim();
+                                    if (!string.IsNullOrWhiteSpace(rawBin))
+                                    {
+                                        group = GetZoneGroup(rawBin);
+                                    }
+                                }
+
+                                if (string.IsNullOrEmpty(group))
+                                {
+                                    group = !string.IsNullOrEmpty(lastSeenGroup) ? lastSeenGroup : "Unassigned";
+                                }
+
+                                lastSeenGroup = group;
+
+                                if (!_masterGroupedData.ContainsKey(group))
+                                    _masterGroupedData[group] = new List<(string, string)>();
+
+                                if (!currentUploadZones.Contains(group))
+                                    currentUploadZones.Add(group);
+
+                                _masterGroupedData[group].Add((partName, partNumber));
+                                totalParts++;
+                            }
+
+                            RefreshBatchDropdowns(currentUploadZones);
+
+                            MessageBox.Show($"Successfully loaded {totalParts} parts across {currentUploadZones.Count} zones.",
+                                "Upload Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                    }
+                    catch (IOException)
+                    {
+                        MessageBox.Show("The file is currently in use by another program. Please close Excel and try again.", "File Lock Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error reading file: {ex.Message}", "Excel Read Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
         }
@@ -465,22 +557,16 @@ namespace OJT___QR_Code_Generator
             Graphics g = e.Graphics;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            // Fetch your custom dimensions defined in your text inputs
             Size paperSize = GetTargetPaperSizeInHundredths();
 
-            // Check if the hardware or driver settings are forcing a portrait bounding layout
             if (e.PageBounds.Width < e.PageBounds.Height)
             {
-                // 1. Pivot the graphics canvas coordinate space to align with landscape drawing
                 g.TranslateTransform(e.PageBounds.Width, 0);
                 g.RotateTransform(90f);
-
-                // 2. Render out passing the inverted height and width bounds
                 RenderLabelLayout(g, e.PageBounds.Height, e.PageBounds.Width, isPrinting: true);
             }
             else
             {
-                // Otherwise, render cleanly inside the existing horizontal bounds
                 RenderLabelLayout(g, e.PageBounds.Width, e.PageBounds.Height, isPrinting: true);
             }
         }
@@ -493,13 +579,11 @@ namespace OJT___QR_Code_Generator
             int safeWidth = totalWidth - (margin * 2);
             int safeHeight = totalHeight - (margin * 2);
 
-            // 1. Draw the outer frame border
             using (Pen borderPen = new Pen(Color.Black, isPrinting ? 4f : 2f))
             {
                 g.DrawRectangle(borderPen, safeX, safeY, safeWidth, safeHeight);
             }
 
-            // Adjust inner area
             int innerPadding = 5;
             int drawX = safeX + innerPadding;
             int drawY = safeY + innerPadding;
@@ -509,19 +593,15 @@ namespace OJT___QR_Code_Generator
             int gap = isPrinting ? 10 : 5;
             int stripHeight = (drawHeight - gap) / 2;
 
-            // 2. Render Strip 1 (Top)
             RenderStrip(g, _activePartName, _activePartNumber, drawX, drawY, drawWidth, stripHeight, isPrinting);
 
-            // 3. Render Strip 2 (Bottom)
             int strip2Top = drawY + stripHeight + gap;
             RenderStrip(g, _activePartName2, _activePartNumber2, drawX, strip2Top, drawWidth, stripHeight, isPrinting);
 
-            // 4. ADD DIVIDER: Draw a line between the two strips
-            // This draws a horizontal line across the center gap
             int lineY = drawY + stripHeight + (gap / 2);
             using (Pen divPen = new Pen(Color.Black, isPrinting ? 2f : 1f))
             {
-                divPen.DashStyle = DashStyle.Dash; // Optional: Makes it look like a cut line
+                divPen.DashStyle = DashStyle.Dash;
                 g.DrawLine(divPen, drawX, lineY, drawX + drawWidth, lineY);
             }
         }
@@ -530,36 +610,27 @@ namespace OJT___QR_Code_Generator
         {
             if (string.IsNullOrEmpty(partName) && string.IsNullOrEmpty(partNumber)) return;
 
-            // Define columns: 75% for text, 25% for QR
             int leftColWidth = (int)(stripWidth * 0.75);
             int rightColX = stripX + leftColWidth;
             int rightColWidth = stripWidth - leftColWidth;
 
-            // Adjust Ratio: 40% height for Name (Header), 60% for Number
             int headerHeight = (int)(stripHeight * 0.40);
             int numberAreaTop = stripY + headerHeight;
             int numberAreaHeight = stripHeight - headerHeight;
 
-            // 1. Draw Text Backgrounds
-            // Name (Header) Background
             g.FillRectangle(Brushes.Black, stripX, stripY, leftColWidth, headerHeight);
 
-            // Number (Body) Background / Border
             using (Pen bodyPen = new Pen(Color.Black, isPrinting ? 2f : 1.5f))
             {
                 g.DrawRectangle(bodyPen, stripX, numberAreaTop, leftColWidth, numberAreaHeight);
             }
 
-            // 2. Draw Text (Autofit)
-            // Part Name (White text on black background)
             DrawTextAutofit(g, partName, "Arial", FontStyle.Bold, headerHeight * 0.7f,
                             stripX + 6, stripY + 3, leftColWidth - 12, headerHeight - 6, Brushes.White);
 
-            // Part Number (Larger: 80% of area, black text)
             DrawTextAutofit(g, partNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.8f,
                             stripX + 6, numberAreaTop + 3, leftColWidth - 12, numberAreaHeight - 6, Brushes.Black);
 
-            // 3. Draw the QR Code
             int qrSize = Math.Min(rightColWidth - 10, stripHeight - 10);
             string qrPayload = !string.IsNullOrEmpty(partNumber) ? partNumber : partName;
 
@@ -570,7 +641,6 @@ namespace OJT___QR_Code_Generator
                     if (qrImg != null)
                     {
                         g.InterpolationMode = InterpolationMode.NearestNeighbor;
-                        // Center QR vertically in the strip
                         g.DrawImage(qrImg, rightColX + (rightColWidth - qrSize) / 2, stripY + (stripHeight - qrSize) / 2, qrSize, qrSize);
                     }
                 }
@@ -579,14 +649,12 @@ namespace OJT___QR_Code_Generator
 
         private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight, Brush brush)
         {
-            // Fix: Set high-quality rendering to prevent "curvy" text
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
 
             float currentSize = maxFontSize;
             Font testFont = new Font(fontFamily, currentSize, style);
             SizeF size = g.MeasureString(text, testFont);
 
-            // Shrink text until it fits
             while ((size.Width > maxWidth || size.Height > maxHeight) && currentSize > 8f)
             {
                 currentSize -= 1f;
@@ -597,7 +665,6 @@ namespace OJT___QR_Code_Generator
 
             using (testFont)
             {
-                // Fix: Use Math.Round to snap to whole pixels, preventing blurry/wavy edges
                 float posX = (float)Math.Round(x + (maxWidth - size.Width) / 2);
                 float posY = (float)Math.Round(y + (maxHeight - size.Height) / 2);
 
@@ -656,6 +723,11 @@ namespace OJT___QR_Code_Generator
         {
             _activePartNumber2 = PartNumberbox.Text.Trim();
             pnlPreview.Invalidate();
+        }
+
+        private void label9_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
