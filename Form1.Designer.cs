@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            Uploadbutt = new Button();
             groupBox1 = new GroupBox();
             label2 = new Label();
             label3 = new Label();
@@ -54,7 +55,8 @@
             panel3 = new Panel();
             label10 = new Label();
             panel4 = new Panel();
-            Uploadbutt = new Button();
+            cmbNewBatch = new ComboBox();
+            label11 = new Label();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
             panel2.SuspendLayout();
@@ -65,7 +67,8 @@
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
-            panel1.Controls.Add(Uploadbutt);
+            panel1.Controls.Add(label11);
+            panel1.Controls.Add(cmbNewBatch);
             panel1.Controls.Add(groupBox1);
             panel1.Controls.Add(btnConvertToPdf);
             panel1.Controls.Add(pnlPreview);
@@ -76,8 +79,20 @@
             panel1.Size = new Size(1043, 516);
             panel1.TabIndex = 0;
             // 
+            // Uploadbutt
+            // 
+            Uploadbutt.BackColor = Color.LightBlue;
+            Uploadbutt.Location = new Point(292, 22);
+            Uploadbutt.Name = "Uploadbutt";
+            Uploadbutt.Size = new Size(89, 23);
+            Uploadbutt.TabIndex = 22;
+            Uploadbutt.Text = "Upload";
+            Uploadbutt.UseVisualStyleBackColor = false;
+            Uploadbutt.Click += Uploadbutt_Click;
+            // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(Uploadbutt);
             groupBox1.Controls.Add(label2);
             groupBox1.Controls.Add(label3);
             groupBox1.Controls.Add(btnPrintAll);
@@ -103,7 +118,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label2.Location = new Point(33, 19);
+            label2.Location = new Point(33, 45);
             label2.Name = "label2";
             label2.Size = new Size(114, 21);
             label2.TabIndex = 1;
@@ -113,7 +128,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.Location = new Point(33, 81);
+            label3.Location = new Point(33, 107);
             label3.Name = "label3";
             label3.Size = new Size(117, 21);
             label3.TabIndex = 2;
@@ -133,7 +148,7 @@
             // 
             // txtBinLocation1
             // 
-            txtBinLocation1.Location = new Point(36, 43);
+            txtBinLocation1.Location = new Point(36, 69);
             txtBinLocation1.Name = "txtBinLocation1";
             txtBinLocation1.Size = new Size(298, 23);
             txtBinLocation1.TabIndex = 3;
@@ -143,7 +158,7 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label8.Location = new Point(33, 137);
+            label8.Location = new Point(33, 163);
             label8.Name = "label8";
             label8.Size = new Size(55, 21);
             label8.TabIndex = 18;
@@ -151,7 +166,7 @@
             // 
             // txtBinLocation2
             // 
-            txtBinLocation2.Location = new Point(36, 105);
+            txtBinLocation2.Location = new Point(36, 131);
             txtBinLocation2.Name = "txtBinLocation2";
             txtBinLocation2.Size = new Size(298, 23);
             txtBinLocation2.TabIndex = 4;
@@ -159,7 +174,7 @@
             // cmbBatch
             // 
             cmbBatch.FormattingEnabled = true;
-            cmbBatch.Location = new Point(36, 161);
+            cmbBatch.Location = new Point(36, 187);
             cmbBatch.Name = "cmbBatch";
             cmbBatch.Size = new Size(298, 23);
             cmbBatch.TabIndex = 17;
@@ -230,7 +245,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label5.Location = new Point(33, 207);
+            label5.Location = new Point(33, 223);
             label5.Name = "label5";
             label5.Size = new Size(89, 21);
             label5.TabIndex = 12;
@@ -249,7 +264,7 @@
             // 
             btnConvertToPdf.BackColor = Color.AliceBlue;
             btnConvertToPdf.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnConvertToPdf.Location = new Point(658, 457);
+            btnConvertToPdf.Location = new Point(845, 457);
             btnConvertToPdf.Name = "btnConvertToPdf";
             btnConvertToPdf.Size = new Size(165, 39);
             btnConvertToPdf.TabIndex = 10;
@@ -336,16 +351,24 @@
             panel4.Size = new Size(1137, 713);
             panel4.TabIndex = 22;
             // 
-            // Uploadbutt
+            // cmbNewBatch
             // 
-            Uploadbutt.BackColor = Color.LightBlue;
-            Uploadbutt.Location = new Point(921, 467);
-            Uploadbutt.Name = "Uploadbutt";
-            Uploadbutt.Size = new Size(89, 23);
-            Uploadbutt.TabIndex = 22;
-            Uploadbutt.Text = "Upload";
-            Uploadbutt.UseVisualStyleBackColor = false;
-            Uploadbutt.Click += Uploadbutt_Click;
+            cmbNewBatch.FormattingEnabled = true;
+            cmbNewBatch.Location = new Point(474, 468);
+            cmbNewBatch.Name = "cmbNewBatch";
+            cmbNewBatch.Size = new Size(178, 23);
+            cmbNewBatch.TabIndex = 23;
+            cmbNewBatch.SelectedIndexChanged += cmbNewBatch_SelectedIndexChanged;
+            // 
+            // label11
+            // 
+            label11.AutoSize = true;
+            label11.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label11.Location = new Point(474, 444);
+            label11.Name = "label11";
+            label11.Size = new Size(92, 21);
+            label11.TabIndex = 23;
+            label11.Text = "New Batch:";
             // 
             // Form1
             // 
@@ -398,5 +421,7 @@
         private Label label10;
         private Panel panel4;
         private Button Uploadbutt;
+        public Label label11;
+        private ComboBox cmbNewBatch;
     }
 }

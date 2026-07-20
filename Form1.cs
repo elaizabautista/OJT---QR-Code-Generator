@@ -29,7 +29,7 @@ namespace OJT___QR_Code_Generator
             this.btnClear.Click += new System.EventHandler(this.btnClear_Click);
             this.btnPrint.Click += new System.EventHandler(this.btnPrint_Click);
             this.btnConvertToPdf.Click += new System.EventHandler(this.btnConvertToPdf_Click);
-            this.btnPrintAll.Click += new System.EventHandler(this.btnPrintAll_Click);   // <-- add this line
+            this.btnPrintAll.Click += new System.EventHandler(this.btnPrintAll_Click);
             this.pnlPreview.Paint += new PaintEventHandler(this.pnlPreview_Paint);
 
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
@@ -55,8 +55,7 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
 
-            // Seed default data from the old hardcoded WarehouseData so the app works
-            // before any file is uploaded. Uploading a file later will overwrite this.
+            // Seed default data from the old hardcoded WarehouseData
             SharedWarehouseData.UploadedZones.Clear();
             foreach (var kvp in WarehouseData.myZones)
             {
@@ -99,14 +98,13 @@ namespace OJT___QR_Code_Generator
                 return;
             }
 
-            // Temporarily swap in this page's bin values so the existing render path handles it
             string savedBin1 = _activeBin1;
             string savedBin2 = _activeBin2;
 
             _activeBin1 = _batchPages[_batchPageIndex].bin1;
             _activeBin2 = _batchPages[_batchPageIndex].bin2;
 
-            PrintLabelsHandler(sender, e); // exact same rotation + RenderLabelLayout call as manual mode
+            PrintLabelsHandler(sender, e);
 
             _activeBin1 = savedBin1;
             _activeBin2 = savedBin2;
@@ -262,7 +260,6 @@ namespace OJT___QR_Code_Generator
         // 🛠️ HONEYWELL COMPATIBLE HIGH-SCALE LAYOUT
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
-            // Safeguard border cutoff zone on physical thermal heads (Honeywell standard unprintable margins)
             int margin = isPrinting ? 20 : 8;
 
             int safeX = margin;
@@ -271,10 +268,8 @@ namespace OJT___QR_Code_Generator
             int safeHeight = totalHeight - (margin * 2);
             int halfHeight = safeHeight / 2;
 
-            // Maintain your 75% wide partition strategy securely in safe zones
             int qrDividerX = safeX + (int)(safeWidth * 0.75);
 
-            // 1. Draw frame paths
             int penThickness = isPrinting ? 4 : 2;
             using (Pen blackPen = new Pen(Color.Black, penThickness))
             {
@@ -283,30 +278,25 @@ namespace OJT___QR_Code_Generator
                 g.DrawLine(blackPen, qrDividerX, safeY, qrDividerX, safeY + safeHeight);
             }
 
-            // 2. MAXIMUM AUTOFIT BIN TEXT: Automatically climbs to the tallest absolute size allowed by the height bounds.
             float maxFontCeiling = safeHeight * 0.32f;
             int textPadding = 10;
             int textBoxWidth = (qrDividerX - safeX) - textPadding;
             int textBoxHeight = halfHeight - textPadding;
 
-            // Top Row Bin Code Text
             if (!string.IsNullOrEmpty(_activeBin1))
             {
                 DrawTextAutofit(g, _activeBin1, "Arial", FontStyle.Bold, maxFontCeiling, safeX + (textPadding / 2), safeY + (textPadding / 2), textBoxWidth, textBoxHeight);
             }
 
-            // Bottom Row Bin Code Text
             if (!string.IsNullOrEmpty(_activeBin2))
             {
                 DrawTextAutofit(g, _activeBin2, "Arial", FontStyle.Bold, maxFontCeiling, safeX + (textPadding / 2), safeY + halfHeight + (textPadding / 2), textBoxWidth, textBoxHeight);
             }
 
-            // 3. MAXIMIZED SYSTEM QR CODES: Scales cleanly to 95% of available inner box area height
             int qrSize = (int)(halfHeight * 0.95);
             int rightCompartmentWidth = (safeX + safeWidth) - qrDividerX;
             int qrX = qrDividerX + (rightCompartmentWidth - qrSize) / 2;
 
-            // Top Row QR Code
             if (!string.IsNullOrEmpty(_activeBin1))
             {
                 using (Bitmap qrImg = CreateQRCodeImage(_activeBin1))
@@ -319,7 +309,6 @@ namespace OJT___QR_Code_Generator
                 }
             }
 
-            // Bottom Row QR Code
             if (!string.IsNullOrEmpty(_activeBin2))
             {
                 using (Bitmap qrImg = CreateQRCodeImage(_activeBin2))
@@ -333,7 +322,6 @@ namespace OJT___QR_Code_Generator
             }
         }
 
-        // Adaptive font crunching ruleset to ensure maximum enlargement on both 6" and 5.4" lengths without bounds breaches
         private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight)
         {
             float currentSize = maxFontSize;
@@ -393,18 +381,22 @@ namespace OJT___QR_Code_Generator
 
         private void btnPrintAll_Click(object sender, EventArgs e)
         {
-            if (cmbBatch.SelectedItem == null)
+            // Determine which combobox to pull data from.
+            // Prioritize the original cmbBatch, but if empty fallback to cmbNewBatch.
+            ComboBox activeCombo = cmbBatch.SelectedItem != null ? cmbBatch : cmbNewBatch;
+
+            if (activeCombo.SelectedItem == null)
             {
-                MessageBox.Show("Please select a Zone from the Batch dropdown.", "Selection Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a Zone from the Batch or New Batch dropdown.", "Selection Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string selectedZone = cmbBatch.SelectedItem.ToString();
+            string selectedZone = activeCombo.SelectedItem.ToString();
 
             if (!SharedWarehouseData.UploadedZones.ContainsKey(selectedZone) ||
                 SharedWarehouseData.UploadedZones[selectedZone].Count == 0)
             {
-                MessageBox.Show("Selected zone has no bin location data. Please upload an Excel file first.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Selected zone has no bin location data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
@@ -441,17 +433,17 @@ namespace OJT___QR_Code_Generator
 
         private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
         {
-
+            // If they select something in the old Batch, clear selection in New Batch to avoid confusion
+            if (cmbBatch.SelectedItem != null && cmbNewBatch.Items.Count > 0)
+            {
+                cmbNewBatch.SelectedIndex = -1;
+            }
         }
 
         private void txtBinLocation1_TextChanged(object sender, EventArgs e)
         {
-
         }
 
-        // Zone is now read directly from a column (with forward-fill for merged-style cells),
-        // NOT derived from the Bin Location text.
-        // Helper to find the correct column index regardless of header name variations
         private int GetColumnIndex(DataColumnCollection columns, params string[] possibleNames)
         {
             foreach (string name in possibleNames)
@@ -464,12 +456,9 @@ namespace OJT___QR_Code_Generator
 
         private int GetZoneColumnIndex(DataTable dt, int binCol, int matCol, int descCol)
         {
-            // 1. Try an explicit "Zone" header first (in case some files do label it)
             int zoneCol = GetColumnIndex(dt.Columns, "Zone", "Zone Name", "Area");
             if (zoneCol != -1) return zoneCol;
 
-            // 2. Fallback: if column 0 exists and isn't already used for Bin/Material/Description,
-            //    treat it as the (unlabeled) Zone column — matches your real file's layout.
             if (dt.Columns.Count > 0 && 0 != binCol && 0 != matCol && 0 != descCol)
                 return 0;
 
@@ -524,9 +513,11 @@ namespace OJT___QR_Code_Generator
                                 return;
                             }
 
-                            SharedWarehouseData.UploadedZones.Clear();
                             int totalBins = 0;
                             string lastSeenZone = string.Empty;
+
+                            // We will collect ONLY the zones present in this current Excel upload for cmbNewBatch
+                            List<string> currentUploadZones = new List<string>();
 
                             foreach (DataRow row in dt.Rows)
                             {
@@ -534,8 +525,6 @@ namespace OJT___QR_Code_Generator
                                 string material = row[matCol]?.ToString().Trim();
                                 string description = descCol != -1 ? row[descCol]?.ToString().Trim() : string.Empty;
 
-                                // Forward-fill: if this row has a zone value, remember it;
-                                // otherwise reuse the last zone seen above it (merged-cell behavior).
                                 string zoneCell = row[zoneCol]?.ToString().Trim();
                                 if (!string.IsNullOrWhiteSpace(zoneCell))
                                     lastSeenZone = zoneCell;
@@ -545,8 +534,13 @@ namespace OJT___QR_Code_Generator
 
                                 string zone = string.IsNullOrWhiteSpace(lastSeenZone) ? "Unassigned" : lastSeenZone;
 
+                                // Append to the master dictionary without wiping out the old data
                                 if (!SharedWarehouseData.UploadedZones.ContainsKey(zone))
                                     SharedWarehouseData.UploadedZones[zone] = new List<BinEntry>();
+
+                                // Keep track of zones for the New Batch list
+                                if (!currentUploadZones.Contains(zone))
+                                    currentUploadZones.Add(zone);
 
                                 SharedWarehouseData.UploadedZones[zone].Add(new BinEntry
                                 {
@@ -557,14 +551,42 @@ namespace OJT___QR_Code_Generator
                                 totalBins++;
                             }
 
-                            var sortedZones = SharedWarehouseData.UploadedZones.Keys.ToList();
-                            sortedZones.Sort(new NaturalStringComparer());
+                            currentUploadZones.Sort(new NaturalStringComparer());
+
+                            // 1. Populate cmbNewBatch with ONLY the zones from this uploaded file
+                            cmbNewBatch.DataSource = null;
+                            cmbNewBatch.Items.Clear();
+                            cmbNewBatch.DataSource = currentUploadZones;
+
+                            // 2. Refresh the old cmbBatch so it retains its old data (and gains the new ones for the master list)
+                            var allZones = SharedWarehouseData.UploadedZones.Keys.ToList();
+                            allZones.Sort(new NaturalStringComparer());
+
+                            // Remember the user's previous selection
+                            string previousBatchSelection = cmbBatch.SelectedItem?.ToString();
 
                             cmbBatch.DataSource = null;
                             cmbBatch.Items.Clear();
-                            cmbBatch.DataSource = sortedZones;
+                            cmbBatch.DataSource = allZones;
 
-                            MessageBox.Show($"Successfully loaded {totalBins} bins across {sortedZones.Count} zones.",
+                            // Restore the selection
+                            if (!string.IsNullOrEmpty(previousBatchSelection) && allZones.Contains(previousBatchSelection))
+                            {
+                                cmbBatch.SelectedItem = previousBatchSelection;
+                            }
+                            else if (cmbBatch.Items.Count > 0)
+                            {
+                                cmbBatch.SelectedIndex = 0;
+                            }
+
+                            // Optional: Ensure New Batch doesn't conflict during manual printing logic immediately
+                            if (cmbNewBatch.Items.Count > 0)
+                            {
+                                cmbNewBatch.SelectedIndex = 0;
+                                cmbBatch.SelectedIndex = -1; // Deselect old batch to make the newly uploaded one active for Print All
+                            }
+
+                            MessageBox.Show($"Successfully loaded {totalBins} bins across {currentUploadZones.Count} zones.",
                                 "Upload Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         }
                     }
@@ -580,6 +602,13 @@ namespace OJT___QR_Code_Generator
             }
         }
 
-
+        private void cmbNewBatch_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // If they select something in the New Batch, clear selection in the old Batch to avoid confusion
+            if (cmbNewBatch.SelectedItem != null && cmbBatch.Items.Count > 0)
+            {
+                cmbBatch.SelectedIndex = -1;
+            }
+        }
     }
 }
