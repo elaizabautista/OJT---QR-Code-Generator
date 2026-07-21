@@ -257,7 +257,7 @@ namespace OJT___QR_Code_Generator
             RenderLabelLayout(g, printableWidth, printableHeight, isPrinting: true);
         }
 
-        // 🛠️ HONEYWELL COMPATIBLE HIGH-SCALE LAYOUT
+        // HONEYWELL COMPATIBLE HIGH-SCALE LAYOUT
         private void RenderLabelLayout(Graphics g, int totalWidth, int totalHeight, bool isPrinting)
         {
             int margin = isPrinting ? 20 : 8;
@@ -381,8 +381,6 @@ namespace OJT___QR_Code_Generator
 
         private void btnPrintAll_Click(object sender, EventArgs e)
         {
-            // Determine which combobox to pull data from.
-            // Prioritize the original cmbBatch, but if empty fallback to cmbNewBatch.
             ComboBox activeCombo = cmbBatch.SelectedItem != null ? cmbBatch : cmbNewBatch;
 
             if (activeCombo.SelectedItem == null)
@@ -433,7 +431,6 @@ namespace OJT___QR_Code_Generator
 
         private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // If they select something in the old Batch, clear selection in New Batch to avoid confusion
             if (cmbBatch.SelectedItem != null && cmbNewBatch.Items.Count > 0)
             {
                 cmbNewBatch.SelectedIndex = -1;
@@ -444,12 +441,25 @@ namespace OJT___QR_Code_Generator
         {
         }
 
+        // --- UPDATED METHOD: Smarter auto-detection (Fuzzy Matching) ---
         private int GetColumnIndex(DataColumnCollection columns, params string[] possibleNames)
         {
+            // Try exact match first
             foreach (string name in possibleNames)
             {
                 if (columns.Contains(name))
                     return columns.IndexOf(name);
+            }
+
+            // Try fuzzy match (ignores uppercase/lowercase and spaces)
+            for (int i = 0; i < columns.Count; i++)
+            {
+                string colName = columns[i].ColumnName.Replace(" ", "").ToLower();
+                foreach (string possibleName in possibleNames)
+                {
+                    if (colName.Contains(possibleName.Replace(" ", "").ToLower()))
+                        return i;
+                }
             }
             return -1;
         }
@@ -465,6 +475,72 @@ namespace OJT___QR_Code_Generator
             return -1;
         }
 
+        // --- NEW METHOD: Dynamic mapping pop-up if headers can't be found ---
+        private bool ShowColumnMappingDialog(List<string> headers, ref int binCol, ref int matCol, ref int descCol, ref int zoneCol)
+        {
+            Form mapForm = new Form
+            {
+                Width = 400,
+                Height = 300,
+                Text = "Map Excel Columns",
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                StartPosition = FormStartPosition.CenterParent,
+                MaximizeBox = false,
+                MinimizeBox = false
+            };
+
+            // Labels
+            mapForm.Controls.Add(new Label { Text = "Bin Location:", Left = 20, Top = 23, Width = 100 });
+            mapForm.Controls.Add(new Label { Text = "Material:", Left = 20, Top = 63, Width = 100 });
+            mapForm.Controls.Add(new Label { Text = "Description:", Left = 20, Top = 103, Width = 100 });
+            mapForm.Controls.Add(new Label { Text = "Zone (Optional):", Left = 20, Top = 143, Width = 100 });
+
+            // ComboBoxes for mapping
+            ComboBox cbBin = new ComboBox { Left = 130, Top = 20, Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
+            ComboBox cbMat = new ComboBox { Left = 130, Top = 60, Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
+            ComboBox cbDesc = new ComboBox { Left = 130, Top = 100, Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
+            ComboBox cbZone = new ComboBox { Left = 130, Top = 140, Width = 220, DropDownStyle = ComboBoxStyle.DropDownList };
+
+            // Add Excel headers to the dropdowns
+            string[] headerArray = headers.ToArray();
+            cbBin.Items.AddRange(headerArray);
+            cbMat.Items.AddRange(headerArray);
+            cbDesc.Items.AddRange(headerArray);
+
+            // Add a blank option for Zone since it might not exist
+            cbZone.Items.Add("-- No Zone Column --");
+            cbZone.Items.AddRange(headerArray);
+
+            // Auto-select if the system guessed correctly
+            if (binCol != -1 && binCol < cbBin.Items.Count) cbBin.SelectedIndex = binCol;
+            if (matCol != -1 && matCol < cbMat.Items.Count) cbMat.SelectedIndex = matCol;
+            if (descCol != -1 && descCol < cbDesc.Items.Count) cbDesc.SelectedIndex = descCol;
+
+            if (zoneCol != -1 && zoneCol < (cbZone.Items.Count - 1))
+                cbZone.SelectedIndex = zoneCol + 1; // +1 because of the "-- No Zone Column --" at index 0
+            else
+                cbZone.SelectedIndex = 0;
+
+            mapForm.Controls.AddRange(new Control[] { cbBin, cbMat, cbDesc, cbZone });
+
+            Button btnOk = new Button { Text = "Confirm Mapping", Left = 130, Top = 200, Width = 120, DialogResult = DialogResult.OK };
+            mapForm.Controls.Add(btnOk);
+            mapForm.AcceptButton = btnOk;
+
+            if (mapForm.ShowDialog() == DialogResult.OK)
+            {
+                binCol = cbBin.SelectedIndex;
+                matCol = cbMat.SelectedIndex;
+                descCol = cbDesc.SelectedIndex;
+
+                // Adjust for the empty "-- No Zone Column --" option
+                zoneCol = cbZone.SelectedIndex > 0 ? cbZone.SelectedIndex - 1 : -1;
+                return true;
+            }
+            return false; // User cancelled
+        }
+
+        // --- UPDATED METHOD: Integrated Auto-detect & UI fallback ---
         private void Uploadbutt_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -494,38 +570,47 @@ namespace OJT___QR_Code_Generator
 
                             DataTable dt = result.Tables[0];
 
-                            int binCol = GetColumnIndex(dt.Columns, "Bin Location", "Bin(FINAL)", "Bin");
-                            int matCol = GetColumnIndex(dt.Columns, "Material", "Material Code");
-                            int descCol = GetColumnIndex(dt.Columns, "Material Description", "Description");
-
-                            if (binCol == -1 || matCol == -1)
-                            {
-                                var headers = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName);
-                                MessageBox.Show($"Could not confidently match required columns (Bin Location and Material).\n\nHeaders found:\n{string.Join(", ", headers)}",
-                                    "Header Mismatch", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return;
-                            }
-
+                            // Try to detect columns with fuzzy matching
+                            int binCol = GetColumnIndex(dt.Columns, "Bin Location", "Bin(FINAL)", "Bin", "loc");
+                            int matCol = GetColumnIndex(dt.Columns, "Material", "Material Code", "sku", "item");
+                            int descCol = GetColumnIndex(dt.Columns, "Material Description", "Description", "desc");
                             int zoneCol = GetZoneColumnIndex(dt, binCol, matCol, descCol);
-                            if (zoneCol == -1)
+
+                            // If it missed ANY required columns, open the UI Mapping Form instead of crashing
+                            if (binCol == -1 || matCol == -1 || zoneCol == -1)
                             {
-                                MessageBox.Show("Could not find a Zone column in this file.", "Header Mismatch", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                                return;
+                                var headers = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName).ToList();
+
+                                MessageBox.Show("Some columns couldn't be detected automatically from this layout. Please map them manually.", "Manual Mapping Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                                bool userMapped = ShowColumnMappingDialog(headers, ref binCol, ref matCol, ref descCol, ref zoneCol);
+
+                                // If the user cancelled or left required dropdowns empty
+                                if (!userMapped || binCol == -1 || matCol == -1)
+                                {
+                                    MessageBox.Show("Upload cancelled. 'Bin Location' and 'Material' columns are required to continue.", "Upload Cancelled", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                                    return; // Stop the upload process safely
+                                }
                             }
 
                             int totalBins = 0;
                             string lastSeenZone = string.Empty;
 
-                            // We will collect ONLY the zones present in this current Excel upload for cmbNewBatch
                             List<string> currentUploadZones = new List<string>();
 
                             foreach (DataRow row in dt.Rows)
                             {
-                                string binLoc = row[binCol]?.ToString().Trim();
-                                string material = row[matCol]?.ToString().Trim();
-                                string description = descCol != -1 ? row[descCol]?.ToString().Trim() : string.Empty;
+                                // Protect against mapped columns falling out of bounds or missing
+                                string binLoc = binCol != -1 && binCol < dt.Columns.Count ? row[binCol]?.ToString().Trim() : string.Empty;
+                                string material = matCol != -1 && matCol < dt.Columns.Count ? row[matCol]?.ToString().Trim() : string.Empty;
+                                string description = descCol != -1 && descCol < dt.Columns.Count ? row[descCol]?.ToString().Trim() : string.Empty;
 
-                                string zoneCell = row[zoneCol]?.ToString().Trim();
+                                string zoneCell = string.Empty;
+                                if (zoneCol != -1 && zoneCol < dt.Columns.Count)
+                                {
+                                    zoneCell = row[zoneCol]?.ToString().Trim();
+                                }
+
                                 if (!string.IsNullOrWhiteSpace(zoneCell))
                                     lastSeenZone = zoneCell;
 
@@ -534,11 +619,9 @@ namespace OJT___QR_Code_Generator
 
                                 string zone = string.IsNullOrWhiteSpace(lastSeenZone) ? "Unassigned" : lastSeenZone;
 
-                                // Append to the master dictionary without wiping out the old data
                                 if (!SharedWarehouseData.UploadedZones.ContainsKey(zone))
                                     SharedWarehouseData.UploadedZones[zone] = new List<BinEntry>();
 
-                                // Keep track of zones for the New Batch list
                                 if (!currentUploadZones.Contains(zone))
                                     currentUploadZones.Add(zone);
 
@@ -553,23 +636,19 @@ namespace OJT___QR_Code_Generator
 
                             currentUploadZones.Sort(new NaturalStringComparer());
 
-                            // 1. Populate cmbNewBatch with ONLY the zones from this uploaded file
                             cmbNewBatch.DataSource = null;
                             cmbNewBatch.Items.Clear();
                             cmbNewBatch.DataSource = currentUploadZones;
 
-                            // 2. Refresh the old cmbBatch so it retains its old data (and gains the new ones for the master list)
                             var allZones = SharedWarehouseData.UploadedZones.Keys.ToList();
                             allZones.Sort(new NaturalStringComparer());
 
-                            // Remember the user's previous selection
                             string previousBatchSelection = cmbBatch.SelectedItem?.ToString();
 
                             cmbBatch.DataSource = null;
                             cmbBatch.Items.Clear();
                             cmbBatch.DataSource = allZones;
 
-                            // Restore the selection
                             if (!string.IsNullOrEmpty(previousBatchSelection) && allZones.Contains(previousBatchSelection))
                             {
                                 cmbBatch.SelectedItem = previousBatchSelection;
@@ -579,11 +658,10 @@ namespace OJT___QR_Code_Generator
                                 cmbBatch.SelectedIndex = 0;
                             }
 
-                            // Optional: Ensure New Batch doesn't conflict during manual printing logic immediately
                             if (cmbNewBatch.Items.Count > 0)
                             {
                                 cmbNewBatch.SelectedIndex = 0;
-                                cmbBatch.SelectedIndex = -1; // Deselect old batch to make the newly uploaded one active for Print All
+                                cmbBatch.SelectedIndex = -1;
                             }
 
                             MessageBox.Show($"Successfully loaded {totalBins} bins across {currentUploadZones.Count} zones.",
@@ -604,7 +682,6 @@ namespace OJT___QR_Code_Generator
 
         private void cmbNewBatch_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // If they select something in the New Batch, clear selection in the old Batch to avoid confusion
             if (cmbNewBatch.SelectedItem != null && cmbBatch.Items.Count > 0)
             {
                 cmbBatch.SelectedIndex = -1;
