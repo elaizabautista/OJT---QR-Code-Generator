@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Drawing.Printing;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Windows.Forms;
+using ExcelDataReader;
 using QRCoder;
 
 namespace OJT___QR_Code_Generator
@@ -16,6 +20,9 @@ namespace OJT___QR_Code_Generator
         // plus the index of which one is currently being printed
         private List<string> _batchQueue = new List<string>();
         private int _batchIndex = 0;
+
+        // Stores parsed zones and bin lists from uploaded Excel files
+        private Dictionary<string, List<string>> _uploadedZones = new Dictionary<string, List<string>>();
 
         public Floor_Bin()
         {
@@ -31,8 +38,10 @@ namespace OJT___QR_Code_Generator
             this.txtCustomWidth.TextChanged += (s, e) => pnlPreview.Invalidate();
             this.txtCustomHeight.TextChanged += (s, e) => pnlPreview.Invalidate();
 
-            // Connect the ComboBox change event
+            // Connect the ComboBox & Upload change events
             this.cmbBatch.SelectedIndexChanged += new EventHandler(this.cmbWhaZones_SelectedIndexChanged);
+            this.cmbNewBatch4.SelectedIndexChanged += new EventHandler(this.cmbNewBatch4_SelectedIndexChanged);
+            this.Uploadbutt.Click += new EventHandler(this.Uploadbutt_Click);
         }
 
         private void CenterPanel()
@@ -49,10 +58,7 @@ namespace OJT___QR_Code_Generator
             txtCustomWidth.Text = "4";
             txtCustomHeight.Text = "6";
 
-            // Populate the ComboBox directly from WarehouseData, instead of hardcoding
-            // zone names here. This automatically includes every zone that exists
-            // in the data and stays correct if more zones get added to WarehouseData
-            // later without touching this form again.
+            // Populate default WarehouseData zones
             cmbBatch.Items.Clear();
 
             List<object> sortedZones = WarehouseData.myZones.Keys.ToList();
@@ -64,11 +70,10 @@ namespace OJT___QR_Code_Generator
             }
         }
 
-        // Keeps WHA01..WHA15 in numeric order, followed by WHA-CP, WHA-FM, then WHC.
         private static int GetZoneSortKey(string zone)
         {
             if (zone.Length == 5 && zone.StartsWith("WHA") && int.TryParse(zone.Substring(3), out int n))
-                return n; // WHA01..WHA15 -> 1..15
+                return n;
 
             switch (zone)
             {
@@ -83,19 +88,194 @@ namespace OJT___QR_Code_Generator
         {
             if (cmbBatch.SelectedItem == null) return;
 
-            string selectedZone = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01" or "WHA-CP"
+            cmbNewBatch4.SelectedIndexChanged -= cmbNewBatch4_SelectedIndexChanged;
+            cmbNewBatch4.SelectedIndex = -1;
+            cmbNewBatch4.SelectedIndexChanged += cmbNewBatch4_SelectedIndexChanged;
 
-            // Direct dictionary lookup - no more scanning every key with StartsWith.
-            // Preview the first bin code in the zone so the user has something to look at
-            // right after picking a zone; Print All still prints every code in the zone.
-            if (WarehouseData.myZones.TryGetValue(selectedZone, out string[] binsInZone) &&
-                binsInZone.Length > 0)
+            string selectedZone = cmbBatch.SelectedItem.ToString();
+
+            if (WarehouseData.myZones.TryGetValue(selectedZone, out string[] binsInZone) && binsInZone.Length > 0)
             {
                 txtNumber.Text = binsInZone[0];
                 _activeNumber = txtNumber.Text.Trim();
                 pnlPreview.Invalidate();
             }
         }
+
+        private void cmbNewBatch4_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbNewBatch4.SelectedItem == null) return;
+
+            cmbBatch.SelectedIndexChanged -= cmbWhaZones_SelectedIndexChanged;
+            cmbBatch.SelectedIndex = -1;
+            cmbBatch.SelectedIndexChanged += cmbWhaZones_SelectedIndexChanged;
+
+            string selectedZone = cmbNewBatch4.SelectedItem.ToString();
+
+            if (_uploadedZones.TryGetValue(selectedZone, out List<string> binsInZone) && binsInZone.Count > 0)
+            {
+                txtNumber.Text = binsInZone[0];
+                _activeNumber = txtNumber.Text.Trim();
+                pnlPreview.Invalidate();
+            }
+        }
+
+        private void Uploadbutt_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls|All Files (*.*)|*.*";
+                openFileDialog.Title = "Select Excel File to Upload";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        DataTable dt = ReadExcelToDataTable(openFileDialog.FileName);
+                        if (dt == null || dt.Rows.Count == 0)
+                        {
+                            MessageBox.Show("The selected Excel file is empty or could not be read.", "Upload Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            return;
+                        }
+
+                        int codeColIdx = GetColumnIndex(dt.Columns, "Bin Location", "Storage Bin", "Location", "Code", "Bin", "Floor Bin");
+                        if (codeColIdx == -1)
+                        {
+                            MessageBox.Show("Could not locate a valid Bin Location / Code column in the Excel file.", "Format Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            return;
+                        }
+
+                        int zoneColIdx = GetZoneColumnIndex(dt, codeColIdx);
+
+                        _uploadedZones.Clear();
+                        cmbNewBatch4.Items.Clear();
+
+                        string lastSeenZone = string.Empty;
+
+                        foreach (DataRow row in dt.Rows)
+                        {
+                            string code = (codeColIdx >= 0 && row[codeColIdx] != DBNull.Value) ? row[codeColIdx].ToString().Trim() : string.Empty;
+                            string zoneCell = (zoneColIdx >= 0 && zoneColIdx < dt.Columns.Count && row[zoneColIdx] != DBNull.Value) ? row[zoneColIdx].ToString().Trim() : string.Empty;
+
+                            if (!string.IsNullOrEmpty(zoneCell))
+                            {
+                                lastSeenZone = zoneCell;
+                            }
+
+                            if (string.IsNullOrEmpty(code)) continue;
+
+                            string zone = string.IsNullOrEmpty(lastSeenZone) ? "Unassigned" : lastSeenZone;
+
+                            if (!_uploadedZones.ContainsKey(zone))
+                            {
+                                _uploadedZones[zone] = new List<string>();
+                                cmbNewBatch4.Items.Add(zone);
+                            }
+
+                            if (!_uploadedZones[zone].Contains(code))
+                            {
+                                _uploadedZones[zone].Add(code);
+                            }
+                        }
+
+                        if (cmbNewBatch4.Items.Count > 0)
+                        {
+                            cmbNewBatch4.SelectedIndex = 0;
+                            MessageBox.Show($"Successfully uploaded and loaded {cmbNewBatch4.Items.Count} zone(s) from Excel file!", "Upload Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        }
+                        else
+                        {
+                            MessageBox.Show("No valid bin records found in the file.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error reading Excel file: {ex.Message}", "Upload Failure", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        #region Excel Parsing Helpers
+
+        private DataTable ReadExcelToDataTable(string filePath)
+        {
+            // Register encoding provider to fix "No data is available for encoding 1252" error
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+
+            using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                using (var reader = ExcelReaderFactory.CreateReader(stream))
+                {
+                    var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                    {
+                        ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                        {
+                            UseHeaderRow = true
+                        }
+                    });
+
+                    if (result.Tables.Count > 0)
+                        return result.Tables[0];
+                }
+            }
+            return null;
+        }
+
+        private bool IsYnOrFlagColumn(string colName)
+        {
+            if (string.IsNullOrWhiteSpace(colName)) return false;
+
+            string clean = colName.ToLower().Trim();
+            string[] ignoreKeywords = new string[] { "y/n", "(y/n)", "yes/no", "status", "active", "flag", "indicator", "required" };
+
+            return ignoreKeywords.Any(kw => clean.Contains(kw));
+        }
+
+        private int GetColumnIndex(DataColumnCollection columns, params string[] possibleNames)
+        {
+            for (int i = 0; i < columns.Count; i++)
+            {
+                string colName = columns[i].ColumnName.Trim();
+                if (IsYnOrFlagColumn(colName)) continue;
+
+                foreach (string name in possibleNames)
+                {
+                    if (string.Equals(colName, name, StringComparison.OrdinalIgnoreCase))
+                        return i;
+                }
+            }
+
+            for (int i = 0; i < columns.Count; i++)
+            {
+                string colName = columns[i].ColumnName.Replace(" ", "").ToLower();
+                if (IsYnOrFlagColumn(columns[i].ColumnName)) continue;
+
+                foreach (string possibleName in possibleNames)
+                {
+                    string cleanPossible = possibleName.Replace(" ", "").ToLower();
+                    if (colName.Contains(cleanPossible))
+                        return i;
+                }
+            }
+
+            return -1;
+        }
+
+        private int GetZoneColumnIndex(DataTable dt, int codeColIdx)
+        {
+            int zoneCol = GetColumnIndex(dt.Columns, "Zone", "Zone Name", "Area", "Rack Zone", "Zone Header", "Storage Section", "Storage Type");
+            if (zoneCol != -1 && zoneCol != codeColIdx) return zoneCol;
+
+            if (codeColIdx == 1 && dt.Columns.Count > 0)
+            {
+                return 0;
+            }
+
+            return -1;
+        }
+
+        #endregion
 
         private Size GetTargetPaperSizeInHundredths()
         {
@@ -130,7 +310,8 @@ namespace OJT___QR_Code_Generator
         private void btnClear_Click(object sender, EventArgs e)
         {
             txtNumber.Clear();
-            cmbBatch.SelectedIndex = -1; // Reset combobox selection
+            cmbBatch.SelectedIndex = -1;
+            cmbNewBatch4.SelectedIndex = -1;
             _activeNumber = string.Empty;
             pnlPreview.Invalidate();
         }
@@ -235,23 +416,33 @@ namespace OJT___QR_Code_Generator
 
         private void btnPrintAll_Click(object sender, EventArgs e)
         {
-            if (cmbBatch.SelectedItem == null)
+            string selectedZone = null;
+            List<string> binsToPrint = null;
+
+            if (cmbNewBatch4.SelectedItem != null)
             {
-                MessageBox.Show("Please select a WHA zone from the Batch dropdown before printing all.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                selectedZone = cmbNewBatch4.SelectedItem.ToString();
+                if (_uploadedZones.TryGetValue(selectedZone, out List<string> list))
+                {
+                    binsToPrint = list;
+                }
+            }
+            else if (cmbBatch.SelectedItem != null)
+            {
+                selectedZone = cmbBatch.SelectedItem.ToString();
+                if (WarehouseData.myZones.TryGetValue(selectedZone, out string[] array))
+                {
+                    binsToPrint = array.ToList();
+                }
+            }
+
+            if (string.IsNullOrEmpty(selectedZone) || binsToPrint == null || binsToPrint.Count == 0)
+            {
+                MessageBox.Show("Please select a zone from either the Batch or Uploaded Batch dropdown before printing all.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
-            string selectedZone = cmbBatch.SelectedItem.ToString(); // e.g., "WHA01" or "WHA-CP"
-
-            // Direct dictionary lookup instead of scanning every key with StartsWith.
-            if (!WarehouseData.myZones.TryGetValue(selectedZone, out string[] binsInZone) ||
-                binsInZone.Length == 0)
-            {
-                MessageBox.Show($"No bin codes found for {selectedZone}.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            _batchQueue = binsInZone.ToList();
+            _batchQueue = binsToPrint;
             _batchIndex = 0;
 
             Size paperSize = GetTargetPaperSizeInHundredths();
@@ -261,14 +452,7 @@ namespace OJT___QR_Code_Generator
                 pd.DefaultPageSettings.Landscape = true;
                 pd.DefaultPageSettings.PaperSize = new PaperSize("FloorBinSticker", paperSize.Width, paperSize.Height);
 
-                // ROOT-CAUSE FIX: PrintPreviewDialog internally calls pd.Print() TWICE —
-                // once to build the on-screen preview, and again for the real print job
-                // when the user clicks Print inside the preview window. BeginPrint fires
-                // at the start of BOTH passes, so this guarantees _batchIndex is reset to 0
-                // before the real print pass too, instead of inheriting the exhausted index
-                // left behind by the preview pass (which was causing an out-of-range crash).
                 pd.BeginPrint += (s, ev) => { _batchIndex = 0; };
-
                 pd.PrintPage += new PrintPageEventHandler(PrintAllFloorBinHandler);
 
                 using (PrintPreviewDialog previewDlg = new PrintPreviewDialog())
@@ -301,12 +485,8 @@ namespace OJT___QR_Code_Generator
             RenderFloorBinLabel(g, printableWidth, printableHeight, isPrinting: true);
         }
 
-        // Multi-page handler for "Print All" - prints one label per page,
-        // advancing through _batchQueue and setting HasMorePages until done
         private void PrintAllFloorBinHandler(object sender, PrintPageEventArgs e)
         {
-            // SAFETY GUARD: prevents ArgumentOutOfRangeException on _batchQueue[_batchIndex]
-            // below if this handler is ever invoked with an exhausted index.
             if (_batchIndex >= _batchQueue.Count)
             {
                 e.HasMorePages = false;
@@ -329,8 +509,6 @@ namespace OJT___QR_Code_Generator
                 printableHeight = temp;
             }
 
-            // Temporarily swap the active number to whichever bin code is next in the queue,
-            // reusing the exact same render method as single-label printing
             string previousActiveNumber = _activeNumber;
             _activeNumber = _batchQueue[_batchIndex];
 
@@ -393,37 +571,37 @@ namespace OJT___QR_Code_Generator
 
         private void DrawBorder(Graphics g, int safeX, int safeY, int safeWidth, int safeHeight, bool isPrinting)
         {
-            int borderThickness = isPrinting ? 3 : 2; // thinner, as requested
+            int borderThickness = isPrinting ? 3 : 2;
             using (SolidBrush borderBrush = new SolidBrush(Color.Black))
             {
-                g.FillRectangle(borderBrush, safeX, safeY, safeWidth, borderThickness); // top
-                g.FillRectangle(borderBrush, safeX, safeY + safeHeight - borderThickness, safeWidth, borderThickness); // bottom
-                g.FillRectangle(borderBrush, safeX, safeY, borderThickness, safeHeight); // left
-                g.FillRectangle(borderBrush, safeX + safeWidth - borderThickness, safeY, borderThickness, safeHeight); // right
+                g.FillRectangle(borderBrush, safeX, safeY, safeWidth, borderThickness);
+                g.FillRectangle(borderBrush, safeX, safeY + safeHeight - borderThickness, safeWidth, borderThickness);
+                g.FillRectangle(borderBrush, safeX, safeY, borderThickness, safeHeight);
+                g.FillRectangle(borderBrush, safeX + safeWidth - borderThickness, safeY, borderThickness, safeHeight);
             }
         }
 
         private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight)
         {
-            StringFormat format = StringFormat.GenericTypographic; // add this
+            StringFormat format = StringFormat.GenericTypographic;
 
             float currentSize = maxFontSize;
             Font testFont = new Font(fontFamily, currentSize, style);
-            SizeF size = g.MeasureString(text, testFont, int.MaxValue, format); // pass format
+            SizeF size = g.MeasureString(text, testFont, int.MaxValue, format);
 
             while ((size.Width > maxWidth || size.Height > maxHeight) && currentSize > 8f)
             {
                 currentSize -= 1f;
                 testFont.Dispose();
                 testFont = new Font(fontFamily, currentSize, style);
-                size = g.MeasureString(text, testFont, int.MaxValue, format); // pass format
+                size = g.MeasureString(text, testFont, int.MaxValue, format);
             }
 
             using (testFont)
             {
                 float posX = x + (maxWidth - size.Width) / 2;
                 float posY = y + (maxHeight - size.Height) / 2;
-                g.DrawString(text, testFont, Brushes.Black, posX, posY, format); // pass format
+                g.DrawString(text, testFont, Brushes.Black, posX, posY, format);
             }
         }
 
@@ -439,7 +617,7 @@ namespace OJT___QR_Code_Generator
                         using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
                         {
                             byte[] qrCodeBytes = qrCode.GetGraphic(20);
-                            using (var ms = new System.IO.MemoryStream(qrCodeBytes))
+                            using (var ms = new MemoryStream(qrCodeBytes))
                             {
                                 return new Bitmap(ms);
                             }
