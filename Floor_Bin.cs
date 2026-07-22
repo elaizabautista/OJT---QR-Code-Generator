@@ -541,7 +541,7 @@ namespace OJT___QR_Code_Generator
             int qrSizeByWidth = safeWidth;
             int qrSize = (int)(Math.Min(qrSizeByHeight, qrSizeByWidth) * 1.22f);
 
-            int moveTextUpPixels = 30;
+            int moveTextUpPixels = 40;
             int contentHeight = qrSize + gap + textHeight;
             int blockStartY = safeY + Math.Max(0, (safeHeight - contentHeight) / 2);
 

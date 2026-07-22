@@ -32,15 +32,11 @@
             panel1 = new Panel();
             label4 = new Label();
             groupBox1 = new GroupBox();
-            Location5 = new TextBox();
             label2 = new Label();
-            txtBinLocation6 = new TextBox();
             btnGenerate = new Button();
-            label10 = new Label();
             btnClear = new Button();
             txtBinLocation4 = new TextBox();
             btnPrint = new Button();
-            label11 = new Label();
             label6 = new Label();
             label12 = new Label();
             label7 = new Label();
@@ -105,15 +101,11 @@
             // 
             // groupBox1
             // 
-            groupBox1.Controls.Add(Location5);
             groupBox1.Controls.Add(label2);
-            groupBox1.Controls.Add(txtBinLocation6);
             groupBox1.Controls.Add(btnGenerate);
-            groupBox1.Controls.Add(label10);
             groupBox1.Controls.Add(btnClear);
             groupBox1.Controls.Add(txtBinLocation4);
             groupBox1.Controls.Add(btnPrint);
-            groupBox1.Controls.Add(label11);
             groupBox1.Controls.Add(label6);
             groupBox1.Controls.Add(label12);
             groupBox1.Controls.Add(label7);
@@ -133,14 +125,6 @@
             groupBox1.TabIndex = 34;
             groupBox1.TabStop = false;
             // 
-            // Location5
-            // 
-            Location5.Location = new Point(186, 110);
-            Location5.Name = "Location5";
-            Location5.Size = new Size(138, 23);
-            Location5.TabIndex = 33;
-            Location5.TextChanged += Location5_TextChanged;
-            // 
             // label2
             // 
             label2.AutoSize = true;
@@ -150,13 +134,6 @@
             label2.Size = new Size(114, 21);
             label2.TabIndex = 19;
             label2.Text = "Bin Location 1:";
-            // 
-            // txtBinLocation6
-            // 
-            txtBinLocation6.Location = new Point(186, 176);
-            txtBinLocation6.Name = "txtBinLocation6";
-            txtBinLocation6.Size = new Size(138, 23);
-            txtBinLocation6.TabIndex = 32;
             // 
             // btnGenerate
             // 
@@ -169,16 +146,6 @@
             btnGenerate.Text = "Generate";
             btnGenerate.UseVisualStyleBackColor = false;
             btnGenerate.Click += btnGenerate_Click;
-            // 
-            // label10
-            // 
-            label10.AutoSize = true;
-            label10.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label10.Location = new Point(186, 152);
-            label10.Name = "label10";
-            label10.Size = new Size(117, 21);
-            label10.TabIndex = 31;
-            label10.Text = "Bin Location 6:";
             // 
             // btnClear
             // 
@@ -194,7 +161,7 @@
             // 
             // txtBinLocation4
             // 
-            txtBinLocation4.Location = new Point(186, 48);
+            txtBinLocation4.Location = new Point(186, 105);
             txtBinLocation4.Name = "txtBinLocation4";
             txtBinLocation4.Size = new Size(138, 23);
             txtBinLocation4.TabIndex = 29;
@@ -211,20 +178,10 @@
             btnPrint.UseVisualStyleBackColor = false;
             btnPrint.Click += btnPrint_Click;
             // 
-            // label11
-            // 
-            label11.AutoSize = true;
-            label11.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label11.Location = new Point(186, 86);
-            label11.Name = "label11";
-            label11.Size = new Size(117, 21);
-            label11.TabIndex = 28;
-            label11.Text = "Bin Location 5:";
-            // 
             // label6
             // 
             label6.AutoSize = true;
-            label6.Location = new Point(22, 283);
+            label6.Location = new Point(19, 241);
             label6.Name = "label6";
             label6.Size = new Size(42, 15);
             label6.TabIndex = 13;
@@ -234,7 +191,7 @@
             // 
             label12.AutoSize = true;
             label12.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label12.Location = new Point(186, 24);
+            label12.Location = new Point(186, 81);
             label12.Name = "label12";
             label12.Size = new Size(117, 21);
             label12.TabIndex = 27;
@@ -243,7 +200,7 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Location = new Point(151, 283);
+            label7.Location = new Point(155, 241);
             label7.Name = "label7";
             label7.Size = new Size(46, 15);
             label7.TabIndex = 14;
@@ -251,7 +208,7 @@
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(22, 171);
+            textBox1.Location = new Point(186, 43);
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(138, 23);
             textBox1.TabIndex = 26;
@@ -271,7 +228,7 @@
             // 
             label9.AutoSize = true;
             label9.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label9.Location = new Point(19, 147);
+            label9.Location = new Point(186, 19);
             label9.Name = "label9";
             label9.Size = new Size(117, 21);
             label9.TabIndex = 25;
@@ -279,7 +236,7 @@
             // 
             // txtCustomWidth
             // 
-            txtCustomWidth.Location = new Point(70, 278);
+            txtCustomWidth.Location = new Point(67, 238);
             txtCustomWidth.Name = "txtCustomWidth";
             txtCustomWidth.Size = new Size(51, 23);
             txtCustomWidth.TabIndex = 15;
@@ -289,7 +246,7 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label8.Location = new Point(22, 209);
+            label8.Location = new Point(19, 168);
             label8.Name = "label8";
             label8.Size = new Size(55, 21);
             label8.TabIndex = 24;
@@ -305,7 +262,7 @@
             // 
             // txtCustomHeight
             // 
-            txtCustomHeight.Location = new Point(203, 278);
+            txtCustomHeight.Location = new Point(207, 238);
             txtCustomHeight.Name = "txtCustomHeight";
             txtCustomHeight.Size = new Size(51, 23);
             txtCustomHeight.TabIndex = 16;
@@ -314,7 +271,7 @@
             // cmbBatch
             // 
             cmbBatch.FormattingEnabled = true;
-            cmbBatch.Location = new Point(25, 233);
+            cmbBatch.Location = new Point(22, 192);
             cmbBatch.Name = "cmbBatch";
             cmbBatch.Size = new Size(299, 23);
             cmbBatch.TabIndex = 23;
@@ -454,12 +411,8 @@
         public Label label3;
         public Label label2;
         public Label label1;
-        public TextBox txtBinLocation6;
-        public Label label10;
         public TextBox txtBinLocation4;
-        public Label label11;
         public Label label12;
-        public TextBox Location5;
         private Panel panel2;
         private Label label13;
         private Panel panel3;
