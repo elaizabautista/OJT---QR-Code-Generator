@@ -1,10 +1,12 @@
-﻿using QRCoder;
+﻿using ExcelDataReader;
+using QRCoder;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -29,11 +31,13 @@ namespace OJT___QR_Code_Generator
         private const double CenterGapIn = 0.5;
 
         // ── State ─────────────────────────────────────────────────────────────
-        // Flat list built from the 12 manual text boxes OR from BinToParts
         private List<(string Name, string Number)> _allLabels =
             new List<(string, string)>();
 
-        // Page counter reset on every BeginPrint
+        // Dedicated storage ONLY for data loaded via the upload button
+        private Dictionary<string, List<(string PartNumber, string PartName)>> _uploadedBinToParts =
+            new Dictionary<string, List<(string PartNumber, string PartName)>>(StringComparer.OrdinalIgnoreCase);
+
         private int _pageIndex = 0;
 
         // ── Constructor ───────────────────────────────────────────────────────
@@ -43,10 +47,7 @@ namespace OJT___QR_Code_Generator
             WireEvents();
             PopulateBatchDropdown();
 
-            // Default mode: Labels With Data
             rdoWithData.Checked = true;
-
-            // Default size
             txtWidth.Text = "8.27";
             txtHeight.Text = "11.69";
         }
@@ -59,10 +60,12 @@ namespace OJT___QR_Code_Generator
             btnPrint.Click += btnPrint_Click;
             btnPrintAll.Click += btnPrintAll_Click;
             btnConvertToPdf.Click += btnConvertToPdf_Click;
+            Uploadbutt.Click += Uploadbutt_Click;
+
+            cmbNewBatch6.SelectedIndexChanged += cmbNewBatch6_SelectedIndexChanged;
 
             pnlPreview.Paint += pnlPreview_Paint;
 
-            // Refresh preview whenever mode changes
             rdoBlank.CheckedChanged += (s, e) => pnlPreview.Invalidate();
             rdoWithData.CheckedChanged += (s, e) => pnlPreview.Invalidate();
         }
@@ -70,25 +73,50 @@ namespace OJT___QR_Code_Generator
         // ── Batch dropdown ────────────────────────────────────────────────────
         private void PopulateBatchDropdown()
         {
+            // Main dropdown uses default system data
             cmbBatch.Items.Clear();
             cmbBatch.Items.Add("__Select__");
 
-            var unique = new HashSet<string>();
+            var uniqueSystem = new HashSet<string>();
             foreach (string key in PartNumber_and_PartName_DATA.BinToParts.Keys)
-                unique.Add(GetZoneGroup(key));
+                uniqueSystem.Add(GetZoneGroup(key));
 
-            var sorted = new List<string>(unique);
-            sorted.Sort((x, y) => GetGroupSortKey(x).CompareTo(GetGroupSortKey(y)));
+            var sortedSystem = new List<string>(uniqueSystem);
+            sortedSystem.Sort((x, y) => GetGroupSortKey(x).CompareTo(GetGroupSortKey(y)));
 
-            foreach (string g in sorted)
+            foreach (string g in sortedSystem)
+            {
                 cmbBatch.Items.Add(g);
-
+            }
             cmbBatch.SelectedIndex = 0;
+
+            // cmbNewBatch6 ONLY uses uploaded Excel data
+            if (cmbNewBatch6 != null)
+            {
+                cmbNewBatch6.Items.Clear();
+                cmbNewBatch6.Items.Add("__Select__");
+
+                var uniqueUploaded = new HashSet<string>();
+                foreach (string key in _uploadedBinToParts.Keys)
+                    uniqueUploaded.Add(GetZoneGroup(key));
+
+                var sortedUploaded = new List<string>(uniqueUploaded);
+                sortedUploaded.Sort((x, y) => GetGroupSortKey(x).CompareTo(GetGroupSortKey(y)));
+
+                foreach (string g in sortedUploaded)
+                {
+                    cmbNewBatch6.Items.Add(g);
+                }
+
+                if (cmbNewBatch6.Items.Count > 0)
+                {
+                    cmbNewBatch6.SelectedIndex = 0;
+                }
+            }
         }
 
         // ── Button handlers ───────────────────────────────────────────────────
 
-        /// <summary>Generate preview from the 12 manual text boxes.</summary>
         private void btnGenerate_Click(object sender, EventArgs e)
         {
             _allLabels = CollectManualEntries();
@@ -102,7 +130,6 @@ namespace OJT___QR_Code_Generator
             pnlPreview.Invalidate();
         }
 
-        /// <summary>Print from the 12 manual text boxes.</summary>
         private void btnPrint_Click(object sender, EventArgs e)
         {
             _allLabels = CollectManualEntries();
@@ -123,7 +150,6 @@ namespace OJT___QR_Code_Generator
             }
         }
 
-        /// <summary>Print All: loads every label from BinToParts for the selected zone.</summary>
         private void btnPrintAll_Click(object sender, EventArgs e)
         {
             if (!LoadZoneLabels()) return;
@@ -139,7 +165,6 @@ namespace OJT___QR_Code_Generator
 
         private void btnConvertToPdf_Click(object sender, EventArgs e)
         {
-            // Decide data source: zone batch if selected, otherwise manual boxes
             if (cmbBatch.SelectedItem != null &&
                 cmbBatch.SelectedItem.ToString() != "__Select__")
             {
@@ -196,7 +221,6 @@ namespace OJT___QR_Code_Generator
             int pw = pnlPreview.Width;
             int ph = pnlPreview.Height;
 
-            // Maintain A4 Landscape aspect ratio inside the panel
             float targetRatio = (float)A4WidthHundredths / A4HeightHundredths;
             float currentRatio = (float)pw / ph;
 
@@ -205,7 +229,6 @@ namespace OJT___QR_Code_Generator
             else
                 ph = (int)(pw / targetRatio);
 
-            // Use whatever is already loaded in _allLabels for the preview
             RenderA4Page(g, pw, ph, startIndex: 0, isPrinting: false);
         }
 
@@ -253,7 +276,6 @@ namespace OJT___QR_Code_Generator
             Graphics g = e.Graphics;
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
-            // Check the ACTUAL bounds reported at print time — don't assume either way
             if (e.PageBounds.Width < e.PageBounds.Height)
             {
                 g.TranslateTransform(e.PageBounds.Width, 0);
@@ -268,19 +290,11 @@ namespace OJT___QR_Code_Generator
             _pageIndex++;
             e.HasMorePages = rdoBlank.Checked ? false : (_pageIndex * LabelsPerPage) < _allLabels.Count;
         }
-        // ── Page rendering engine ─────────────────────────────────────────────
 
-        /// <summary>
-        /// Renders one full A4 Landscape page of 12 label slots.
-        /// Depending on the selected mode, each slot is either blank or filled.
-        /// A 0.3" vertical gap is inserted between consecutive labels in each column.
-        /// The whole grid is centered within the printable area to compensate for
-        /// integer-division rounding in labelHeight/colWidth.
-        /// </summary>
+        // ── Page rendering engine ─────────────────────────────────────────────
         private void RenderA4Page(Graphics g, int pageWidth, int pageHeight,
                                    int startIndex, bool isPrinting)
         {
-            // Scale inch-based margins to device pixels
             double sx = (double)pageWidth / A4WidthHundredths;
             double sy = (double)pageHeight / A4HeightHundredths;
 
@@ -297,18 +311,12 @@ namespace OJT___QR_Code_Generator
 
             int colWidth = (areaWidth - centerGap) / 2;
 
-            // Vertical gap between labels (0.3 inch), scaled to device pixels
             const double LabelGapIn = 0.3;
             int labelGap = (int)(LabelGapIn * 100 * sy);
 
             int totalGapHeight = labelGap * (Rows - 1);
             int labelHeight = (areaHeight - totalGapHeight) / Rows;
 
-            // ── NEW: center the grid within the printable area ──
-            // Integer division above always leaves a small remainder (a few px)
-            // that was previously pushed entirely to the right/bottom of the
-            // printable area. We compute that leftover and split it evenly so
-            // the grid sits dead-center between the margins.
             int contentWidth = colWidth * 2 + centerGap;
             int contentHeight = labelHeight * Rows + totalGapHeight;
 
@@ -320,16 +328,11 @@ namespace OJT___QR_Code_Generator
 
             bool isBlank = rdoBlank.Checked;
 
-            // Outer page border: removed
-            // Column separator line: removed
-
-            // ── Draw each of the 12 label slots ──
             for (int slot = 0; slot < LabelsPerPage; slot++)
             {
-                int row = slot % Rows;   // 0–5  (fill top-to-bottom in each column)
-                int col = slot / Rows;   // 0 or 1
+                int row = slot % Rows;
+                int col = slot / Rows;
 
-                // NEW: positions now originate from gridLeft/gridTop instead of areaLeft/areaTop
                 int labelX = gridLeft + col * (colWidth + centerGap);
                 int labelY = gridTop + row * (labelHeight + labelGap);
 
@@ -345,35 +348,23 @@ namespace OJT___QR_Code_Generator
 
                     RenderStrip(g, name, number, labelX, labelY, colWidth, labelHeight, isPrinting);
                 }
-
-                // Dashed cut guide between rows: removed (0.3" gap already separates labels)
             }
         }
 
-        // ── Blank slot renderer ───────────────────────────────────────────────
-
-        /// <summary>
-        /// Draws an empty label slot as a plain bordered rectangle only.
-        /// No placeholder text, no QR box, no inner guides.
-        /// </summary>
         private void DrawBlankSlot(Graphics g, int x, int y, int width, int height, bool isPrinting)
         {
-            // Outer cell border only
             using (Pen border = new Pen(Color.Black, isPrinting ? 1.5f : 1f))
             {
                 g.DrawRectangle(border, x, y, width - 1, height - 1);
             }
         }
 
-        // ── Label renderer (identical logic to Naming_Part_From) ──────────────
-
         private void RenderStrip(Graphics g, string partName, string partNumber,
-                                  int stripX, int stripY, int stripWidth, int stripHeight,
-                                  bool isPrinting)
+                                 int stripX, int stripY, int stripWidth, int stripHeight,
+                                 bool isPrinting)
         {
             if (string.IsNullOrEmpty(partName) && string.IsNullOrEmpty(partNumber)) return;
 
-            // Outer cell border
             using (Pen border = new Pen(Color.Black, isPrinting ? 2f : 1f))
             {
                 g.DrawRectangle(border, stripX, stripY, stripWidth - 1, stripHeight - 1);
@@ -385,34 +376,27 @@ namespace OJT___QR_Code_Generator
             int innerW = stripWidth - pad * 2;
             int innerH = stripHeight - pad * 2;
 
-            // 75 % text | 25 % QR
             int leftColWidth = (int)(innerW * 0.75);
             int rightColX = innerX + leftColWidth;
             int rightColWidth = innerW - leftColWidth;
 
-            // 40 % header | 60 % body
             int headerHeight = (int)(innerH * 0.40);
             int numberAreaTop = innerY + headerHeight;
             int numberAreaHeight = innerH - headerHeight;
 
-            // Part Name background (black)
             g.FillRectangle(Brushes.Black, innerX, innerY, leftColWidth, headerHeight);
 
-            // Part Number border
             using (Pen bodyPen = new Pen(Color.Black, isPrinting ? 1.5f : 1f))
             {
                 g.DrawRectangle(bodyPen, innerX, numberAreaTop, leftColWidth, numberAreaHeight);
             }
 
-            // Part Name text (white)
             DrawTextAutofit(g, partName, "Arial", FontStyle.Bold, headerHeight * 0.7f,
                             innerX + 4, innerY + 2, leftColWidth - 8, headerHeight - 4, Brushes.White);
 
-            // Part Number text (black)
             DrawTextAutofit(g, partNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.8f,
                             innerX + 4, numberAreaTop + 2, leftColWidth - 8, numberAreaHeight - 4, Brushes.Black);
 
-            // QR Code
             int qrSize = Math.Min(rightColWidth - 6, innerH - 6);
             string qrPayload = !string.IsNullOrEmpty(partNumber) ? partNumber : partName;
 
@@ -431,11 +415,9 @@ namespace OJT___QR_Code_Generator
             }
         }
 
-        // ── Text helper ───────────────────────────────────────────────────────
-
         private void DrawTextAutofit(Graphics g, string text, string fontFamily,
-                                      FontStyle style, float maxFontSize,
-                                      int x, int y, int maxWidth, int maxHeight, Brush brush)
+                                   FontStyle style, float maxFontSize,
+                                   int x, int y, int maxWidth, int maxHeight, Brush brush)
         {
             if (string.IsNullOrEmpty(text)) return;
 
@@ -460,8 +442,6 @@ namespace OJT___QR_Code_Generator
                 g.DrawString(text, testFont, brush, posX, posY);
             }
         }
-
-        // ── QR helper ─────────────────────────────────────────────────────────
 
         private Bitmap CreateQRCodeImage(string text)
         {
@@ -489,25 +469,19 @@ namespace OJT___QR_Code_Generator
             catch { return null; }
         }
 
-        // ── Data helpers ──────────────────────────────────────────────────────
-
-        /// <summary>
-        /// Reads the 12 manual Part Name / Part Number text boxes
-        /// and returns only the pairs that have at least one non-empty field.
-        /// </summary>
         private List<(string Name, string Number)> CollectManualEntries()
         {
             var list = new List<(string, string)>();
 
             var names = new[] { txtPartName1,  txtPartName2,  txtPartName3,
-                                   txtPartName4,  txtPartName5,  txtPartName6,
-                                   txtPartName7,  txtPartName8,  txtPartName9,
-                                   txtPartName10, txtPartName11, txtPartName12 };
+                                txtPartName4,  txtPartName5,  txtPartName6,
+                                txtPartName7,  txtPartName8,  txtPartName9,
+                                txtPartName10, txtPartName11, txtPartName12 };
 
             var numbers = new[] { txtPartNumber1,  txtPartNumber2,  txtPartNumber3,
-                                   txtPartNumber4,  txtPartNumber5,  txtPartNumber6,
-                                   txtPartNumber7,  txtPartNumber8,  txtPartNumber9,
-                                   txtPartNumber10, txtPartNumber11, txtPartNumber12 };
+                                  txtPartNumber4,  txtPartNumber5,  txtPartNumber6,
+                                  txtPartNumber7,  txtPartNumber8,  txtPartNumber9,
+                                  txtPartNumber10, txtPartNumber11, txtPartNumber12 };
 
             for (int i = 0; i < 12; i++)
             {
@@ -520,10 +494,6 @@ namespace OJT___QR_Code_Generator
             return list;
         }
 
-        /// <summary>
-        /// Loads all labels from BinToParts for the zone selected in cmbBatch.
-        /// Returns false with a warning when nothing is found.
-        /// </summary>
         private bool LoadZoneLabels()
         {
             if (cmbBatch.SelectedItem == null ||
@@ -578,10 +548,9 @@ namespace OJT___QR_Code_Generator
                 tb.Clear();
         }
 
-        // ── Zone grouping (shared with Naming_Part_From, kept in sync) ────────
-
         private static string GetZoneGroup(string binKey)
         {
+            if (string.IsNullOrEmpty(binKey)) return "Other";
             string prefix = binKey.Contains("-") ? binKey.Split('-')[0] : binKey;
 
             Match numMatch = Regex.Match(prefix, @"^(\d+)[A-C]?$");
@@ -654,6 +623,112 @@ namespace OJT___QR_Code_Generator
         private void GeneralForm_Load(object sender, EventArgs e)
         {
 
+        }
+
+        // cmbNewBatch6 loads ALL matching items from the zone and assigns Description to header, Material to body/QR
+        private void cmbNewBatch6_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbNewBatch6.SelectedItem == null || cmbNewBatch6.SelectedItem.ToString() == "__Select__")
+            {
+                _allLabels.Clear();
+                pnlPreview.Invalidate();
+                return;
+            }
+
+            string selectedZone = cmbNewBatch6.SelectedItem.ToString();
+            _allLabels.Clear();
+
+            foreach (var kvp in _uploadedBinToParts)
+            {
+                if (GetZoneGroup(kvp.Key) == selectedZone)
+                {
+                    foreach (var part in kvp.Value)
+                    {
+                        // part.PartName = Material Description (Header)
+                        // part.PartNumber = Material Code (Body & QR)
+                        string headerText = !string.IsNullOrEmpty(part.PartName) ? part.PartName : kvp.Key;
+                        string bodyText = part.PartNumber;
+
+                        _allLabels.Add((headerText, bodyText));
+                    }
+                }
+            }
+
+            pnlPreview.Invalidate();
+        }
+
+        private void Uploadbutt_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Filter = "Excel Files (*.xlsx;*.xls)|*.xlsx;*.xls";
+                openFileDialog.Title = "Select Materials Excel File";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+                        using (var stream = File.Open(openFileDialog.FileName, FileMode.Open, FileAccess.Read))
+                        {
+                            using (var reader = ExcelReaderFactory.CreateReader(stream))
+                            {
+                                var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                                {
+                                    ConfigureDataTable = (_) => new ExcelDataTableConfiguration()
+                                    {
+                                        UseHeaderRow = true
+                                    }
+                                });
+
+                                int importedCount = 0;
+                                _uploadedBinToParts.Clear();
+
+                                foreach (System.Data.DataTable table in result.Tables)
+                                {
+                                    foreach (System.Data.DataRow row in table.Rows)
+                                    {
+                                        if (row.ItemArray.Length < 2) continue;
+
+                                        // Column 0: Material (Part Number)
+                                        // Column 1: Material Description (Part Name)
+                                        string material = row[0]?.ToString().Trim();
+                                        string description = row[1]?.ToString().Trim();
+
+                                        if (string.IsNullOrEmpty(material))
+                                            continue;
+
+                                        if (!_uploadedBinToParts.ContainsKey(material))
+                                        {
+                                            _uploadedBinToParts[material] = new List<(string PartNumber, string PartName)>();
+                                        }
+
+                                        var existingList = _uploadedBinToParts[material];
+                                        bool exists = existingList.Exists(p => p.PartNumber.Equals(material, StringComparison.OrdinalIgnoreCase));
+
+                                        if (!exists)
+                                        {
+                                            existingList.Add((material, description));
+                                            importedCount++;
+                                        }
+                                    }
+                                }
+
+                                PopulateBatchDropdown();
+
+                                MessageBox.Show($"Successfully imported {importedCount} materials from Excel!",
+                                    "Import Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error reading Excel file: {ex.Message}",
+                            "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
         }
     }
 }

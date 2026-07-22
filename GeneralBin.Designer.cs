@@ -99,6 +99,9 @@
             rdoWithData = new RadioButton();
             rdoBlank = new RadioButton();
             panel4 = new Panel();
+            Uploadbutt = new Button();
+            label4 = new Label();
+            cmbNewBatch6 = new ComboBox();
             panel2.SuspendLayout();
             panel3.SuspendLayout();
             groupBox1.SuspendLayout();
@@ -752,8 +755,11 @@
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
+            panel1.Controls.Add(Uploadbutt);
             panel1.Controls.Add(lblPrintPreview);
+            panel1.Controls.Add(label4);
             panel1.Controls.Add(groupBox1);
+            panel1.Controls.Add(cmbNewBatch6);
             panel1.Controls.Add(btnConvertToPdf);
             panel1.Controls.Add(pnlPreview);
             panel1.Controls.Add(label1);
@@ -806,6 +812,36 @@
             panel4.Name = "panel4";
             panel4.Size = new Size(1311, 892);
             panel4.TabIndex = 86;
+            // 
+            // Uploadbutt
+            // 
+            Uploadbutt.BackColor = Color.LightBlue;
+            Uploadbutt.Location = new Point(992, 682);
+            Uploadbutt.Name = "Uploadbutt";
+            Uploadbutt.Size = new Size(89, 23);
+            Uploadbutt.TabIndex = 87;
+            Uploadbutt.Text = "Upload";
+            Uploadbutt.UseVisualStyleBackColor = false;
+            Uploadbutt.Click += Uploadbutt_Click;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label4.Location = new Point(753, 659);
+            label4.Name = "label4";
+            label4.Size = new Size(92, 21);
+            label4.TabIndex = 89;
+            label4.Text = "New Batch:";
+            // 
+            // cmbNewBatch6
+            // 
+            cmbNewBatch6.FormattingEnabled = true;
+            cmbNewBatch6.Location = new Point(753, 683);
+            cmbNewBatch6.Name = "cmbNewBatch6";
+            cmbNewBatch6.Size = new Size(178, 23);
+            cmbNewBatch6.TabIndex = 88;
+            cmbNewBatch6.SelectedIndexChanged += cmbNewBatch6_SelectedIndexChanged;
             // 
             // GeneralForm
             // 
@@ -905,5 +941,8 @@
         public Label label30;
         public Label label31;
         private Panel panel4;
+        private Button Uploadbutt;
+        public Label label4;
+        private ComboBox cmbNewBatch6;
     }
 }
