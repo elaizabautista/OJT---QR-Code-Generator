@@ -637,5 +637,10 @@ namespace OJT___QR_Code_Generator
                 return null;
             }
         }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

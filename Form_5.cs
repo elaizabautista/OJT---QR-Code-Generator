@@ -5,8 +5,11 @@ using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Printing;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using ExcelDataReader;
 using QRCoder;
 
 namespace OJT___QR_Code_Generator
@@ -19,9 +22,12 @@ namespace OJT___QR_Code_Generator
         private string _activeBin3 = string.Empty; // Bottom-left
         private string _activeBin4 = string.Empty; // Bottom-right
 
-        // Each batch page now holds FOUR bin values (one per grid cell)
-        private List<(string bin1, string bin2, string bin3, string bin4)> _batchPages = new List<(string, string, string, string)>();
+        // Each batch page holds FOUR bin values (one per grid cell)
+        private List<(string bin1, string bin2, string bin3, string bin4)> _batchPages = new List<(string bin1, string bin2, string bin3, string bin4)>();
         private int _batchPageIndex = 0;
+
+        // Stores parsed zones and bin lists from uploaded Excel files
+        private Dictionary<string, List<string>> _uploadedZones = new Dictionary<string, List<string>>();
 
         public Form_5()
         {
@@ -31,14 +37,18 @@ namespace OJT___QR_Code_Generator
 
         private void CenterPanel()
         {
-            panel4.Left = (this.ClientSize.Width - panel4.Width) / 2;
-            panel4.Top = (this.ClientSize.Height - panel4.Height) / 2;
+            // Safety check to prevent negative placement if form gets too small
+            if (this.ClientSize.Width > 0 && this.ClientSize.Height > 0)
+            {
+                panel4.Left = (this.ClientSize.Width - panel4.Width) / 2;
+                panel4.Top = (this.ClientSize.Height - panel4.Height) / 2;
+            }
         }
 
         private void Form_5_Load(object sender, EventArgs e)
         {
             CenterPanel();
-            this.Resize += (s, e) => CenterPanel();
+            this.Resize += (s, ev) => CenterPanel();
 
             txtCustomWidth.Text = "3";
             txtCustomHeight.Text = "6";
@@ -52,9 +62,6 @@ namespace OJT___QR_Code_Generator
         }
 
         // --- Invalidation Handlers ---
-        // Note: txtBinLocation1/2/textBox1/txtBinLocation4 now map to the 4 grid cells.
-        // Location5 / txtBinLocation6 are kept wired up (in case the designer still
-        // references them) but are no longer part of the printed layout.
         private void txtBinLocation1_TextChanged(object sender, EventArgs e) { pnlPreview.Invalidate(); }
         private void txtBinLocation2_TextChanged(object sender, EventArgs e) { pnlPreview.Invalidate(); }
         private void textBox1_TextChanged(object sender, EventArgs e) { pnlPreview.Invalidate(); }
@@ -67,7 +74,60 @@ namespace OJT___QR_Code_Generator
 
         private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Handled during print
+            if (cmbBatch.SelectedItem != null)
+            {
+                // Reset uploaded batch dropdown selection to avoid conflict
+                cmbNewBatch5.SelectedIndexChanged -= cmbNewBatch5_SelectedIndexChanged;
+                cmbNewBatch5.SelectedIndex = -1;
+                cmbNewBatch5.SelectedIndexChanged += cmbNewBatch5_SelectedIndexChanged;
+
+                LoadSelectedZoneIntoTextBoxes(cmbBatch.SelectedItem.ToString(), isUploaded: false);
+            }
+        }
+
+        private void cmbNewBatch5_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbNewBatch5.SelectedItem != null)
+            {
+                // Reset standard batch dropdown selection to avoid conflict
+                cmbBatch.SelectedIndexChanged -= cmbBatch_SelectedIndexChanged;
+                cmbBatch.SelectedIndex = -1;
+                cmbBatch.SelectedIndexChanged += cmbBatch_SelectedIndexChanged;
+
+                LoadSelectedZoneIntoTextBoxes(cmbNewBatch5.SelectedItem.ToString(), isUploaded: true);
+            }
+        }
+
+        private void LoadSelectedZoneIntoTextBoxes(string zoneKey, bool isUploaded)
+        {
+            List<string> materials = null;
+            if (isUploaded)
+            {
+                if (_uploadedZones.TryGetValue(zoneKey, out List<string> list))
+                    materials = list;
+            }
+            else
+            {
+                if (Form5Data.ZoneToMaterials.TryGetValue(zoneKey, out string[] array))
+                    materials = array.ToList();
+            }
+
+            if (materials != null)
+            {
+                // Automatically populate the 4 text boxes for the 2x2 grid preview
+                txtBinLocation1.Text = materials.Count > 0 ? materials[0] : string.Empty;
+                txtBinLocation2.Text = materials.Count > 1 ? materials[1] : string.Empty;
+                textBox1.Text = materials.Count > 2 ? materials[2] : string.Empty;
+                txtBinLocation4.Text = materials.Count > 3 ? materials[3] : string.Empty;
+
+                // Update active bins and refresh the preview panel
+                _activeBin1 = txtBinLocation1.Text.Trim();
+                _activeBin2 = txtBinLocation2.Text.Trim();
+                _activeBin3 = textBox1.Text.Trim();
+                _activeBin4 = txtBinLocation4.Text.Trim();
+
+                pnlPreview.Invalidate();
+            }
         }
 
         private void btnGenerate_Click(object sender, EventArgs e)
@@ -94,6 +154,8 @@ namespace OJT___QR_Code_Generator
             textBox1.Clear();
             txtBinLocation4.Clear();
 
+            cmbBatch.SelectedIndex = -1;
+            cmbNewBatch5.SelectedIndex = -1;
 
             _activeBin1 = string.Empty;
             _activeBin2 = string.Empty;
@@ -105,13 +167,17 @@ namespace OJT___QR_Code_Generator
 
         private void pnlPreview_Paint(object sender, PaintEventArgs e)
         {
+            int totalWidth = pnlPreview.Width;
+            int totalHeight = pnlPreview.Height;
+
+            // Prevent crash if the panel is minimized or essentially invisible
+            if (totalWidth <= 0 || totalHeight <= 0) return;
+
             Graphics g = e.Graphics;
             g.Clear(Color.White);
             g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
 
             Size paperSize = GetTargetPaperSizeInHundredths();
-            int totalWidth = pnlPreview.Width;
-            int totalHeight = pnlPreview.Height;
 
             float targetRatio = (float)paperSize.Width / paperSize.Height;
             float currentRatio = (float)totalWidth / totalHeight;
@@ -156,36 +222,43 @@ namespace OJT___QR_Code_Generator
 
         private void PrintAllButt_Click(object sender, EventArgs e)
         {
-            if (cmbBatch.SelectedItem == null)
+            string selectedZone = null;
+            List<string> materials = null;
+
+            // Priority check for uploaded batch dropdown
+            if (cmbNewBatch5.SelectedItem != null)
             {
-                MessageBox.Show("Please select a Zone from the Batch dropdown.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
+                selectedZone = cmbNewBatch5.SelectedItem.ToString();
+                if (_uploadedZones.TryGetValue(selectedZone, out List<string> list))
+                {
+                    materials = list;
+                }
+            }
+            // Check default warehouse batch dropdown
+            else if (cmbBatch.SelectedItem != null)
+            {
+                selectedZone = cmbBatch.SelectedItem.ToString();
+                if (Form5Data.ZoneToMaterials.TryGetValue(selectedZone, out string[] array))
+                {
+                    materials = array.ToList();
+                }
             }
 
-            string selectedZone = cmbBatch.SelectedItem.ToString();
-
-            if (!Form5Data.ZoneToMaterials.ContainsKey(selectedZone))
+            if (string.IsNullOrEmpty(selectedZone) || materials == null || materials.Count == 0)
             {
-                MessageBox.Show("Selected zone has no material data.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            string[] materials = Form5Data.ZoneToMaterials[selectedZone];
-            if (materials == null || materials.Length == 0)
-            {
-                MessageBox.Show("Selected zone has no materials.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a zone from either the Batch or Uploaded Batch dropdown before printing all.", "Batch Print Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             _batchPages.Clear();
 
             // Loop steps by 4 now (one page = 4 bins in a 2x2 grid)
-            for (int i = 0; i < materials.Length; i += 4)
+            for (int i = 0; i < materials.Count; i += 4)
             {
                 string b1 = materials[i];
-                string b2 = (i + 1 < materials.Length) ? materials[i + 1] : string.Empty;
-                string b3 = (i + 2 < materials.Length) ? materials[i + 2] : string.Empty;
-                string b4 = (i + 3 < materials.Length) ? materials[i + 3] : string.Empty;
+                string b2 = (i + 1 < materials.Count) ? materials[i + 1] : string.Empty;
+                string b3 = (i + 2 < materials.Count) ? materials[i + 2] : string.Empty;
+                string b4 = (i + 3 < materials.Count) ? materials[i + 3] : string.Empty;
 
                 _batchPages.Add((b1, b2, b3, b4));
             }
@@ -226,7 +299,7 @@ namespace OJT___QR_Code_Generator
             {
                 saveDlg.Filter = "PDF Files (*.pdf)|*.pdf";
                 saveDlg.Title = "Save Bin Labels as PDF";
-                saveDlg.FileName = $"Bin_Labels_Export";
+                saveDlg.FileName = "Bin_Labels_Export.pdf";
 
                 if (saveDlg.ShowDialog() == DialogResult.OK)
                 {
@@ -321,9 +394,16 @@ namespace OJT___QR_Code_Generator
             int safeWidth = totalWidth - (margin * 2);
             int safeHeight = totalHeight - (margin * 2);
 
+            // Safety guard to prevent dividing by zero or drawing out of bounds
+            if (safeWidth <= 0 || safeHeight <= 0) return;
+
             // Vertical divider only — rows are separated by space, not a drawn line
             int dividerThickness = 2;
             int columnWidth = (safeWidth - dividerThickness) / 2;
+
+            // Safety guard for column width
+            if (columnWidth <= 0) return;
+
             int rowHeight = safeHeight / 2;
             int rightColumnX = safeX + columnWidth + dividerThickness;
             int bottomRowY = safeY + rowHeight;
@@ -348,17 +428,15 @@ namespace OJT___QR_Code_Generator
                 int rowTop = (rowIndex == 0) ? safeY : bottomRowY;
                 int rowBottom = rowTop + rowHeight;
 
-                // QR sized against column width (the real constraint), with minimal padding
-                // so it grows as large as possible
                 int qrPadding = isPrinting ? 6 : 3;
                 int qrSize = columnWidth - (qrPadding * 2);
+
+                if (qrSize <= 0) continue;
 
                 int gapBetweenQrAndText = isPrinting ? 4 : 2;
                 int textBlockHeight = (int)(rowHeight * 0.18f);
                 int contentHeight = qrSize + gapBetweenQrAndText + textBlockHeight;
 
-                // Small fixed margin that pulls each block toward the center divider
-                // instead of centering it in the full (tall) row
                 int marginFromDivider = isPrinting ? 20 : 10;
 
                 int qrY;
@@ -366,7 +444,6 @@ namespace OJT___QR_Code_Generator
                 {
                     // Top row: anchor the block's BOTTOM near the divider
                     int contentBottom = rowBottom - marginFromDivider;
-                    qrY = contentBottom - contentHeight + (contentHeight - (qrSize + gapBetweenQrAndText + textBlockHeight)); // no-op, kept for clarity
                     qrY = contentBottom - contentHeight;
                     if (qrY < rowTop) qrY = rowTop; // safety clamp
                 }
@@ -383,7 +460,19 @@ namespace OJT___QR_Code_Generator
                 {
                     if (qrImg != null)
                     {
+                        var oldInterpolation = g.InterpolationMode;
+                        var oldSmoothing = g.SmoothingMode;
+                        var oldPixelOffset = g.PixelOffsetMode;
+
+                        g.InterpolationMode = InterpolationMode.NearestNeighbor;
+                        g.SmoothingMode = SmoothingMode.None;
+                        g.PixelOffsetMode = PixelOffsetMode.Half;
+
                         g.DrawImage(qrImg, qrX, qrY, qrSize, qrSize);
+
+                        g.InterpolationMode = oldInterpolation;
+                        g.SmoothingMode = oldSmoothing;
+                        g.PixelOffsetMode = oldPixelOffset;
                     }
                 }
 
@@ -396,13 +485,17 @@ namespace OJT___QR_Code_Generator
 
         private void DrawTextAutofit(Graphics g, string text, string fontFamily, FontStyle style, float maxFontSize, int x, int y, int maxWidth, int maxHeight, Brush brush = null)
         {
+            // Safety guards for text rendering
+            if (string.IsNullOrEmpty(text) || maxWidth <= 0 || maxHeight <= 0) return;
             if (brush == null) brush = Brushes.Black;
+
+            // Ensure the font size never drops below a valid metric, preventing an ArgumentException crash
+            if (maxFontSize < 1f) maxFontSize = 1f;
 
             float currentSize = maxFontSize;
             Font testFont = new Font(fontFamily, currentSize, style);
             SizeF size = g.MeasureString(text, testFont);
 
-            // Auto-fit the text to the maximum allowable bounds, shrinking only when necessary
             while ((size.Width > maxWidth || size.Height > maxHeight) && currentSize > 8f)
             {
                 currentSize -= 1f;
@@ -432,9 +525,12 @@ namespace OJT___QR_Code_Generator
                             using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
                             {
                                 byte[] qrCodeBytes = qrCode.GetGraphic(4);
-                                using (var ms = new System.IO.MemoryStream(qrCodeBytes))
+                                using (var ms = new MemoryStream(qrCodeBytes))
                                 {
-                                    return new Bitmap(ms);
+                                    using (var tempBmp = Image.FromStream(ms))
+                                    {
+                                        return new Bitmap(tempBmp);
+                                    }
                                 }
                             }
                         }
@@ -454,9 +550,160 @@ namespace OJT___QR_Code_Generator
             }
         }
 
+        private void Uploadbutt_Click(object sender, EventArgs e)
+        {
+            using (OpenFileDialog ofd = new OpenFileDialog() { Filter = "Excel Files|*.xls;*.xlsx", ValidateNames = true })
+            {
+                if (ofd.ShowDialog() == DialogResult.OK)
+                {
+                    try
+                    {
+                        System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                        DataTable dt = ReadExcelToDataTable(ofd.FileName);
+
+                        if (dt != null && dt.Rows.Count > 0)
+                        {
+                            _uploadedZones.Clear();
+                            cmbNewBatch5.Items.Clear();
+
+                            string currentZone = null;
+                            List<string> currentBins = null;
+
+                            // Walk down the DataTable row by row
+                            for (int i = 0; i < dt.Rows.Count; i++)
+                            {
+                                DataRow row = dt.Rows[i];
+                                string zoneVal = row.ItemArray.Length > 0 ? row[0]?.ToString()?.Trim() : null;
+                                string binVal = row.ItemArray.Length > 1 ? row[1]?.ToString()?.Trim() : null;
+
+                                // Non-empty cell in Column A marks the start of a new zone
+                                if (!string.IsNullOrWhiteSpace(zoneVal))
+                                {
+                                    if (currentZone != null && currentBins != null)
+                                    {
+                                        AddZoneToDictionary(currentZone, currentBins);
+                                    }
+
+                                    currentZone = zoneVal;
+                                    currentBins = new List<string>();
+                                }
+
+                                // Collect Column B values for the active zone
+                                if (currentZone != null && !string.IsNullOrWhiteSpace(binVal))
+                                {
+                                    currentBins.Add(binVal);
+                                }
+                            }
+
+                            // Save the final zone after the loop completes
+                            if (currentZone != null && currentBins != null)
+                            {
+                                AddZoneToDictionary(currentZone, currentBins);
+                            }
+
+                            // Populate the ComboBox with zones in top-to-bottom sheet order
+                            if (_uploadedZones.Count > 0)
+                            {
+                                foreach (string zoneName in _uploadedZones.Keys)
+                                {
+                                    cmbNewBatch5.Items.Add(zoneName);
+                                }
+
+                                cmbNewBatch5.SelectedIndex = 0;
+                                MessageBox.Show($"Excel uploaded successfully! Found {_uploadedZones.Count} zone(s).", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            }
+                            else
+                            {
+                                MessageBox.Show("No valid zones or bin data found in the spreadsheet.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("The selected Excel file is empty.", "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error reading Excel file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+        }
+
+        private void AddZoneToDictionary(string zoneName, List<string> bins)
+        {
+            string uniqueKey = zoneName;
+            int counter = 1;
+            while (_uploadedZones.ContainsKey(uniqueKey))
+            {
+                uniqueKey = $"{zoneName} ({counter++})";
+            }
+            _uploadedZones[uniqueKey] = bins;
+        }
+
+        private DataTable ReadExcelToDataTable(string filePath)
+        {
+            using (var stream = File.Open(filePath, FileMode.Open, FileAccess.Read))
+            {
+                using (var reader = ExcelReaderFactory.CreateReader(stream))
+                {
+                    var result = reader.AsDataSet(new ExcelDataSetConfiguration()
+                    {
+                        ConfigureDataTable = (_) => new ExcelDataTableConfiguration() { UseHeaderRow = false }
+                    });
+                    return result.Tables[0];
+                }
+            }
+        }
+
+        private int GetColumnIndex(DataTable dt, params string[] possibleHeaders)
+        {
+            if (dt.Rows.Count == 0) return -1;
+            DataRow headerRow = dt.Rows[0];
+            for (int i = 0; i < dt.Columns.Count; i++)
+            {
+                string cellValue = headerRow[i]?.ToString()?.Trim().ToUpper();
+                if (string.IsNullOrEmpty(cellValue)) continue;
+
+                if (IsYnOrFlagColumn(cellValue)) continue;
+
+                foreach (string expected in possibleHeaders)
+                {
+                    if (cellValue.Contains(expected))
+                        return i;
+                }
+            }
+            return -1;
+        }
+
+        private int GetZoneColumnIndex(DataTable dt)
+        {
+            if (dt.Rows.Count == 0) return -1;
+            DataRow headerRow = dt.Rows[0];
+            for (int i = 0; i < dt.Columns.Count; i++)
+            {
+                string cellValue = headerRow[i]?.ToString()?.Trim().ToUpper();
+                if (string.IsNullOrEmpty(cellValue)) continue;
+
+                if (IsYnOrFlagColumn(cellValue)) continue;
+
+                if (cellValue.Contains("ZONE") || cellValue.Contains("BUILDING") || cellValue.Contains("AREA"))
+                    return i;
+            }
+            return -1;
+        }
+
+        private bool IsYnOrFlagColumn(string headerText)
+        {
+            return headerText.Contains("Y/N") ||
+                   headerText.Contains("YN") ||
+                   headerText.Contains("FLAG") ||
+                   headerText.Contains("INDICATOR");
+        }
+
         private void Location5_TextChanged(object sender, EventArgs e)
         {
-
+            // Unused
         }
     }
 }

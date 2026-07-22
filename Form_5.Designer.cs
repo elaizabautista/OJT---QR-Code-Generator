@@ -57,6 +57,9 @@
             panel3 = new Panel();
             label14 = new Label();
             panel4 = new Panel();
+            Uploadbutt = new Button();
+            label5 = new Label();
+            cmbNewBatch5 = new ComboBox();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
             panel2.SuspendLayout();
@@ -79,6 +82,9 @@
             // panel1
             // 
             panel1.BackColor = Color.LightSteelBlue;
+            panel1.Controls.Add(Uploadbutt);
+            panel1.Controls.Add(label5);
+            panel1.Controls.Add(cmbNewBatch5);
             panel1.Controls.Add(label4);
             panel1.Controls.Add(groupBox1);
             panel1.Controls.Add(btnConvertToPdf);
@@ -290,7 +296,7 @@
             // 
             btnConvertToPdf.BackColor = Color.AliceBlue;
             btnConvertToPdf.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnConvertToPdf.Location = new Point(660, 457);
+            btnConvertToPdf.Location = new Point(811, 460);
             btnConvertToPdf.Name = "btnConvertToPdf";
             btnConvertToPdf.Size = new Size(165, 39);
             btnConvertToPdf.TabIndex = 10;
@@ -366,6 +372,36 @@
             panel4.Size = new Size(1146, 765);
             panel4.TabIndex = 35;
             // 
+            // Uploadbutt
+            // 
+            Uploadbutt.BackColor = Color.LightBlue;
+            Uploadbutt.Location = new Point(887, 514);
+            Uploadbutt.Name = "Uploadbutt";
+            Uploadbutt.Size = new Size(89, 23);
+            Uploadbutt.TabIndex = 35;
+            Uploadbutt.Text = "Upload";
+            Uploadbutt.UseVisualStyleBackColor = false;
+            Uploadbutt.Click += Uploadbutt_Click;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label5.Location = new Point(510, 447);
+            label5.Name = "label5";
+            label5.Size = new Size(92, 21);
+            label5.TabIndex = 37;
+            label5.Text = "New Batch:";
+            // 
+            // cmbNewBatch5
+            // 
+            cmbNewBatch5.FormattingEnabled = true;
+            cmbNewBatch5.Location = new Point(510, 471);
+            cmbNewBatch5.Name = "cmbNewBatch5";
+            cmbNewBatch5.Size = new Size(178, 23);
+            cmbNewBatch5.TabIndex = 36;
+            cmbNewBatch5.SelectedIndexChanged += cmbNewBatch5_SelectedIndexChanged;
+            // 
             // Form_5
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -419,5 +455,8 @@
         private Label label14;
         private GroupBox groupBox1;
         private Panel panel4;
+        private Button Uploadbutt;
+        public Label label5;
+        private ComboBox cmbNewBatch5;
     }
 }

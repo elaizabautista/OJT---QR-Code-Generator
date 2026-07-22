@@ -39,15 +39,15 @@
             label3 = new Label();
             label1 = new Label();
             panel1 = new Panel();
+            label2 = new Label();
             groupBox1 = new GroupBox();
+            Uploadbutt = new Button();
+            cmbNewBatch4 = new ComboBox();
             panel2 = new Panel();
             label11 = new Label();
             panel3 = new Panel();
             label12 = new Label();
             panel4 = new Panel();
-            label2 = new Label();
-            cmbNewBatch4 = new ComboBox();
-            Uploadbutt = new Button();
             panel1.SuspendLayout();
             groupBox1.SuspendLayout();
             panel2.SuspendLayout();
@@ -236,6 +236,17 @@
             panel1.Size = new Size(997, 520);
             panel1.TabIndex = 1;
             // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
+            label2.Location = new Point(446, 445);
+            label2.Name = "label2";
+            label2.Size = new Size(92, 21);
+            label2.TabIndex = 32;
+            label2.Text = "New Batch:";
+            label2.Click += label2_Click;
+            // 
             // groupBox1
             // 
             groupBox1.Controls.Add(label3);
@@ -257,6 +268,26 @@
             groupBox1.Size = new Size(290, 372);
             groupBox1.TabIndex = 20;
             groupBox1.TabStop = false;
+            // 
+            // Uploadbutt
+            // 
+            Uploadbutt.BackColor = Color.LightBlue;
+            Uploadbutt.Location = new Point(195, 22);
+            Uploadbutt.Name = "Uploadbutt";
+            Uploadbutt.Size = new Size(89, 23);
+            Uploadbutt.TabIndex = 30;
+            Uploadbutt.Text = "Upload";
+            Uploadbutt.UseVisualStyleBackColor = false;
+            Uploadbutt.Click += Uploadbutt_Click;
+            // 
+            // cmbNewBatch4
+            // 
+            cmbNewBatch4.FormattingEnabled = true;
+            cmbNewBatch4.Location = new Point(446, 469);
+            cmbNewBatch4.Name = "cmbNewBatch4";
+            cmbNewBatch4.Size = new Size(178, 23);
+            cmbNewBatch4.TabIndex = 31;
+            cmbNewBatch4.SelectedIndexChanged += cmbNewBatch4_SelectedIndexChanged;
             // 
             // panel2
             // 
@@ -308,36 +339,6 @@
             panel4.Name = "panel4";
             panel4.Size = new Size(1117, 760);
             panel4.TabIndex = 33;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold);
-            label2.Location = new Point(446, 445);
-            label2.Name = "label2";
-            label2.Size = new Size(92, 21);
-            label2.TabIndex = 32;
-            label2.Text = "New Batch:";
-            // 
-            // cmbNewBatch4
-            // 
-            cmbNewBatch4.FormattingEnabled = true;
-            cmbNewBatch4.Location = new Point(446, 469);
-            cmbNewBatch4.Name = "cmbNewBatch4";
-            cmbNewBatch4.Size = new Size(178, 23);
-            cmbNewBatch4.TabIndex = 31;
-            cmbNewBatch4.SelectedIndexChanged += cmbNewBatch4_SelectedIndexChanged;
-            // 
-            // Uploadbutt
-            // 
-            Uploadbutt.BackColor = Color.LightBlue;
-            Uploadbutt.Location = new Point(195, 22);
-            Uploadbutt.Name = "Uploadbutt";
-            Uploadbutt.Size = new Size(89, 23);
-            Uploadbutt.TabIndex = 30;
-            Uploadbutt.Text = "Upload";
-            Uploadbutt.UseVisualStyleBackColor = false;
-            Uploadbutt.Click += Uploadbutt_Click;
             // 
             // Floor_Bin
             // 
