@@ -31,8 +31,9 @@ namespace OJT___QR_Code_Generator
         private const double CenterGapIn = 0.5;
 
         // ── State ─────────────────────────────────────────────────────────────
-        private List<(string Name, string Number)> _allLabels =
-            new List<(string, string)>();
+        // Store Header Text, Body Text, QR Payload, and a SortKey (Bin Code)
+        private List<(string Header, string Body, string QrPayload, string SortKey)> _allLabels =
+            new List<(string, string, string, string)>();
 
         // Dedicated storage ONLY for data loaded via the upload button
         private Dictionary<string, List<(string PartNumber, string PartName)>> _uploadedBinToParts =
@@ -62,6 +63,7 @@ namespace OJT___QR_Code_Generator
             btnConvertToPdf.Click += btnConvertToPdf_Click;
             Uploadbutt.Click += Uploadbutt_Click;
 
+            cmbBatch.SelectedIndexChanged += cmbBatch_SelectedIndexChanged;
             cmbNewBatch6.SelectedIndexChanged += cmbNewBatch6_SelectedIndexChanged;
 
             pnlPreview.Paint += pnlPreview_Paint;
@@ -70,16 +72,39 @@ namespace OJT___QR_Code_Generator
             rdoWithData.CheckedChanged += (s, e) => pnlPreview.Invalidate();
         }
 
+        // ── Dropdown selection handlers ──────────────────────────────────────
+        private void cmbBatch_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbBatch.SelectedItem != null && cmbBatch.SelectedItem.ToString() != "__Select__")
+            {
+                if (cmbNewBatch6 != null) cmbNewBatch6.SelectedIndex = 0;
+            }
+            LoadSelectedZoneLabelsToMemory();
+            pnlPreview.Invalidate();
+        }
+
+        private void cmbNewBatch6_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (cmbNewBatch6.SelectedItem != null && cmbNewBatch6.SelectedItem.ToString() != "__Select__")
+            {
+                if (cmbBatch != null) cmbBatch.SelectedIndex = 0;
+            }
+            LoadSelectedZoneLabelsToMemory();
+            pnlPreview.Invalidate();
+        }
+
         // ── Batch dropdown ────────────────────────────────────────────────────
         private void PopulateBatchDropdown()
         {
-            // Main dropdown uses default system data
             cmbBatch.Items.Clear();
             cmbBatch.Items.Add("__Select__");
 
             var uniqueSystem = new HashSet<string>();
-            foreach (string key in PartNumber_and_PartName_DATA.BinToParts.Keys)
-                uniqueSystem.Add(GetZoneGroup(key));
+            if (PartNumber_and_PartName_DATA.BinToParts != null)
+            {
+                foreach (string key in PartNumber_and_PartName_DATA.BinToParts.Keys)
+                    uniqueSystem.Add(GetZoneGroup(key));
+            }
 
             var sortedSystem = new List<string>(uniqueSystem);
             sortedSystem.Sort((x, y) => GetGroupSortKey(x).CompareTo(GetGroupSortKey(y)));
@@ -88,9 +113,8 @@ namespace OJT___QR_Code_Generator
             {
                 cmbBatch.Items.Add(g);
             }
-            cmbBatch.SelectedIndex = 0;
+            if (cmbBatch.Items.Count > 0) cmbBatch.SelectedIndex = 0;
 
-            // cmbNewBatch6 ONLY uses uploaded Excel data
             if (cmbNewBatch6 != null)
             {
                 cmbNewBatch6.Items.Clear();
@@ -165,8 +189,10 @@ namespace OJT___QR_Code_Generator
 
         private void btnConvertToPdf_Click(object sender, EventArgs e)
         {
-            if (cmbBatch.SelectedItem != null &&
-                cmbBatch.SelectedItem.ToString() != "__Select__")
+            bool hasBatchSelected = (cmbNewBatch6 != null && cmbNewBatch6.SelectedItem != null && cmbNewBatch6.SelectedItem.ToString() != "__Select__") ||
+                                    (cmbBatch != null && cmbBatch.SelectedItem != null && cmbBatch.SelectedItem.ToString() != "__Select__");
+
+            if (hasBatchSelected)
             {
                 if (!LoadZoneLabels()) return;
             }
@@ -293,7 +319,7 @@ namespace OJT___QR_Code_Generator
 
         // ── Page rendering engine ─────────────────────────────────────────────
         private void RenderA4Page(Graphics g, int pageWidth, int pageHeight,
-                                   int startIndex, bool isPrinting)
+                                  int startIndex, bool isPrinting)
         {
             double sx = (double)pageWidth / A4WidthHundredths;
             double sy = (double)pageHeight / A4HeightHundredths;
@@ -343,10 +369,11 @@ namespace OJT___QR_Code_Generator
                 else
                 {
                     int dataIndex = startIndex + slot;
-                    string name = (dataIndex < _allLabels.Count) ? _allLabels[dataIndex].Name : string.Empty;
-                    string number = (dataIndex < _allLabels.Count) ? _allLabels[dataIndex].Number : string.Empty;
+                    string header = (dataIndex < _allLabels.Count) ? _allLabels[dataIndex].Header : string.Empty;
+                    string body = (dataIndex < _allLabels.Count) ? _allLabels[dataIndex].Body : string.Empty;
+                    string qrPayload = (dataIndex < _allLabels.Count) ? _allLabels[dataIndex].QrPayload : string.Empty;
 
-                    RenderStrip(g, name, number, labelX, labelY, colWidth, labelHeight, isPrinting);
+                    RenderStrip(g, header, body, qrPayload, labelX, labelY, colWidth, labelHeight, isPrinting);
                 }
             }
         }
@@ -359,11 +386,11 @@ namespace OJT___QR_Code_Generator
             }
         }
 
-        private void RenderStrip(Graphics g, string partName, string partNumber,
-                                 int stripX, int stripY, int stripWidth, int stripHeight,
-                                 bool isPrinting)
+        private void RenderStrip(Graphics g, string headerText, string bodyText, string qrPayload,
+                               int stripX, int stripY, int stripWidth, int stripHeight,
+                               bool isPrinting)
         {
-            if (string.IsNullOrEmpty(partName) && string.IsNullOrEmpty(partNumber)) return;
+            if (string.IsNullOrEmpty(headerText) && string.IsNullOrEmpty(bodyText)) return;
 
             using (Pen border = new Pen(Color.Black, isPrinting ? 2f : 1f))
             {
@@ -391,14 +418,13 @@ namespace OJT___QR_Code_Generator
                 g.DrawRectangle(bodyPen, innerX, numberAreaTop, leftColWidth, numberAreaHeight);
             }
 
-            DrawTextAutofit(g, partName, "Arial", FontStyle.Bold, headerHeight * 0.7f,
+            DrawTextAutofit(g, headerText, "Arial", FontStyle.Bold, headerHeight * 0.7f,
                             innerX + 4, innerY + 2, leftColWidth - 8, headerHeight - 4, Brushes.White);
 
-            DrawTextAutofit(g, partNumber, "Arial", FontStyle.Bold, numberAreaHeight * 0.8f,
+            DrawTextAutofit(g, bodyText, "Arial", FontStyle.Bold, numberAreaHeight * 0.8f,
                             innerX + 4, numberAreaTop + 2, leftColWidth - 8, numberAreaHeight - 4, Brushes.Black);
 
             int qrSize = Math.Min(rightColWidth - 6, innerH - 6);
-            string qrPayload = !string.IsNullOrEmpty(partNumber) ? partNumber : partName;
 
             if (!string.IsNullOrEmpty(qrPayload) && qrSize > 0)
             {
@@ -416,8 +442,8 @@ namespace OJT___QR_Code_Generator
         }
 
         private void DrawTextAutofit(Graphics g, string text, string fontFamily,
-                                   FontStyle style, float maxFontSize,
-                                   int x, int y, int maxWidth, int maxHeight, Brush brush)
+                                     FontStyle style, float maxFontSize,
+                                     int x, int y, int maxWidth, int maxHeight, Brush brush)
         {
             if (string.IsNullOrEmpty(text)) return;
 
@@ -469,9 +495,9 @@ namespace OJT___QR_Code_Generator
             catch { return null; }
         }
 
-        private List<(string Name, string Number)> CollectManualEntries()
+        private List<(string Header, string Body, string QrPayload, string SortKey)> CollectManualEntries()
         {
-            var list = new List<(string, string)>();
+            var list = new List<(string, string, string, string)>();
 
             var names = new[] { txtPartName1,  txtPartName2,  txtPartName3,
                                 txtPartName4,  txtPartName5,  txtPartName6,
@@ -485,41 +511,129 @@ namespace OJT___QR_Code_Generator
 
             for (int i = 0; i < 12; i++)
             {
-                string n = names[i].Text.Trim();
-                string no = numbers[i].Text.Trim();
+                string n = names[i].Text.Trim();   // Will act as Description (Header)
+                string no = numbers[i].Text.Trim();// Will act as Material (Body)
+
                 if (!string.IsNullOrEmpty(n) || !string.IsNullOrEmpty(no))
-                    list.Add((n, no));
+                {
+                    string qrData = !string.IsNullOrEmpty(no) ? no : n;
+                    list.Add((n, no, qrData, string.Empty));
+                }
+            }
+
+            if (list.Count == 1)
+            {
+                var single = list[0];
+                while (list.Count < LabelsPerPage)
+                {
+                    list.Add(single);
+                }
             }
 
             return list;
         }
 
-        private bool LoadZoneLabels()
+        // ── Zone Loading Logic (Supports both System & Uploaded Data) ────────
+        private void LoadSelectedZoneLabelsToMemory()
         {
-            if (cmbBatch.SelectedItem == null ||
-                cmbBatch.SelectedItem.ToString() == "__Select__")
-            {
-                MessageBox.Show("Please select a Zone from the Batch dropdown.",
-                    "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return false;
-            }
-
-            string selectedGroup = cmbBatch.SelectedItem.ToString();
             _allLabels.Clear();
 
-            foreach (var kvp in PartNumber_and_PartName_DATA.BinToParts)
+            // 1. Check Uploaded Excel Data (cmbNewBatch6)
+            if (cmbNewBatch6 != null && cmbNewBatch6.SelectedItem != null && cmbNewBatch6.SelectedItem.ToString() != "__Select__")
             {
-                if (GetZoneGroup(kvp.Key) == selectedGroup)
+                string selectedZone = cmbNewBatch6.SelectedItem.ToString();
+                foreach (var kvp in _uploadedBinToParts)
                 {
-                    foreach (var part in kvp.Value)
-                        _allLabels.Add((part.PartName, part.PartNumber));
+                    string bin = kvp.Key;
+                    if (GetZoneGroup(bin) == selectedZone)
+                    {
+                        foreach (var part in kvp.Value)
+                        {
+                            string mat = part.PartNumber?.Trim() ?? ""; // Col B (Material Code)
+                            string desc = part.PartName?.Trim() ?? "";  // Col C (Material Description)
+
+                            string headerText = desc;
+                            string bodyText = !string.IsNullOrEmpty(mat) ? mat : bin;
+                            string qrData = !string.IsNullOrEmpty(mat) ? mat : bin;
+
+                            if (string.IsNullOrEmpty(headerText))
+                            {
+                                if (bodyText.Equals("VACANT", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    headerText = "";
+                                }
+                                else
+                                {
+                                    headerText = !string.IsNullOrEmpty(mat) ? bin : GetZonePrefix(bin);
+                                }
+                            }
+
+                            _allLabels.Add((headerText, bodyText, qrData, bin));
+                        }
+                    }
+                }
+            }
+            // 2. Check Default System Data (cmbBatch)
+            else if (cmbBatch != null && cmbBatch.SelectedItem != null && cmbBatch.SelectedItem.ToString() != "__Select__")
+            {
+                string selectedGroup = cmbBatch.SelectedItem.ToString();
+                if (PartNumber_and_PartName_DATA.BinToParts != null)
+                {
+                    foreach (var kvp in PartNumber_and_PartName_DATA.BinToParts)
+                    {
+                        string bin = kvp.Key;
+                        if (GetZoneGroup(bin) == selectedGroup)
+                        {
+                            foreach (var part in kvp.Value)
+                            {
+                                string mat = part.PartNumber?.Trim() ?? "";
+                                string desc = part.PartName?.Trim() ?? "";
+
+                                string headerText = desc;
+                                string bodyText = !string.IsNullOrEmpty(mat) ? mat : bin;
+                                string qrData = !string.IsNullOrEmpty(mat) ? mat : bin;
+
+                                if (string.IsNullOrEmpty(headerText))
+                                {
+                                    if (bodyText.Equals("VACANT", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        headerText = "";
+                                    }
+                                    else
+                                    {
+                                        headerText = !string.IsNullOrEmpty(mat) ? bin : GetZonePrefix(bin);
+                                    }
+                                }
+
+                                _allLabels.Add((headerText, bodyText, qrData, bin));
+                            }
+                        }
+                    }
                 }
             }
 
+            // Sort sequentially by Bin and Material to keep everything organized
+            _allLabels.Sort((x, y) =>
+            {
+                string padX = Regex.Replace(x.SortKey ?? "", "[0-9]+", m => m.Value.PadLeft(10, '0'));
+                string padY = Regex.Replace(y.SortKey ?? "", "[0-9]+", m => m.Value.PadLeft(10, '0'));
+                int comp = padX.CompareTo(padY);
+                if (comp != 0) return comp;
+                return x.Body.CompareTo(y.Body);
+            });
+
+            // REMOVED the auto-duplication block that was forcing 1 item to fill all 12 slots.
+            // Now, if there is only 1 item, it will just show that 1 item naturally instead of cloning it 12 times.
+        }
+
+        private bool LoadZoneLabels()
+        {
+            LoadSelectedZoneLabelsToMemory();
+
             if (_allLabels.Count == 0)
             {
-                MessageBox.Show("Selected zone has no bin data.",
-                    "No Data", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show("Please select a valid Zone from the Batch or New Batch dropdown, or ensure the zone has data.",
+                    "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -546,6 +660,12 @@ namespace OJT___QR_Code_Generator
 
             foreach (var tb in controls)
                 tb.Clear();
+        }
+
+        private static string GetZonePrefix(string binKey)
+        {
+            if (string.IsNullOrEmpty(binKey)) return "";
+            return binKey.Contains("-") ? binKey.Split('-')[0] : binKey;
         }
 
         private static string GetZoneGroup(string binKey)
@@ -625,38 +745,6 @@ namespace OJT___QR_Code_Generator
 
         }
 
-        // cmbNewBatch6 loads ALL matching items from the zone and assigns Description to header, Material to body/QR
-        private void cmbNewBatch6_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (cmbNewBatch6.SelectedItem == null || cmbNewBatch6.SelectedItem.ToString() == "__Select__")
-            {
-                _allLabels.Clear();
-                pnlPreview.Invalidate();
-                return;
-            }
-
-            string selectedZone = cmbNewBatch6.SelectedItem.ToString();
-            _allLabels.Clear();
-
-            foreach (var kvp in _uploadedBinToParts)
-            {
-                if (GetZoneGroup(kvp.Key) == selectedZone)
-                {
-                    foreach (var part in kvp.Value)
-                    {
-                        // part.PartName = Material Description (Header)
-                        // part.PartNumber = Material Code (Body & QR)
-                        string headerText = !string.IsNullOrEmpty(part.PartName) ? part.PartName : kvp.Key;
-                        string bodyText = part.PartNumber;
-
-                        _allLabels.Add((headerText, bodyText));
-                    }
-                }
-            }
-
-            pnlPreview.Invalidate();
-        }
-
         private void Uploadbutt_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openFileDialog = new OpenFileDialog())
@@ -687,45 +775,66 @@ namespace OJT___QR_Code_Generator
 
                                 foreach (System.Data.DataTable table in result.Tables)
                                 {
+                                    // Detect column indices based on header names or fall back to default positions (0, 1, 2)
+                                    int binCol = -1;
+                                    int partNumCol = -1;
+                                    int partNameCol = -1;
+
+                                    for (int c = 0; c < table.Columns.Count; c++)
+                                    {
+                                        string colName = table.Columns[c].ColumnName?.Trim().ToLower() ?? "";
+                                        if (colName.Contains("bin") || colName.Contains("location"))
+                                        {
+                                            if (binCol == -1) binCol = c;
+                                        }
+                                        else if (colName.Contains("partnumber") || colName.Contains("part number") || colName.Contains("material") || colName.Contains("code"))
+                                        {
+                                            if (partNumCol == -1) partNumCol = c;
+                                        }
+                                        else if (colName.Contains("partname") || colName.Contains("part name") || colName.Contains("description") || colName.Contains("name"))
+                                        {
+                                            if (partNameCol == -1) partNameCol = c;
+                                        }
+                                    }
+
+                                    // Fallback defaults if headers don't match exactly
+                                    if (binCol == -1 && table.Columns.Count > 0) binCol = 0;
+                                    if (partNumCol == -1 && table.Columns.Count > 1) partNumCol = 1;
+                                    else if (partNumCol == -1 && table.Columns.Count > 0) partNumCol = 0;
+                                    if (partNameCol == -1 && table.Columns.Count > 2) partNameCol = 2;
+                                    else if (partNameCol == -1 && table.Columns.Count > 1) partNameCol = 1;
+
                                     foreach (System.Data.DataRow row in table.Rows)
                                     {
-                                        if (row.ItemArray.Length < 2) continue;
+                                        string bin = binCol >= 0 && binCol < table.Columns.Count ? row[binCol]?.ToString()?.Trim() : "";
+                                        string partNum = partNumCol >= 0 && partNumCol < table.Columns.Count ? row[partNumCol]?.ToString()?.Trim() : "";
+                                        string partName = partNameCol >= 0 && partNameCol < table.Columns.Count ? row[partNameCol]?.ToString()?.Trim() : "";
 
-                                        // Column 0: Material (Part Number)
-                                        // Column 1: Material Description (Part Name)
-                                        string material = row[0]?.ToString().Trim();
-                                        string description = row[1]?.ToString().Trim();
+                                        if (string.IsNullOrEmpty(bin)) continue;
 
-                                        if (string.IsNullOrEmpty(material))
-                                            continue;
-
-                                        if (!_uploadedBinToParts.ContainsKey(material))
+                                        if (!_uploadedBinToParts.ContainsKey(bin))
                                         {
-                                            _uploadedBinToParts[material] = new List<(string PartNumber, string PartName)>();
+                                            _uploadedBinToParts[bin] = new List<(string, string)>();
                                         }
 
-                                        var existingList = _uploadedBinToParts[material];
-                                        bool exists = existingList.Exists(p => p.PartNumber.Equals(material, StringComparison.OrdinalIgnoreCase));
-
-                                        if (!exists)
-                                        {
-                                            existingList.Add((material, description));
-                                            importedCount++;
-                                        }
+                                        _uploadedBinToParts[bin].Add((partNum, partName));
+                                        importedCount++;
                                     }
                                 }
 
+                                // Refresh dropdowns and preview
                                 PopulateBatchDropdown();
+                                pnlPreview.Invalidate();
 
-                                MessageBox.Show($"Successfully imported {importedCount} materials from Excel!",
-                                    "Import Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                                MessageBox.Show($"Successfully imported {importedCount} items across {_uploadedBinToParts.Count} bins from Excel!",
+                                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                             }
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show($"Error reading Excel file: {ex.Message}",
-                            "Import Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show($"Could not read Excel file: {ex.Message}",
+                            "Excel Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
             }
